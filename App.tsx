@@ -176,6 +176,47 @@ const App: React.FC = () => {
         }
     }, [currentView, activeMissionId, dailyActivity.missions]);
 
+    // Preload questions for all missions when dashboard loads
+    useEffect(() => {
+        if (currentView !== View.DASHBOARD || !user) return;
+
+        const preloadMissions = async () => {
+            const missionsNeedingQuestions = dailyActivity.missions.filter(
+                m => !m.completed && (!m.questions || m.questions.length === 0)
+            );
+
+            if (missionsNeedingQuestions.length === 0) return;
+
+            // Preload questions for each mission in parallel
+            const preloadPromises = missionsNeedingQuestions.map(async (mission) => {
+                const subtopicLevel = profile.stats[mission.subtopic]?.level || 'Easy';
+                const difficulty = getDifficultyForLevel(subtopicLevel);
+                const generatedQuestions = await Promise.all(
+                    Array(mission.questionCount).fill(0).map(() => generateSatQuestion(mission.subtopic, difficulty))
+                );
+                return {
+                    missionId: mission.id,
+                    questions: generatedQuestions.map(q => ({ ...q, subtopic: mission.subtopic }))
+                };
+            });
+
+            const results = await Promise.all(preloadPromises);
+
+            setDailyActivity(prev => ({
+                ...prev,
+                missions: prev.missions.map(m => {
+                    const preloaded = results.find(r => r.missionId === m.id);
+                    if (preloaded && (!m.questions || m.questions.length === 0)) {
+                        return { ...m, questions: preloaded.questions };
+                    }
+                    return m;
+                })
+            }));
+        };
+
+        preloadMissions();
+    }, [currentView, user, dailyActivity.missions.length]);
+
     const updateProfile = (subtopic: string, isCorrect: boolean) => {
         setProfile(prev => {
             const newStats = { ...prev.stats };
