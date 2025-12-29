@@ -1,6 +1,6 @@
 
 import { Question, Difficulty, Point, GraphData } from '../types';
-import { QUESTION_BANK } from '../data/questionBank';
+import { getQuestionsByCategory } from '../data/questionBankIndexed';
 
 const FALLBACK_QUESTION = (subtopic: string, difficulty: string): Omit<Question, 'subtopic'> => ({
     question: `Content Development: The database is currently being populated with high-quality SAT questions for "${subtopic}" at ${difficulty} level.\n\nCheck back soon, or try "Grammar: Punctuation" for a full experience!`,
@@ -12,12 +12,11 @@ const FALLBACK_QUESTION = (subtopic: string, difficulty: string): Omit<Question,
 
 /**
  * Parses legacy question text for bracketed graph descriptions.
- * Modern questions from Gemini already include structured graphData.
  */
 const parseLegacyGraphData = (text: string): GraphData | undefined => {
     const pointRegex = /\((-?\d+),\s*(-?\d+)\)/g;
     const matches = Array.from(text.matchAll(pointRegex));
-    
+
     if (matches.length === 0) return undefined;
 
     const points: Point[] = matches.map(m => ({
@@ -28,7 +27,7 @@ const parseLegacyGraphData = (text: string): GraphData | undefined => {
     if (text.includes('system') || text.includes('intersecting')) {
         return { type: 'system', points };
     }
-    
+
     if (text.includes('line')) {
         return { type: 'line', points };
     }
@@ -37,10 +36,9 @@ const parseLegacyGraphData = (text: string): GraphData | undefined => {
 };
 
 export const generateSatQuestion = async (subtopic: string, difficulty: Difficulty): Promise<Omit<Question, 'subtopic'>> => {
-    await new Promise(resolve => setTimeout(resolve, 300));
-
-    // 1. Check local static bank first for curated questions
-    let candidates = QUESTION_BANK.filter(q => q.Type === subtopic && q.Difficulty === difficulty);
+    // Removed artificial delay for instant loading
+    // Use pre-indexed questions for O(1) lookup instead of O(n) filtering
+    const candidates = getQuestionsByCategory(subtopic, difficulty);
 
     if (candidates.length > 0) {
         const randomIndex = Math.floor(Math.random() * candidates.length);
@@ -58,6 +56,6 @@ export const generateSatQuestion = async (subtopic: string, difficulty: Difficul
         };
     }
 
-    // 2. Fallback to placeholder if nothing exists in bank (or link to Gemini generator in a real live environment)
+    // Fallback to placeholder if nothing exists in bank
     return FALLBACK_QUESTION(subtopic, difficulty);
 };

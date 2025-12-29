@@ -4,7 +4,11 @@
       "Bash(npx tsc:*)",
       "Bash(npm run build:*)",
       "Bash(paste:*)",
-      "Bash(sort:*)"
+      "Bash(sort:*)",
+      "Bash(if [ -f \".env\" ])",
+      "Bash(then echo \".env file exists - should be removed manually\")",
+      "Bash(else echo \"No .env file found\")",
+      "Bash(fi)"
     ]
   }
 }
