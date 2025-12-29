@@ -1,0 +1,5 @@
+{
+  "name": "AuraPrep",
+  "description": "An application that uses daily bite-sized SAT questions to help users practice consistently. Users earn points to summon and grow a collection of digital creatures.",
+  "requestFramePermissions": []
+}

@@ -1,0 +1,151 @@
+
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>AuraPrep</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=Playfair+Display:wght@700&family=Press+Start+2P&display=swap" rel="stylesheet">
+    <script>
+        tailwind.config = {
+            theme: {
+                extend: {
+                    fontFamily: {
+                        sans: ['"Press Start 2P"', 'cursive'],
+                        serif: ['Playfair Display', 'serif'],
+                    },
+                    colors: {
+                        'background': '#f3f4f6',
+                        'surface': '#ffffff',
+                        'primary': '#4338ca',
+                        'secondary': '#ddd6fe',
+                        'secondary-hover': '#c4b5fd',
+                        'accent': '#dc2626',
+                        'accent-dark': '#b91c1c',
+                        'highlight': '#ca8a04',
+                        'text-main': '#111827',
+                        'text-dim': '#6b7280',
+                        'text-dark': '#9ca3af',
+                        'text-light': '#f8fafc',
+                        'success': '#16a34a',
+                        'success-dark': '#15803d',
+                        'common': '#6b7280',
+                        'rare': '#4338ca',
+                        'legendary': '#ca8a04',
+                    },
+                    keyframes: {
+                        fadeIn: {
+                            '0%': { opacity: '0' },
+                            '100%': { opacity: '1' },
+                        },
+                        pulse: {
+                            '0%, 100%': { opacity: '1', transform: 'scale(1)' },
+                            '50%': { opacity: '.7', transform: 'scale(1.05)' },
+                        },
+                         shimmer: {
+                            '0%': { backgroundPosition: '-1000px 0' },
+                            '100%': { backgroundPosition: '1000px 0' },
+                        },
+                        reveal: {
+                            '0%': { transform: 'scale(0.8) translateY(20px)', filter: 'blur(12px) brightness(3)', opacity: '0' },
+                            '100%': { transform: 'scale(1) translateY(0)', filter: 'blur(0) brightness(1)', opacity: '1' },
+                        },
+                        blink: {
+                           '50%': { opacity: '0' }
+                        },
+                        shake: {
+                            '0%, 100%': { transform: 'translate3d(0, 0, 0)' },
+                            '10%, 30%, 50%, 70%, 90%': { transform: 'translate3d(-2px, 0, 0)' },
+                            '20%, 40%, 60%, 80%': { transform: 'translate3d(2px, 0, 0)' },
+                        },
+                        flash: {
+                            '0%': { opacity: '0' },
+                            '20%': { opacity: '1' },
+                            '100%': { opacity: '0' },
+                        },
+                        burst: {
+                            '0%': { transform: 'translate(0, 0) scale(1)', opacity: '1' },
+                            '100%': { transform: 'translate(var(--tw-translate-x), var(--tw-translate-y)) scale(0)', opacity: '0' },
+                        },
+                        levelUp: {
+                            '0%': { transform: 'scale(0) translateY(50px)', opacity: '0' },
+                            '50%': { transform: 'scale(1.2) translateY(0)', opacity: '1' },
+                            '100%': { transform: 'scale(1) translateY(0)', opacity: '1' },
+                        },
+                        float: {
+                            '0%, 100%': { transform: 'translateY(0)' },
+                            '50%': { transform: 'translateY(-10px)' },
+                        },
+                        orbit: {
+                            'from': { transform: 'rotate(0deg) translateX(40px) rotate(0deg)' },
+                            'to': { transform: 'rotate(360deg) translateX(40px) rotate(-360deg)' },
+                        },
+                        spinSlow: {
+                            'from': { transform: 'rotate(0deg)' },
+                            'to': { transform: 'rotate(360deg)' },
+                        },
+                        spinSlowReverse: {
+                            'from': { transform: 'rotate(360deg)' },
+                            'to': { transform: 'rotate(0deg)' },
+                        },
+                        flyToBestiary: {
+                            '0%': { transform: 'translate(0, 0) scale(1)', opacity: '1', filter: 'brightness(2) blur(0px)' },
+                            '20%': { transform: 'translate(20px, -40px) scale(1.1)', opacity: '1' },
+                            '100%': { transform: 'translate(100px, 400px) scale(0.2)', opacity: '0', filter: 'brightness(5) blur(4px)' }
+                        },
+                        glowFlicker: {
+                            '0%, 100%': { opacity: '0.4' },
+                            '50%': { opacity: '1' }
+                        }
+                    },
+                    animation: {
+                        fadeIn: 'fadeIn 0.5s ease-in-out',
+                        pulse: 'pulse 2s cubic-bezier(0.4, 0, 0.6, 1) infinite',
+                        shimmer: 'shimmer 2s infinite linear',
+                        reveal: 'reveal 0.8s cubic-bezier(0.22, 1, 0.36, 1) forwards',
+                        blink: 'blink 1s step-start infinite',
+                        shake: 'shake 0.5s cubic-bezier(.36,.07,.19,.97) infinite',
+                        flash: 'flash 0.8s ease-out',
+                        burst: 'burst 1.2s ease-out forwards',
+                        levelUp: 'levelUp 0.8s cubic-bezier(0.25, 1, 0.5, 1) forwards',
+                        float: 'float 3s ease-in-out infinite',
+                        spinSlow: 'spinSlow 8s linear infinite',
+                        spinSlowReverse: 'spinSlowReverse 12s linear infinite',
+                        flyToBestiary: 'flyToBestiary 1s cubic-bezier(0.45, 0, 0.55, 1) forwards',
+                        glowFlicker: 'glowFlicker 0.2s infinite ease-in-out',
+                    },
+                },
+            },
+        }
+    </script>
+<script type="importmap">
+{
+  "imports": {
+    "@google/genai": "https://aistudiocdn.com/@google/genai@^1.29.0",
+    "react": "https://aistudiocdn.com/react@^19.2.0",
+    "react/": "https://aistudiocdn.com/react@^19.2.0/",
+    "react-dom/": "https://aistudiocdn.com/react-dom@^19.2.0/"
+  }
+}
+</script>
+<style>
+    @keyframes drift {
+        0% { transform: translateY(0) translateX(0); opacity: 0; }
+        20% { opacity: 0.5; }
+        80% { opacity: 0.5; }
+        100% { transform: translateY(-100px) translateX(20px); opacity: 0; }
+    }
+    .aura-particle {
+        animation: drift var(--duration) linear infinite;
+        animation-delay: var(--delay);
+    }
+</style>
+</head>
+<body class="bg-background text-text-main font-sans text-[10px]">
+    <div id="root"></div>
+    <script type="module" src="/index.tsx"></script>
+</body>
+</html>
