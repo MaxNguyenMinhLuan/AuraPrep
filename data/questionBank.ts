@@ -7706,5 +7706,1418 @@ export const QUESTION_BANK: DBQuestion[] = [
         Difficulty: "Hard",
         Source: "Original",
         Explanation: "c = √(49 + 576) = √625 = 25. sin(A) = opposite/hypotenuse = a/c = 7/25."
+    },
+
+    // ========== BATCH 5: DATA (40 questions) ==========
+
+    // Data: Categories and Probabilities (10 questions)
+    {
+        Question: "A bag contains 5 red marbles and 3 blue marbles. What is the probability of randomly selecting a red marble?",
+        A: "5/8",
+        B: "3/8",
+        C: "5/3",
+        D: "1/2",
+        CorrectAns: "A",
+        Type: "Data: Categories and Probabilities",
+        Difficulty: "Easy",
+        Source: "Original",
+        Explanation: "P(red) = number of red / total = 5/(5+3) = 5/8."
+    },
+    {
+        Question: "A fair six-sided die is rolled. What is the probability of rolling a number greater than 4?",
+        A: "1/3",
+        B: "1/2",
+        C: "2/3",
+        D: "1/6",
+        CorrectAns: "A",
+        Type: "Data: Categories and Probabilities",
+        Difficulty: "Easy",
+        Source: "Original",
+        Explanation: "Numbers greater than 4 are {5, 6}. P = 2/6 = 1/3."
+    },
+    {
+        Question: "In a class of 30 students, 18 are female. If a student is selected at random, what is the probability of selecting a male student?",
+        A: "2/5",
+        B: "3/5",
+        C: "18/30",
+        D: "1/2",
+        CorrectAns: "A",
+        Type: "Data: Categories and Probabilities",
+        Difficulty: "Easy",
+        Source: "Original",
+        Explanation: "Males = 30 - 18 = 12. P(male) = 12/30 = 2/5."
+    },
+    {
+        Question: "Two coins are flipped. What is the probability that both show heads?",
+        A: "1/4",
+        B: "1/2",
+        C: "1/3",
+        D: "3/4",
+        CorrectAns: "A",
+        Type: "Data: Categories and Probabilities",
+        Difficulty: "Medium",
+        Source: "Original",
+        Explanation: "P(HH) = P(H on first) × P(H on second) = 1/2 × 1/2 = 1/4."
+    },
+    {
+        Question: "A card is drawn from a standard 52-card deck. What is the probability it is a heart?",
+        A: "1/4",
+        B: "1/13",
+        C: "13/52",
+        D: "1/2",
+        CorrectAns: "A",
+        Type: "Data: Categories and Probabilities",
+        Difficulty: "Easy",
+        Source: "Original",
+        Explanation: "There are 13 hearts in 52 cards. P = 13/52 = 1/4."
+    },
+    {
+        Question: "Events A and B are independent. If P(A) = 0.3 and P(B) = 0.4, what is P(A and B)?",
+        A: "0.12",
+        B: "0.70",
+        C: "0.10",
+        D: "0.24",
+        CorrectAns: "A",
+        Type: "Data: Categories and Probabilities",
+        Difficulty: "Medium",
+        Source: "Original",
+        Explanation: "For independent events, P(A and B) = P(A) × P(B) = 0.3 × 0.4 = 0.12."
+    },
+    {
+        Question: "A spinner has 8 equal sections: 3 red, 3 blue, and 2 green. What is the probability of NOT landing on red?",
+        A: "5/8",
+        B: "3/8",
+        C: "1/2",
+        D: "2/8",
+        CorrectAns: "A",
+        Type: "Data: Categories and Probabilities",
+        Difficulty: "Medium",
+        Source: "Original",
+        Explanation: "P(not red) = 1 - P(red) = 1 - 3/8 = 5/8."
+    },
+    {
+        Question: "In a survey, 60% of students like pizza and 40% like burgers. If these are independent preferences, what percent like both?",
+        A: "24%",
+        B: "100%",
+        C: "20%",
+        D: "50%",
+        CorrectAns: "A",
+        Type: "Data: Categories and Probabilities",
+        Difficulty: "Hard",
+        Source: "Original",
+        Explanation: "P(both) = 0.60 × 0.40 = 0.24 = 24%."
+    },
+    {
+        Question: "A bag has 4 red balls and 6 white balls. After drawing one red ball without replacement, what is the probability the next ball is also red?",
+        A: "1/3",
+        B: "4/10",
+        C: "3/10",
+        D: "1/2",
+        CorrectAns: "A",
+        Type: "Data: Categories and Probabilities",
+        Difficulty: "Hard",
+        Source: "Original",
+        Explanation: "After removing one red ball, there are 3 red and 6 white remaining (9 total). P = 3/9 = 1/3."
+    },
+    {
+        Question: "If P(A) = 0.5 and P(B) = 0.6, what is the maximum possible value of P(A or B)?",
+        A: "1",
+        B: "1.1",
+        C: "0.8",
+        D: "0.3",
+        CorrectAns: "A",
+        Type: "Data: Categories and Probabilities",
+        Difficulty: "Hard",
+        Source: "Original",
+        Explanation: "The maximum P(A or B) = 1 (when A and B together cover all outcomes). It cannot exceed 1."
+    },
+
+    // Data: Experimental Interpretation (10 questions)
+    {
+        Question: "An experiment measures plant growth with and without fertilizer. Which variable is the independent variable?",
+        A: "Presence of fertilizer",
+        B: "Plant growth",
+        C: "Time elapsed",
+        D: "Plant species",
+        CorrectAns: "A",
+        Type: "Data: Experimental Interpretation",
+        Difficulty: "Easy",
+        Source: "Original",
+        Explanation: "The independent variable is what the experimenter controls (fertilizer vs. no fertilizer)."
+    },
+    {
+        Question: "A study finds that ice cream sales and drowning incidents both increase in summer. What does this suggest?",
+        A: "Correlation, not causation",
+        B: "Ice cream causes drowning",
+        C: "Drowning causes ice cream sales",
+        D: "No relationship exists",
+        CorrectAns: "A",
+        Type: "Data: Experimental Interpretation",
+        Difficulty: "Medium",
+        Source: "Original",
+        Explanation: "Both are correlated with warm weather (a confounding variable), but one doesn't cause the other."
+    },
+    {
+        Question: "In a controlled experiment, what is the purpose of a control group?",
+        A: "To provide a baseline for comparison",
+        B: "To increase sample size",
+        C: "To prove causation",
+        D: "To eliminate all variables",
+        CorrectAns: "A",
+        Type: "Data: Experimental Interpretation",
+        Difficulty: "Easy",
+        Source: "Original",
+        Explanation: "The control group receives no treatment, allowing comparison with the experimental group."
+    },
+    {
+        Question: "A researcher surveys people at a gym about exercise habits. What type of sampling bias might this introduce?",
+        A: "Selection bias",
+        B: "Response bias",
+        C: "Survivorship bias",
+        D: "No bias",
+        CorrectAns: "A",
+        Type: "Data: Experimental Interpretation",
+        Difficulty: "Medium",
+        Source: "Original",
+        Explanation: "Surveying only gym-goers creates selection bias, as they're more likely to exercise than the general population."
+    },
+    {
+        Question: "An experiment shows that students who study more get better grades. Can we conclude studying causes better grades?",
+        A: "Not necessarily; other factors may be involved",
+        B: "Yes, the correlation proves causation",
+        C: "No, there is no relationship",
+        D: "Yes, if the sample size is large",
+        CorrectAns: "A",
+        Type: "Data: Experimental Interpretation",
+        Difficulty: "Medium",
+        Source: "Original",
+        Explanation: "While studying may cause better grades, other factors (motivation, prior knowledge) could also explain the relationship."
+    },
+    {
+        Question: "A drug trial uses a placebo group. What is the purpose of this?",
+        A: "To control for psychological effects",
+        B: "To save money on medicine",
+        C: "To increase the sample size",
+        D: "To ensure equal distribution",
+        CorrectAns: "A",
+        Type: "Data: Experimental Interpretation",
+        Difficulty: "Easy",
+        Source: "Original",
+        Explanation: "A placebo controls for the placebo effect (improvement from believing you're being treated)."
+    },
+    {
+        Question: "Which study design best establishes causation?",
+        A: "Randomized controlled experiment",
+        B: "Observational study",
+        C: "Survey",
+        D: "Case study",
+        CorrectAns: "A",
+        Type: "Data: Experimental Interpretation",
+        Difficulty: "Medium",
+        Source: "Original",
+        Explanation: "Randomized controlled experiments control variables and establish cause-and-effect relationships."
+    },
+    {
+        Question: "A study samples only college students. What limitation does this create?",
+        A: "Limited generalizability to other populations",
+        B: "Guaranteed incorrect results",
+        C: "No limitations",
+        D: "Automatic causation",
+        CorrectAns: "A",
+        Type: "Data: Experimental Interpretation",
+        Difficulty: "Medium",
+        Source: "Original",
+        Explanation: "Results may not apply to non-college populations (elderly, children, non-students)."
+    },
+    {
+        Question: "In an experiment, the dependent variable is:",
+        A: "The outcome being measured",
+        B: "The factor being manipulated",
+        C: "The control group",
+        D: "The sample size",
+        CorrectAns: "A",
+        Type: "Data: Experimental Interpretation",
+        Difficulty: "Easy",
+        Source: "Original",
+        Explanation: "The dependent variable is what you measure as a result of changing the independent variable."
+    },
+    {
+        Question: "A study finds taller people tend to have higher incomes. What confounding variable might explain this?",
+        A: "Gender (men are typically taller and historically earn more)",
+        B: "Shoe size",
+        C: "Hair color",
+        D: "No confounding variable exists",
+        CorrectAns: "A",
+        Type: "Data: Experimental Interpretation",
+        Difficulty: "Hard",
+        Source: "Original",
+        Explanation: "Gender could be a confounding variable since men are typically taller and have historically earned higher wages."
+    },
+
+    // Data: Central Tendency and Standard Deviation (10 questions)
+    {
+        Question: "What is the mean of the data set {4, 8, 6, 5, 7}?",
+        A: "6",
+        B: "5",
+        C: "7",
+        D: "8",
+        CorrectAns: "A",
+        Type: "Data: Central Tendency and Standard Deviation",
+        Difficulty: "Easy",
+        Source: "Original",
+        Explanation: "Mean = (4 + 8 + 6 + 5 + 7) / 5 = 30 / 5 = 6."
+    },
+    {
+        Question: "What is the median of {3, 7, 2, 9, 5}?",
+        A: "5",
+        B: "7",
+        C: "3",
+        D: "6",
+        CorrectAns: "A",
+        Type: "Data: Central Tendency and Standard Deviation",
+        Difficulty: "Easy",
+        Source: "Original",
+        Explanation: "Ordered: {2, 3, 5, 7, 9}. The middle value is 5."
+    },
+    {
+        Question: "What is the mode of {2, 4, 4, 6, 8, 4, 10}?",
+        A: "4",
+        B: "2",
+        C: "6",
+        D: "No mode",
+        CorrectAns: "A",
+        Type: "Data: Central Tendency and Standard Deviation",
+        Difficulty: "Easy",
+        Source: "Original",
+        Explanation: "The mode is the most frequent value, which is 4 (appears 3 times)."
+    },
+    {
+        Question: "The mean of five numbers is 20. If one number is 15, what is the sum of the other four?",
+        A: "85",
+        B: "100",
+        C: "80",
+        D: "75",
+        CorrectAns: "A",
+        Type: "Data: Central Tendency and Standard Deviation",
+        Difficulty: "Medium",
+        Source: "Original",
+        Explanation: "Total sum = 20 × 5 = 100. Sum of other four = 100 - 15 = 85."
+    },
+    {
+        Question: "What is the range of {12, 5, 8, 19, 3}?",
+        A: "16",
+        B: "19",
+        C: "3",
+        D: "12",
+        CorrectAns: "A",
+        Type: "Data: Central Tendency and Standard Deviation",
+        Difficulty: "Easy",
+        Source: "Original",
+        Explanation: "Range = maximum - minimum = 19 - 3 = 16."
+    },
+    {
+        Question: "A data set has mean 50 and each value is increased by 10. What is the new mean?",
+        A: "60",
+        B: "50",
+        C: "500",
+        D: "40",
+        CorrectAns: "A",
+        Type: "Data: Central Tendency and Standard Deviation",
+        Difficulty: "Medium",
+        Source: "Original",
+        Explanation: "Adding a constant to each value increases the mean by that constant. New mean = 50 + 10 = 60."
+    },
+    {
+        Question: "Which measure of central tendency is most affected by outliers?",
+        A: "Mean",
+        B: "Median",
+        C: "Mode",
+        D: "None",
+        CorrectAns: "A",
+        Type: "Data: Central Tendency and Standard Deviation",
+        Difficulty: "Medium",
+        Source: "Original",
+        Explanation: "The mean is most affected by extreme values (outliers) because it uses all values in its calculation."
+    },
+    {
+        Question: "Two data sets have the same mean. Set A has a larger standard deviation than Set B. What does this tell us?",
+        A: "Set A has more variability",
+        B: "Set A has a larger range",
+        C: "Set B has more data points",
+        D: "Set A has a higher median",
+        CorrectAns: "A",
+        Type: "Data: Central Tendency and Standard Deviation",
+        Difficulty: "Hard",
+        Source: "Original",
+        Explanation: "Standard deviation measures spread. A larger standard deviation means data is more spread out (more variability)."
+    },
+    {
+        Question: "What is the median of an even number of values?",
+        A: "The average of the two middle values",
+        B: "The larger middle value",
+        C: "The smaller middle value",
+        D: "The mean of all values",
+        CorrectAns: "A",
+        Type: "Data: Central Tendency and Standard Deviation",
+        Difficulty: "Easy",
+        Source: "Original",
+        Explanation: "For an even number of values, the median is the average of the two middle values when ordered."
+    },
+    {
+        Question: "A perfectly symmetrical distribution has mean = 40 and median = 40. What is most likely true about the mode?",
+        A: "Mode ≈ 40",
+        B: "Mode < 40",
+        C: "Mode > 40",
+        D: "Cannot be determined",
+        CorrectAns: "A",
+        Type: "Data: Central Tendency and Standard Deviation",
+        Difficulty: "Hard",
+        Source: "Original",
+        Explanation: "In a symmetric distribution, mean = median = mode. So the mode is likely also 40."
+    },
+
+    // Data: Scatterplots and Graphs (10 questions)
+    {
+        Question: "A scatterplot shows points forming a line from lower left to upper right. What type of correlation is this?",
+        A: "Positive correlation",
+        B: "Negative correlation",
+        C: "No correlation",
+        D: "Perfect correlation",
+        CorrectAns: "A",
+        Type: "Data: Scatterplots and Graphs",
+        Difficulty: "Easy",
+        Source: "Original",
+        Explanation: "Points rising from left to right indicate a positive correlation (as x increases, y increases)."
+    },
+    {
+        Question: "A scatterplot shows points scattered randomly with no pattern. What does this suggest?",
+        A: "No correlation between variables",
+        B: "Strong positive correlation",
+        C: "Strong negative correlation",
+        D: "Perfect linear relationship",
+        CorrectAns: "A",
+        Type: "Data: Scatterplots and Graphs",
+        Difficulty: "Easy",
+        Source: "Original",
+        Explanation: "Random scatter indicates no linear relationship between the variables."
+    },
+    {
+        Question: "In a line graph, the x-axis typically represents:",
+        A: "The independent variable",
+        B: "The dependent variable",
+        C: "The mode",
+        D: "The outliers",
+        CorrectAns: "A",
+        Type: "Data: Scatterplots and Graphs",
+        Difficulty: "Easy",
+        Source: "Original",
+        Explanation: "By convention, the independent variable (what you control or measure first) goes on the x-axis."
+    },
+    {
+        Question: "A bar graph shows test scores by student. What type of data is being displayed?",
+        A: "Categorical data",
+        B: "Continuous data",
+        C: "Time series data",
+        D: "Proportional data",
+        CorrectAns: "A",
+        Type: "Data: Scatterplots and Graphs",
+        Difficulty: "Easy",
+        Source: "Original",
+        Explanation: "Bar graphs are ideal for categorical data (each student is a separate category)."
+    },
+    {
+        Question: "A scatterplot has a line of best fit with equation y = 2x + 5. If x = 10, what does the line predict for y?",
+        A: "25",
+        B: "20",
+        C: "15",
+        D: "30",
+        CorrectAns: "A",
+        Type: "Data: Scatterplots and Graphs",
+        Difficulty: "Medium",
+        Source: "Original",
+        Explanation: "Substitute x = 10: y = 2(10) + 5 = 20 + 5 = 25."
+    },
+    {
+        Question: "In a histogram, what does the height of each bar represent?",
+        A: "Frequency or count",
+        B: "The mean",
+        C: "The range",
+        D: "The outliers",
+        CorrectAns: "A",
+        Type: "Data: Scatterplots and Graphs",
+        Difficulty: "Easy",
+        Source: "Original",
+        Explanation: "Histogram bars show frequency (how many data points fall in each interval)."
+    },
+    {
+        Question: "A scatterplot shows strong negative correlation. As x increases, what happens to y?",
+        A: "y decreases",
+        B: "y increases",
+        C: "y stays constant",
+        D: "y becomes zero",
+        CorrectAns: "A",
+        Type: "Data: Scatterplots and Graphs",
+        Difficulty: "Easy",
+        Source: "Original",
+        Explanation: "Negative correlation means as one variable increases, the other decreases."
+    },
+    {
+        Question: "An outlier in a scatterplot is a point that:",
+        A: "Deviates significantly from the pattern",
+        B: "Falls exactly on the line of best fit",
+        C: "Has the highest x-value",
+        D: "Has the lowest y-value",
+        CorrectAns: "A",
+        Type: "Data: Scatterplots and Graphs",
+        Difficulty: "Medium",
+        Source: "Original",
+        Explanation: "An outlier is a data point that doesn't fit the general pattern of the data."
+    },
+    {
+        Question: "A line of best fit has slope -3. What does this tell us about the relationship?",
+        A: "Negative correlation; y decreases by 3 for each unit increase in x",
+        B: "Positive correlation; y increases by 3 for each unit increase in x",
+        C: "No correlation",
+        D: "The y-intercept is -3",
+        CorrectAns: "A",
+        Type: "Data: Scatterplots and Graphs",
+        Difficulty: "Medium",
+        Source: "Original",
+        Explanation: "A negative slope indicates negative correlation, and the magnitude tells how much y changes per unit of x."
+    },
+    {
+        Question: "Two variables have correlation coefficient r = 0.95. What does this indicate?",
+        A: "Strong positive linear relationship",
+        B: "Strong negative linear relationship",
+        C: "Weak positive relationship",
+        D: "No relationship",
+        CorrectAns: "A",
+        Type: "Data: Scatterplots and Graphs",
+        Difficulty: "Hard",
+        Source: "Original",
+        Explanation: "r close to +1 indicates a strong positive linear correlation. 0.95 is very close to 1."
+    },
+
+    // ========== BATCH 6: ENSURING ALL 46 CATEGORIES HAVE BALANCED COVERAGE ==========
+    // Adding 1 Easy, 1 Medium, 1 Hard for categories that need them most
+
+    // Function Notation - Easy
+    {
+        Question: "If $f(x) = 2x + 5$, what is $f(3)$?",
+        A: "11",
+        B: "8",
+        C: "6",
+        D: "16",
+        CorrectAns: "A",
+        Type: "Function Notation",
+        Difficulty: "Easy",
+        Source: "Original",
+        Explanation: "$f(3) = 2(3) + 5 = 6 + 5 = 11$."
+    },
+    // Function Notation - Medium
+    {
+        Question: "If $f(x) = x^2 - 3$ and $f(a) = 6$, what are the possible values of $a$?",
+        A: "$\\pm 3$",
+        B: "$\\pm 2$",
+        C: "3 only",
+        D: "$\\pm\\sqrt{6}$",
+        CorrectAns: "A",
+        Type: "Function Notation",
+        Difficulty: "Medium",
+        Source: "Original",
+        Explanation: "$a^2 - 3 = 6 \\Rightarrow a^2 = 9 \\Rightarrow a = \\pm 3$."
+    },
+    // Function Notation - Hard
+    {
+        Question: "If $f(x) = 2x + 1$ and $g(x) = x^2$, what is $f(g(3))$?",
+        A: "19",
+        B: "10",
+        C: "37",
+        D: "18",
+        CorrectAns: "A",
+        Type: "Function Notation",
+        Difficulty: "Hard",
+        Source: "Original",
+        Explanation: "$g(3) = 9$. Then $f(9) = 2(9) + 1 = 18 + 1 = 19$."
+    },
+
+    // Formulas and Expressions - Easy
+    {
+        Question: "The formula for the area of a rectangle is $A = lw$, where $l$ is length and $w$ is width. If $l = 8$ and $w = 5$, what is $A$?",
+        A: "40",
+        B: "13",
+        C: "26",
+        D: "80",
+        CorrectAns: "A",
+        Type: "Formulas and Expressions",
+        Difficulty: "Easy",
+        Source: "Original",
+        Explanation: "$A = lw = 8 \\times 5 = 40$."
+    },
+    // Formulas and Expressions - Medium
+    {
+        Question: "The formula $d = rt$ relates distance, rate, and time. If a car travels 180 miles in 3 hours, what is the rate $r$ in miles per hour?",
+        A: "60",
+        B: "540",
+        C: "183",
+        D: "177",
+        CorrectAns: "A",
+        Type: "Formulas and Expressions",
+        Difficulty: "Medium",
+        Source: "Original",
+        Explanation: "$180 = r(3) \\Rightarrow r = \\frac{180}{3} = 60$ mph."
+    },
+    // Formulas and Expressions - Hard
+    {
+        Question: "The surface area of a cylinder is given by $S = 2\\pi r^2 + 2\\pi rh$. If $r = 3$ and $h = 5$, what is $S$?",
+        A: "$48\\pi$",
+        B: "$30\\pi$",
+        C: "$24\\pi$",
+        D: "$54\\pi$",
+        CorrectAns: "A",
+        Type: "Formulas and Expressions",
+        Difficulty: "Hard",
+        Source: "Original",
+        Explanation: "$S = 2\\pi(3)^2 + 2\\pi(3)(5) = 18\\pi + 30\\pi = 48\\pi$."
+    },
+
+    // Numbers: Sequences - Easy
+    {
+        Question: "What is the next term in the arithmetic sequence: 5, 8, 11, 14, ...?",
+        A: "17",
+        B: "16",
+        C: "18",
+        D: "15",
+        CorrectAns: "A",
+        Type: "Numbers: Sequences",
+        Difficulty: "Easy",
+        Source: "Original",
+        Explanation: "The common difference is 3. Next term: $14 + 3 = 17$."
+    },
+    // Numbers: Sequences - Medium
+    {
+        Question: "In a geometric sequence, the first term is 2 and the common ratio is 3. What is the 4th term?",
+        A: "54",
+        B: "18",
+        C: "6",
+        D: "162",
+        CorrectAns: "A",
+        Type: "Numbers: Sequences",
+        Difficulty: "Medium",
+        Source: "Original",
+        Explanation: "Term 4 = $2 \\times 3^{4-1} = 2 \\times 27 = 54$."
+    },
+    // Numbers: Sequences - Hard
+    {
+        Question: "The sum of the first $n$ terms of an arithmetic sequence is given by $S_n = \\frac{n}{2}(a_1 + a_n)$. If $a_1 = 4$, $a_n = 40$, and $n = 10$, what is $S_n$?",
+        A: "220",
+        B: "440",
+        C: "200",
+        D: "400",
+        CorrectAns: "A",
+        Type: "Numbers: Sequences",
+        Difficulty: "Hard",
+        Source: "Original",
+        Explanation: "$S_n = \\frac{10}{2}(4 + 40) = 5(44) = 220$."
+    },
+
+    // Ratios and Proportions - Easy
+    {
+        Question: "If the ratio of boys to girls in a class is 3:5 and there are 15 girls, how many boys are there?",
+        A: "9",
+        B: "25",
+        C: "12",
+        D: "18",
+        CorrectAns: "A",
+        Type: "Ratios and Proportions",
+        Difficulty: "Easy",
+        Source: "Original",
+        Explanation: "$\\frac{\\text{boys}}{15} = \\frac{3}{5} \\Rightarrow \\text{boys} = \\frac{3 \\times 15}{5} = 9$."
+    },
+    // Ratios and Proportions - Medium
+    {
+        Question: "A recipe calls for flour and sugar in the ratio 4:3. If you use 12 cups of flour, how many cups of sugar do you need?",
+        A: "9",
+        B: "16",
+        C: "8",
+        D: "6",
+        CorrectAns: "A",
+        Type: "Ratios and Proportions",
+        Difficulty: "Medium",
+        Source: "Original",
+        Explanation: "$\\frac{12}{\\text{sugar}} = \\frac{4}{3} \\Rightarrow \\text{sugar} = \\frac{12 \\times 3}{4} = 9$ cups."
+    },
+    // Ratios and Proportions - Hard
+    {
+        Question: "The ratio of $x$ to $y$ is 2:5, and the ratio of $y$ to $z$ is 3:4. What is the ratio of $x$ to $z$?",
+        A: "3:10",
+        B: "2:4",
+        C: "6:20",
+        D: "1:2",
+        CorrectAns: "A",
+        Type: "Ratios and Proportions",
+        Difficulty: "Hard",
+        Source: "Original",
+        Explanation: "$\\frac{x}{y} = \\frac{2}{5}$ and $\\frac{y}{z} = \\frac{3}{4}$. So $\\frac{x}{z} = \\frac{x}{y} \\times \\frac{y}{z} = \\frac{2}{5} \\times \\frac{3}{4} = \\frac{6}{20} = \\frac{3}{10}$."
+    },
+
+    // R/W: Multiple Text Analysis - Easy
+    {
+        Question: "Text 1 states that exercise improves mood. Text 2 states that exercise reduces stress hormones. Which statement best describes the relationship?",
+        A: "Text 2 provides a mechanism for Text 1's claim",
+        B: "Text 2 contradicts Text 1",
+        C: "They discuss unrelated topics",
+        D: "Text 1 disproves Text 2",
+        CorrectAns: "A",
+        Type: "R/W: Multiple Text Analysis",
+        Difficulty: "Easy",
+        Source: "Original",
+        Explanation: "Text 2 explains HOW exercise improves mood (by reducing stress hormones), supporting Text 1."
+    },
+    // R/W: Multiple Text Analysis - Medium
+    {
+        Question: "Text 1 argues that technology increases productivity. Text 2 argues that technology creates distractions. How do these texts relate?",
+        A: "They present contrasting perspectives on technology's impact",
+        B: "Text 2 supports Text 1",
+        C: "They discuss different types of technology",
+        D: "Text 1 refutes Text 2",
+        CorrectAns: "A",
+        Type: "R/W: Multiple Text Analysis",
+        Difficulty: "Medium",
+        Source: "Original",
+        Explanation: "The texts offer opposing views on technology's effects in the workplace."
+    },
+    // R/W: Multiple Text Analysis - Hard
+    {
+        Question: "Text 1 discusses Mozart's influence on classical music. Text 2 examines Beethoven's innovations. Text 3 analyzes how Beethoven built upon Mozart's techniques. Which best describes Text 3's function?",
+        A: "It synthesizes the information in Texts 1 and 2 by showing connections",
+        B: "It contradicts both previous texts",
+        C: "It provides unrelated information",
+        D: "It repeats Text 1",
+        CorrectAns: "A",
+        Type: "R/W: Multiple Text Analysis",
+        Difficulty: "Hard",
+        Source: "Original",
+        Explanation: "Text 3 connects the two composers by explaining their relationship, synthesizing Texts 1 and 2."
+    },
+
+    // R/W: Quantitative Analysis - Easy
+    {
+        Question: "A graph shows that sales increased from 100 units in January to 150 units in June. What was the increase?",
+        A: "50 units",
+        B: "50%",
+        C: "150 units",
+        D: "250 units",
+        CorrectAns: "A",
+        Type: "R/W: Quantitative Analysis",
+        Difficulty: "Easy",
+        Source: "Original",
+        Explanation: "Increase = $150 - 100 = 50$ units."
+    },
+    // R/W: Quantitative Analysis - Medium
+    {
+        Question: "A table shows unemployment rates: 2020 (8%), 2021 (6%), 2022 (5%). Which statement is supported?",
+        A: "Unemployment decreased each year from 2020 to 2022",
+        B: "Unemployment increased",
+        C: "Unemployment remained constant",
+        D: "Unemployment doubled",
+        CorrectAns: "A",
+        Type: "R/W: Quantitative Analysis",
+        Difficulty: "Medium",
+        Source: "Original",
+        Explanation: "The data shows a consistent decline: 8% → 6% → 5%."
+    },
+    // R/W: Quantitative Analysis - Hard
+    {
+        Question: "A chart shows Company A's revenue grew 20% while Company B's grew from $\\$50M$ to $\\$65M$. Which company had higher percentage growth?",
+        A: "Company B (30%)",
+        B: "Company A (20%)",
+        C: "Both equal",
+        D: "Cannot determine",
+        CorrectAns: "A",
+        Type: "R/W: Quantitative Analysis",
+        Difficulty: "Hard",
+        Source: "Original",
+        Explanation: "Company B: $\\frac{65-50}{50} = \\frac{15}{50} = 0.30 = 30\\%$, which exceeds Company A's 20%."
+    },
+
+    // R/W: Text Structure and Purpose - Easy
+    {
+        Question: "A passage begins with a question, then provides three examples, and ends with a conclusion. What is the text structure?",
+        A: "Question-answer with supporting examples",
+        B: "Chronological narrative",
+        C: "Compare and contrast",
+        D: "Cause and effect",
+        CorrectAns: "A",
+        Type: "R/W: Text Structure and Purpose",
+        Difficulty: "Easy",
+        Source: "Original",
+        Explanation: "The text poses a question and answers it using examples."
+    },
+    // R/W: Text Structure and Purpose - Medium
+    {
+        Question: "An article discusses solar panels' benefits, then their drawbacks, then concludes with recommendations. What organizational pattern is used?",
+        A: "Problem-solution with balanced analysis",
+        B: "Chronological",
+        C: "Spatial",
+        D: "Descriptive",
+        CorrectAns: "A",
+        Type: "R/W: Text Structure and Purpose",
+        Difficulty: "Medium",
+        Source: "Original",
+        Explanation: "The text examines both sides (pros/cons) before offering solutions."
+    },
+    // R/W: Text Structure and Purpose - Hard
+    {
+        Question: "A scientific paper presents background, methodology, results, and discussion. The discussion section primarily serves to:",
+        A: "Interpret results and explain their significance in context",
+        B: "Repeat the methodology",
+        C: "List raw data",
+        D: "Introduce new unrelated topics",
+        CorrectAns: "A",
+        Type: "R/W: Text Structure and Purpose",
+        Difficulty: "Hard",
+        Source: "Original",
+        Explanation: "The discussion section analyzes what the results mean and their broader implications."
+    },
+
+    // R/W: Command of Evidence - Easy
+    {
+        Question: "Claim: 'Regular reading improves vocabulary.' Which evidence best supports this? A) A study showing readers know 30% more words. B) Books are popular.",
+        A: "A",
+        B: "B",
+        C: "Neither",
+        D: "Both equally",
+        CorrectAns: "A",
+        Type: "R/W: Command of Evidence",
+        Difficulty: "Easy",
+        Source: "Original",
+        Explanation: "Option A provides quantitative evidence directly linking reading to vocabulary gains."
+    },
+    // R/W: Command of Evidence - Medium
+    {
+        Question: "To support the claim that urban green spaces reduce stress, which evidence is most relevant? A) Parks attract visitors. B) A study found 20% stress reduction near parks. C) Trees produce oxygen.",
+        A: "B",
+        B: "A",
+        C: "C",
+        D: "All equally",
+        CorrectAns: "A",
+        Type: "R/W: Command of Evidence",
+        Difficulty: "Medium",
+        Source: "Original",
+        Explanation: "Option B directly measures the stress reduction effect of green spaces."
+    },
+    // R/W: Command of Evidence - Hard
+    {
+        Question: "A writer claims early education programs have long-term benefits. Which combination of evidence is strongest? A) Test scores + college attendance rates. B) Program popularity. C) Parent testimonials.",
+        A: "A",
+        B: "B",
+        C: "C",
+        D: "B and C",
+        CorrectAns: "A",
+        Type: "R/W: Command of Evidence",
+        Difficulty: "Hard",
+        Source: "Original",
+        Explanation: "Quantitative data on academic outcomes provides the most rigorous evidence for long-term benefits."
+    },
+
+    // R/W: Drawing Inferences - Easy
+    {
+        Question: "'The library was silent except for the rustle of turning pages.' What can be inferred?",
+        A: "People are reading in the library",
+        B: "The library is closed",
+        C: "The library is loud",
+        D: "No one is present",
+        CorrectAns: "A",
+        Type: "R/W: Drawing Inferences",
+        Difficulty: "Easy",
+        Source: "Original",
+        Explanation: "The sound of turning pages indicates people are actively reading."
+    },
+    // R/W: Drawing Inferences - Medium
+    {
+        Question: "'Maria checked her watch for the third time in five minutes, then stood and paced.' What is implied about Maria's state?",
+        A: "She is anxious or impatient",
+        B: "She is relaxed",
+        C: "She is sleeping",
+        D: "She is early",
+        CorrectAns: "A",
+        Type: "R/W: Drawing Inferences",
+        Difficulty: "Medium",
+        Source: "Original",
+        Explanation: "Repeated watch-checking and pacing suggest nervousness or waiting impatient ly."
+    },
+    // R/W: Drawing Inferences - Hard
+    {
+        Question: "'Despite record profits, the CEO announced immediate cost-cutting measures and a hiring freeze.' What can most reasonably be inferred?",
+        A: "The company anticipates future financial challenges",
+        B: "The company is bankrupt",
+        C: "Profits will increase",
+        D: "The CEO is generous",
+        CorrectAns: "A",
+        Type: "R/W: Drawing Inferences",
+        Difficulty: "Hard",
+        Source: "Original",
+        Explanation: "Cost-cutting despite current profits suggests preparation for expected difficulties ahead."
+    },
+
+    // R/W: Identifying Main Idea - Easy
+    {
+        Question: "A paragraph discusses bees' role in pollination, crop production, and ecosystem health. What is the main idea?",
+        A: "Bees are essential to ecosystems and agriculture",
+        B: "Bees make honey",
+        C: "Bees can sting",
+        D: "Bees are insects",
+        CorrectAns: "A",
+        Type: "R/W: Identifying Main Idea",
+        Difficulty: "Easy",
+        Source: "Original",
+        Explanation: "All details support bees' importance to natural and agricultural systems."
+    },
+    // R/W: Identifying Main Idea - Medium
+    {
+        Question: "An article describes streaming services' growth, their impact on traditional TV, and changing viewing habits. What is the central idea?",
+        A: "Streaming services are transforming how people consume media",
+        B: "TV is obsolete",
+        C: "Streaming is expensive",
+        D: "Everyone watches Netflix",
+        CorrectAns: "A",
+        Type: "R/W: Identifying Main Idea",
+        Difficulty: "Medium",
+        Source: "Original",
+        Explanation: "The article's focus is on the broader transformation of media consumption patterns."
+    },
+    // R/W: Identifying Main Idea - Hard
+    {
+        Question: "A passage discusses AI's benefits in medicine, concerns about job displacement, ethical questions, and regulatory challenges. What overarching idea unifies these points?",
+        A: "AI presents both opportunities and complex challenges across sectors",
+        B: "AI is purely beneficial",
+        C: "AI should be banned",
+        D: "AI only affects medicine",
+        CorrectAns: "A",
+        Type: "R/W: Identifying Main Idea",
+        Difficulty: "Hard",
+        Source: "Original",
+        Explanation: "The passage examines AI's multifaceted impact, balancing promise with problems."
+    },
+
+    // R/W: Rhetorical Synthesis - Easy
+    {
+        Question: "A student is writing about recycling benefits. Which sentence best combines: 'Recycling saves energy. Recycling reduces waste.'?",
+        A: "Recycling saves energy and reduces waste",
+        B: "Recycling saves energy, but it reduces waste",
+        C: "Although recycling saves energy, waste",
+        D: "Recycling energy waste",
+        CorrectAns: "A",
+        Type: "R/W: Rhetorical Synthesis",
+        Difficulty: "Easy",
+        Source: "Original",
+        Explanation: "Using 'and' appropriately combines two parallel benefits."
+    },
+    // R/W: Rhetorical Synthesis - Medium
+    {
+        Question: "Which sentence best synthesizes these points: renewable energy reduces emissions, costs are decreasing, technology is improving?",
+        A: "Renewable energy is becoming more viable as costs fall and technology advances, while reducing emissions",
+        B: "Renewable energy exists",
+        C: "Costs and technology",
+        D: "Emissions happen",
+        CorrectAns: "A",
+        Type: "R/W: Rhetorical Synthesis",
+        Difficulty: "Medium",
+        Source: "Original",
+        Explanation: "This sentence logically connects all three supporting points into a coherent claim."
+    },
+    // R/W: Rhetorical Synthesis - Hard
+    {
+        Question: "A writer needs to synthesize: early education improves outcomes, funding is limited, programs show strong ROI. Which is most effective?",
+        A: "Despite funding constraints, early education programs' strong ROI and proven outcomes make them worthwhile investments",
+        B: "Early education costs money",
+        C: "Programs exist",
+        D: "Outcomes vary",
+        CorrectAns: "A",
+        Type: "R/W: Rhetorical Synthesis",
+        Difficulty: "Hard",
+        Source: "Original",
+        Explanation: "This synthesis acknowledges the challenge while emphasizing the evidence-based argument for investment."
+    },
+
+    // R/W: Determining Sentence Purpose - Easy
+    {
+        Question: "In this passage, what is the purpose of the first sentence? 'Climate change is accelerating. Rising temperatures threaten ecosystems. Action is urgent.'",
+        A: "To introduce the topic and establish importance",
+        B: "To provide a solution",
+        C: "To entertain readers",
+        D: "To contradict the passage",
+        CorrectAns: "A",
+        Type: "R/W: Determining Sentence Purpose",
+        Difficulty: "Easy",
+        Source: "Original",
+        Explanation: "The opening sentence sets up the topic and its significance."
+    },
+    // R/W: Determining Sentence Purpose - Medium
+    {
+        Question: "'However, critics argue that these measures are insufficient.' What purpose does 'However' serve?",
+        A: "Introduces a contrasting viewpoint",
+        B: "Agrees with the previous point",
+        C: "Concludes the argument",
+        D: "Provides an example",
+        CorrectAns: "A",
+        Type: "R/W: Determining Sentence Purpose",
+        Difficulty: "Medium",
+        Source: "Original",
+        Explanation: "'However' signals a transition to an opposing perspective."
+    },
+    // R/W: Determining Sentence Purpose - Hard
+    {
+        Question: "In a scientific paper, 'Nevertheless, further research is needed' appears after presenting results. This sentence primarily:",
+        A: "Acknowledges limitations and suggests future directions",
+        B: "Dismisses all previous findings",
+        C: "Restates the hypothesis",
+        D: "Provides raw data",
+        CorrectAns: "A",
+        Type: "R/W: Determining Sentence Purpose",
+        Difficulty: "Hard",
+        Source: "Original",
+        Explanation: "This transitional statement recognizes study boundaries while pointing to needed work."
+    },
+
+    // R/W: Vocabulary in Context - Easy
+    {
+        Question: "As used in the sentence 'The novel concept challenged traditional thinking,' what does 'novel' most nearly mean?",
+        A: "New",
+        B: "Book",
+        C: "Old",
+        D: "Familiar",
+        CorrectAns: "A",
+        Type: "R/W: Vocabulary in Context",
+        Difficulty: "Easy",
+        Source: "Original",
+        Explanation: "In this context, 'novel' means new or innovative, not a book."
+    },
+    // R/W: Vocabulary in Context - Medium
+    {
+        Question: "'The politician's ambiguous statement left voters uncertain.' What does 'ambiguous' mean here?",
+        A: "Unclear or having multiple interpretations",
+        B: "Very clear",
+        C: "Honest",
+        D: "Angry",
+        CorrectAns: "A",
+        Type: "R/W: Vocabulary in Context",
+        Difficulty: "Medium",
+        Source: "Original",
+        Explanation: "Something ambiguous can be understood in multiple ways, causing uncertainty."
+    },
+    // R/W: Vocabulary in Context - Hard
+    {
+        Question: "'Her meticulous research methodology yielded robust findings.' In this context, 'robust' most nearly means:",
+        A: "Strong and reliable",
+        B: "Weak",
+        C: "Quick",
+        D: "Expensive",
+        CorrectAns: "A",
+        Type: "R/W: Vocabulary in Context",
+        Difficulty: "Hard",
+        Source: "Original",
+        Explanation: "'Robust' here describes findings that are strong, reliable, and well-supported."
+    },
+
+    // Grammar: Subject-Verb Agreement - Easy
+    {
+        Question: "The group of students _____ arriving tomorrow.",
+        A: "is",
+        B: "are",
+        C: "were",
+        D: "be",
+        CorrectAns: "A",
+        Type: "Grammar: Subject-Verb Agreement",
+        Difficulty: "Easy",
+        Source: "Original",
+        Explanation: "The subject is 'group' (singular), so the verb should be 'is'."
+    },
+    // Grammar: Subject-Verb Agreement - Medium
+    {
+        Question: "Neither the teacher nor the students _____ aware of the change.",
+        A: "were",
+        B: "was",
+        C: "is",
+        D: "be",
+        CorrectAns: "A",
+        Type: "Grammar: Subject-Verb Agreement",
+        Difficulty: "Medium",
+        Source: "Original",
+        Explanation: "With 'neither...nor,' the verb agrees with the nearest subject ('students'), which is plural."
+    },
+    // Grammar: Subject-Verb Agreement - Hard
+    {
+        Question: "The data from the recent studies _____ contradictory results.",
+        A: "show",
+        B: "shows",
+        C: "showing",
+        D: "shown",
+        CorrectAns: "A",
+        Type: "Grammar: Subject-Verb Agreement",
+        Difficulty: "Hard",
+        Source: "Original",
+        Explanation: "'Data' is plural (datum is singular), so the verb should be 'show'."
+    },
+
+    // Grammar: Conventional Expression - Easy
+    {
+        Question: "She decided to study abroad _____ gain international experience.",
+        A: "to",
+        B: "for",
+        C: "in",
+        D: "at",
+        CorrectAns: "A",
+        Type: "Grammar: Conventional Expression",
+        Difficulty: "Easy",
+        Source: "Original",
+        Explanation: "The conventional expression is 'to gain' (infinitive showing purpose)."
+    },
+    // Grammar: Conventional Expression - Medium
+    {
+        Question: "The solution _____ the problem was surprisingly simple.",
+        A: "to",
+        B: "of",
+        C: "for",
+        D: "at",
+        CorrectAns: "A",
+        Type: "Grammar: Conventional Expression",
+        Difficulty: "Medium",
+        Source: "Original",
+        Explanation: "The idiomatic expression is 'solution to a problem'."
+    },
+    // Grammar: Conventional Expression - Hard
+    {
+        Question: "Her research was focused _____ renewable energy sources.",
+        A: "on",
+        B: "at",
+        C: "in",
+        D: "to",
+        CorrectAns: "A",
+        Type: "Grammar: Conventional Expression",
+        Difficulty: "Hard",
+        Source: "Original",
+        Explanation: "The conventional expression is 'focused on'."
+    },
+
+    // Grammar: Modifiers - Easy
+    {
+        Question: "Walking down the street, a colorful poster caught my attention. Which revision fixes the misplaced modifier?",
+        A: "Walking down the street, I noticed a colorful poster",
+        B: "A poster walking down the street caught my attention",
+        C: "The street had a walking poster",
+        D: "No revision needed",
+        CorrectAns: "A",
+        Type: "Grammar: Modifiers",
+        Difficulty: "Easy",
+        Source: "Original",
+        Explanation: "The modifier 'Walking down the street' should modify 'I', not 'poster'."
+    },
+    // Grammar: Modifiers - Medium
+    {
+        Question: "Having finished the exam, _____.",
+        A: "Sarah left the room",
+        B: "the room was left by Sarah",
+        C: "leaving happened",
+        D: "it was time to go",
+        CorrectAns: "A",
+        Type: "Grammar: Modifiers",
+        Difficulty: "Medium",
+        Source: "Original",
+        Explanation: "'Having finished' must modify Sarah (who finished), not the room."
+    },
+    // Grammar: Modifiers - Hard
+    {
+        Question: "A renowned scientist, _____.",
+        A: "Dr. Chen's research revolutionized the field",
+        B: "the research of Dr. Chen revolutionized the field",
+        C: "her research was revolutionary",
+        D: "there was revolutionary research",
+        CorrectAns: "A",
+        Type: "Grammar: Modifiers",
+        Difficulty: "Hard",
+        Source: "Original",
+        Explanation: "'A renowned scientist' must directly modify Dr. Chen, not her research."
+    },
+
+    // Grammar: Possessives - Easy
+    {
+        Question: "The _____ toys were scattered across the floor.",
+        A: "children's",
+        B: "childrens",
+        C: "childrens'",
+        D: "children",
+        CorrectAns: "A",
+        Type: "Grammar: Possessives",
+        Difficulty: "Easy",
+        Source: "Original",
+        Explanation: "'Children' is already plural, so add apostrophe-s: children's."
+    },
+    // Grammar: Possessives - Medium
+    {
+        Question: "_____ research has significant implications for climate science.",
+        A: "Dr. Smith's",
+        B: "Dr. Smiths",
+        C: "Dr. Smiths'",
+        D: "Dr. Smith",
+        CorrectAns: "A",
+        Type: "Grammar: Possessives",
+        Difficulty: "Medium",
+        Source: "Original",
+        Explanation: "For a singular proper noun, add apostrophe-s: Dr. Smith's."
+    },
+    // Grammar: Possessives - Hard
+    {
+        Question: "The two _____ opinions differed significantly.",
+        A: "witnesses'",
+        B: "witness's",
+        C: "witnesses",
+        D: "witness'",
+        CorrectAns: "A",
+        Type: "Grammar: Possessives",
+        Difficulty: "Hard",
+        Source: "Original",
+        Explanation: "For plural nouns ending in -s, add only an apostrophe: witnesses'."
+    },
+
+    // Grammar: Pronouns - Easy
+    {
+        Question: "Maria and _____ went to the library.",
+        A: "I",
+        B: "me",
+        C: "myself",
+        D: "mine",
+        CorrectAns: "A",
+        Type: "Grammar: Pronouns",
+        Difficulty: "Easy",
+        Source: "Original",
+        Explanation: "Use the subject pronoun 'I' (Maria and I went)."
+    },
+    // Grammar: Pronouns - Medium
+    {
+        Question: "Each student must bring _____ own laptop.",
+        A: "their",
+        B: "its",
+        C: "his or her",
+        D: "it's",
+        CorrectAns: "A",
+        Type: "Grammar: Pronouns",
+        Difficulty: "Medium",
+        Source: "Original",
+        Explanation: "Modern usage accepts 'their' as a singular pronoun for 'each student'."
+    },
+    // Grammar: Pronouns - Hard
+    {
+        Question: "The committee submitted _____ report last week.",
+        A: "its",
+        B: "their",
+        C: "it's",
+        D: "there",
+        CorrectAns: "A",
+        Type: "Grammar: Pronouns",
+        Difficulty: "Hard",
+        Source: "Original",
+        Explanation: "'Committee' is a collective noun treated as singular, so use 'its' (not it's)."
+    },
+
+    // Grammar: Punctuation - Easy
+    {
+        Question: "Which is correctly punctuated? A) Its raining. B) It's raining. C) Its' raining. D) It's' raining.",
+        A: "B",
+        B: "A",
+        C: "C",
+        D: "D",
+        CorrectAns: "A",
+        Type: "Grammar: Punctuation",
+        Difficulty: "Easy",
+        Source: "Original",
+        Explanation: "'It's' (with apostrophe) is the contraction of 'it is'."
+    },
+    // Grammar: Punctuation - Medium
+    {
+        Question: "The meeting will cover three topics_____ budget, staffing, and timelines.",
+        A: ":",
+        B: ";",
+        C: ",",
+        D: ".",
+        CorrectAns: "A",
+        Type: "Grammar: Punctuation",
+        Difficulty: "Medium",
+        Source: "Original",
+        Explanation: "Use a colon to introduce a list that follows a complete clause."
+    },
+    // Grammar: Punctuation - Hard
+    {
+        Question: "She earned her degree in biology_____ however, she pursued a career in education.",
+        A: ";",
+        B: ",",
+        C: ":",
+        D: "—",
+        CorrectAns: "A",
+        Type: "Grammar: Punctuation",
+        Difficulty: "Hard",
+        Source: "Original",
+        Explanation: "A semicolon connects two independent clauses, especially before transitional words like 'however'."
+    },
+
+    // Grammar: Sentence Structure - Easy
+    {
+        Question: "Which is a complete sentence? A) Running quickly. B) She runs. C) Because she ran. D) Running and jumping.",
+        A: "B",
+        B: "A",
+        C: "C",
+        D: "D",
+        CorrectAns: "A",
+        Type: "Grammar: Sentence Structure",
+        Difficulty: "Easy",
+        Source: "Original",
+        Explanation: "'She runs' has a subject and verb, forming a complete thought."
+    },
+    // Grammar: Sentence Structure - Medium
+    {
+        Question: "Which revision fixes the run-on? 'The experiment failed we tried again.' A) Add a period or semicolon between clauses. B) Remove words. C) Add more words. D) Change nothing.",
+        A: "A",
+        B: "B",
+        C: "C",
+        D: "D",
+        CorrectAns: "A",
+        Type: "Grammar: Sentence Structure",
+        Difficulty: "Medium",
+        Source: "Original",
+        Explanation: "Two independent clauses need proper separation: period, semicolon, or coordinating conjunction."
+    },
+    // Grammar: Sentence Structure - Hard
+    {
+        Question: "Which best combines these sentences? 'The study was comprehensive. It included 1,000 participants. The results were significant.' A) The comprehensive study of 1,000 participants yielded significant results. B) The study comprehensive results. C) Participants significant. D) Study was.",
+        A: "A",
+        B: "B",
+        C: "C",
+        D: "D",
+        CorrectAns: "A",
+        Type: "Grammar: Sentence Structure",
+        Difficulty: "Hard",
+        Source: "Original",
+        Explanation: "Option A combines all information into one clear, grammatically correct sentence."
+    },
+
+    // Grammar: Verb Tense - Easy
+    {
+        Question: "Yesterday, she _____ to the store.",
+        A: "went",
+        B: "goes",
+        C: "will go",
+        D: "going",
+        CorrectAns: "A",
+        Type: "Grammar: Verb Tense",
+        Difficulty: "Easy",
+        Source: "Original",
+        Explanation: "'Yesterday' indicates past tense, so use 'went'."
+    },
+    // Grammar: Verb Tense - Medium
+    {
+        Question: "By next week, we _____ the project.",
+        A: "will have completed",
+        B: "completed",
+        C: "complete",
+        D: "completing",
+        CorrectAns: "A",
+        Type: "Grammar: Verb Tense",
+        Difficulty: "Medium",
+        Source: "Original",
+        Explanation: "'By next week' indicates future perfect: an action completed before a future time."
+    },
+    // Grammar: Verb Tense - Hard
+    {
+        Question: "She _____ at the company for five years when she received the promotion.",
+        A: "had been working",
+        B: "worked",
+        C: "has worked",
+        D: "will work",
+        CorrectAns: "A",
+        Type: "Grammar: Verb Tense",
+        Difficulty: "Hard",
+        Source: "Original",
+        Explanation: "Past perfect progressive shows an ongoing action completed before another past event."
+    },
+
+    // Rhetoric: Precision - Easy
+    {
+        Question: "Which is most precise? A) The meeting is soon. B) The meeting is at 2 PM tomorrow. C) The meeting happens. D) Meeting sometime.",
+        A: "B",
+        B: "A",
+        C: "C",
+        D: "D",
+        CorrectAns: "A",
+        Type: "Rhetoric: Precision",
+        Difficulty: "Easy",
+        Source: "Original",
+        Explanation: "Option B provides specific time and date information."
+    },
+    // Rhetoric: Precision - Medium
+    {
+        Question: "To describe temperature change, which is most precise? A) It got warmer. B) Temperature increased significantly. C) Temperature rose 15°F. D) Hot day.",
+        A: "C",
+        B: "A",
+        C: "B",
+        D: "D",
+        CorrectAns: "A",
+        Type: "Rhetoric: Precision",
+        Difficulty: "Medium",
+        Source: "Original",
+        Explanation: "Specific numerical data (15°F) is most precise."
+    },
+    // Rhetoric: Precision - Hard
+    {
+        Question: "In a scientific context, which revision improves precision? 'The sample was small.' A) The sample consisted of 12 participants. B) The sample was tiny. C) Not many participants. D) Few people.",
+        A: "A",
+        B: "B",
+        C: "C",
+        D: "D",
+        CorrectAns: "A",
+        Type: "Rhetoric: Precision",
+        Difficulty: "Hard",
+        Source: "Original",
+        Explanation: "Exact numbers provide scientific precision vs. vague qualifiers."
+    },
+
+    // Rhetoric: Transitions - Easy
+    {
+        Question: "The project succeeded. _____, the team celebrated. Which transition word fits?",
+        A: "Therefore",
+        B: "However",
+        C: "Although",
+        D: "Despite",
+        CorrectAns: "A",
+        Type: "Rhetoric: Transitions",
+        Difficulty: "Easy",
+        Source: "Original",
+        Explanation: "'Therefore' shows the celebration is a logical result of success."
+    },
+    // Rhetoric: Transitions - Medium
+    {
+        Question: "'The plan had flaws. _____, we proceeded cautiously.' Which transition best fits?",
+        A: "Nevertheless",
+        B: "Furthermore",
+        C: "Similarly",
+        D: "For example",
+        CorrectAns: "A",
+        Type: "Rhetoric: Transitions",
+        Difficulty: "Medium",
+        Source: "Original",
+        Explanation: "'Nevertheless' indicates proceeding despite the flaws."
+    },
+    // Rhetoric: Transitions - Hard
+    {
+        Question: "Which transition best connects these ideas? 'Renewable energy reduces emissions. _____ fossil fuels remain dominant globally.' A) However B) Additionally C) Similarly D) Therefore",
+        A: "A",
+        B: "B",
+        C: "C",
+        D: "D",
+        CorrectAns: "A",
+        Type: "Rhetoric: Transitions",
+        Difficulty: "Hard",
+        Source: "Original",
+        Explanation: "'However' introduces the contrasting reality despite renewable benefits."
     }
 ];
