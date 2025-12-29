@@ -22,6 +22,19 @@ import { AuthService } from './services/authService';
 const App: React.FC = () => {
     const [user, setUser] = useLocalStorage<User | null>('user', null);
     const [currentView, setCurrentView] = useState<View>(View.DASHBOARD);
+    const [isCheckingSession, setIsCheckingSession] = useState(true);
+
+    // Check for valid session on app load
+    useEffect(() => {
+        const validatedUser = AuthService.getCurrentSession();
+        if (validatedUser) {
+            setUser(validatedUser);
+        } else if (user) {
+            // User exists in localStorage but session is invalid/expired
+            setUser(null);
+        }
+        setIsCheckingSession(false);
+    }, []);
     const [activeMissionId, setActiveMissionId] = useState<string | null>(null);
     const [preparingMissionId, setPreparingMissionId] = useState<string | null>(null);
     const [streakToShow, setStreakToShow] = useState<number | null>(null);
@@ -405,6 +418,18 @@ const App: React.FC = () => {
             return { ...prev, stats: newStats };
         });
     };
+
+    // Show loading while checking session
+    if (isCheckingSession) {
+        return (
+            <div className="min-h-screen w-full flex items-center justify-center bg-background">
+                <div className="text-center space-y-4">
+                    <div className="w-16 h-16 border-4 border-primary border-t-transparent rounded-full animate-spin mx-auto"></div>
+                    <p className="text-sm text-text-dim">Loading...</p>
+                </div>
+            </div>
+        );
+    }
 
     if (!user) {
         return <LoginView onLogin={setUser} />;
