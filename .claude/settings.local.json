@@ -8,7 +8,8 @@
       "Bash(if [ -f \".env\" ])",
       "Bash(then echo \".env file exists - should be removed manually\")",
       "Bash(else echo \"No .env file found\")",
-      "Bash(fi)"
+      "Bash(fi)",
+      "Bash(python:*)"
     ]
   }
 }
