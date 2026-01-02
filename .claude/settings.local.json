@@ -9,7 +9,14 @@
       "Bash(then echo \".env file exists - should be removed manually\")",
       "Bash(else echo \"No .env file found\")",
       "Bash(fi)",
-      "Bash(python:*)"
+      "Bash(python:*)",
+      "Bash(if [ -f \"c:/Users/Wootton High School/AuraPrep/server/.env\" ])",
+      "Bash(then echo \".env file exists\")",
+      "Bash(node -e:*)",
+      "Bash(powershell -Command \"node -e \"\"console.log\\(require\\(''crypto''\\).randomBytes\\(64\\).toString\\(''hex''\\)\\)\"\"\")",
+      "Bash(powershell -Command \"Get-Command node -ErrorAction SilentlyContinue | Select-Object -ExpandProperty Source; if \\(-not $?\\) { Write-Host ''Node not in PATH'' }\")",
+      "Bash(powershell -Command \"where.exe node 2>&1\")",
+      "Bash(powershell -Command:*)"
     ]
   }
 }

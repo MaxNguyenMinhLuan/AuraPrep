@@ -26,14 +26,23 @@ const App: React.FC = () => {
 
     // Check for valid session on app load
     useEffect(() => {
-        const validatedUser = AuthService.getCurrentSession();
-        if (validatedUser) {
-            setUser(validatedUser);
-        } else if (user) {
-            // User exists in localStorage but session is invalid/expired
-            setUser(null);
-        }
-        setIsCheckingSession(false);
+        const checkSession = async () => {
+            try {
+                const validatedUser = await AuthService.getCurrentSession();
+                if (validatedUser) {
+                    setUser(validatedUser);
+                } else if (user) {
+                    // User exists in localStorage but session is invalid/expired
+                    setUser(null);
+                }
+            } catch (error) {
+                console.error('Session check failed:', error);
+                // On error, keep existing user state if any
+            } finally {
+                setIsCheckingSession(false);
+            }
+        };
+        checkSession();
     }, []);
     const [activeMissionId, setActiveMissionId] = useState<string | null>(null);
     const [preparingMissionId, setPreparingMissionId] = useState<string | null>(null);
@@ -349,8 +358,8 @@ const App: React.FC = () => {
         setCurrentView(View.MISSION);
     };
 
-    const handleLogout = () => {
-        AuthService.logout();
+    const handleLogout = async () => {
+        await AuthService.logout();
         setUser(null);
         setCurrentView(View.DASHBOARD);
     };
