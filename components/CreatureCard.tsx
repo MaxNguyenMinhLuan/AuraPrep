@@ -10,23 +10,27 @@ interface PixelCreatureProps {
 }
 
 export const PixelCreature: React.FC<PixelCreatureProps> = ({ creature, evolutionStage, pixelSize = 8 }) => {
-    // Priority 1: Built-in image asset
-    if (creature.spriteUrl) {
+    // Priority 1: Evolution-based sprite URLs (animated GIFs for each stage)
+    if (creature.spriteUrls) {
+        const spriteUrl = creature.spriteUrls[evolutionStage - 1];
+        const stageName = creature.names[evolutionStage - 1];
+        const baseSize = pixelSize * 12; // Larger multiplier for animated sprites
         return (
-            <img 
-                src={creature.spriteUrl} 
-                alt={creature.name} 
-                className="object-contain"
-                style={{ 
-                    width: pixelSize * 8, 
-                    height: pixelSize * 8, 
-                    imageRendering: 'pixelated' 
-                }} 
+            <img
+                src={spriteUrl}
+                alt={stageName}
+                className="object-contain drop-shadow-lg"
+                style={{
+                    width: baseSize,
+                    height: baseSize,
+                    imageRendering: 'auto' // Better rendering for animated GIFs
+                }}
+                loading="lazy"
             />
         );
     }
 
-    // Priority 2: Pixel string grid
+    // Priority 2: Pixel string grid (legacy)
     const sprite = creature.pixelSprite[evolutionStage - 1];
     const colors = creature.pixelColors;
     if (!sprite) return null;
@@ -74,8 +78,12 @@ const CreatureCard: React.FC<CreatureCardProps> = ({ instance, isLarge = false, 
     const isCustom = instance.creatureId === 0 && !!instance.customImageUrl;
     const creatureData = INITIAL_CREATURES.find(c => c.id === instance.creatureId);
     
-    // Fallback/Custom logic
-    const displayName = isCustom ? instance.customName : (creatureData?.name || 'Unknown');
+    // Fallback/Custom logic - use stage-specific name if available
+    const displayName = isCustom
+        ? instance.customName
+        : (creatureData?.names
+            ? creatureData.names[instance.evolutionStage - 1]
+            : (creatureData?.name || 'Unknown'));
     const displayRarity = isCustom ? (instance.customRarity || Rarity.Common) : (creatureData?.rarity || Rarity.Common);
     const rarityClasses = getRarityClasses(displayRarity);
     

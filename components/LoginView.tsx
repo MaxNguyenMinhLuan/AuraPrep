@@ -198,15 +198,35 @@ const LoginView: React.FC<LoginViewProps> = ({ onLogin }) => {
                     </button>
                 </form>
 
-                <button
-                    onClick={() => {
-                        setAuthMode(authMode === 'login' ? 'register' : 'login');
-                        setFormError(null);
-                    }}
-                    className="text-xs text-primary hover:text-primary/80 font-medium"
-                >
-                    {authMode === 'login' ? "Don't have an account? Sign up" : 'Already have an account? Sign in'}
-                </button>
+                <div className="flex items-center justify-center gap-4">
+                    <button
+                        onClick={() => {
+                            setAuthMode(authMode === 'login' ? 'register' : 'login');
+                            setFormError(null);
+                        }}
+                        className="text-xs text-primary hover:text-primary/80 font-medium"
+                    >
+                        {authMode === 'login' ? "Don't have an account? Sign up" : 'Already have an account? Sign in'}
+                    </button>
+                </div>
+
+                {/* Guest Mode - works without server */}
+                <div className="pt-2">
+                    <button
+                        onClick={() => {
+                            const guestUser: User = {
+                                uid: 'guest-' + Date.now(),
+                                name: 'Guest Summoner',
+                                email: 'guest@auraprep.local'
+                            };
+                            onLogin(guestUser);
+                        }}
+                        className="w-full bg-highlight hover:bg-highlight/90 text-white font-bold py-3 px-6 rounded-xl transition-all active:scale-95 shadow-lg"
+                    >
+                        <span className="text-xs uppercase tracking-widest">Continue as Guest</span>
+                    </button>
+                    <p className="text-[10px] text-text-dim mt-2">No account needed - progress saved on this device</p>
+                </div>
 
                 {/* Google Sign-In (if available) */}
                 {gsiAvailable && (

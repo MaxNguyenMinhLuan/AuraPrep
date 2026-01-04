@@ -79,15 +79,16 @@ export enum CreatureType {
 
 export interface Creature {
     id: number;
-    name: string;
+    name: string;  // Base name (e.g., "Charmander" for the Charmander line)
+    names: [string, string, string];  // Names for each evolution stage
     rarity: Rarity;
     type: CreatureType;
-    pixelSprite: string[][]; // [stage1, stage2, stage3]
+    pixelSprite: string[][]; // [stage1, stage2, stage3] - legacy pixel art
     pixelColors: { [key: string]: string };
     evoThreshold1: number;
     evoThreshold2: number;
     description: string;
-    spriteUrl?: string; // Optional field for high-fidelity assets
+    spriteUrls?: [string, string, string]; // Sprite URLs for each evolution stage
 }
 
 export interface CreatureInstance {
