@@ -1,6 +1,6 @@
 
 import React from 'react';
-import { CreatureInstance, Creature, Rarity } from '../types';
+import { CreatureInstance, Creature, Rarity, XP_PER_LEVEL, MAX_LEVEL } from '../types';
 import { INITIAL_CREATURES } from '../constants';
 
 interface PixelCreatureProps {
@@ -12,8 +12,10 @@ interface PixelCreatureProps {
 export const PixelCreature: React.FC<PixelCreatureProps> = ({ creature, evolutionStage, pixelSize = 8 }) => {
     // Priority 1: Evolution-based sprite URLs (animated GIFs for each stage)
     if (creature.spriteUrls) {
-        const spriteUrl = creature.spriteUrls[evolutionStage - 1];
-        const stageName = creature.names[evolutionStage - 1];
+        // Clamp evolution stage to maxEvolutionStage (for Pokemon without evolutions)
+        const effectiveStage = Math.min(evolutionStage, creature.maxEvolutionStage);
+        const spriteUrl = creature.spriteUrls[effectiveStage - 1];
+        const stageName = creature.names[effectiveStage - 1] || creature.name;
         const baseSize = pixelSize * 12; // Larger multiplier for animated sprites
         return (
             <img
@@ -78,33 +80,27 @@ const CreatureCard: React.FC<CreatureCardProps> = ({ instance, isLarge = false, 
     const isCustom = instance.creatureId === 0 && !!instance.customImageUrl;
     const creatureData = INITIAL_CREATURES.find(c => c.id === instance.creatureId);
     
+    // Handle max evolution stage (clamp evolution stage to what's available)
+    const maxEvoStage = creatureData?.maxEvolutionStage || 3;
+    const effectiveStage = Math.min(instance.evolutionStage, maxEvoStage) as 1 | 2 | 3;
+
     // Fallback/Custom logic - use stage-specific name if available
     const displayName = isCustom
         ? instance.customName
         : (creatureData?.names
-            ? creatureData.names[instance.evolutionStage - 1]
+            ? (creatureData.names[effectiveStage - 1] || creatureData.name)
             : (creatureData?.name || 'Unknown'));
     const displayRarity = isCustom ? (instance.customRarity || Rarity.Common) : (creatureData?.rarity || Rarity.Common);
     const rarityClasses = getRarityClasses(displayRarity);
-    
-    const evoThreshold1 = creatureData?.evoThreshold1 || 100;
-    const evoThreshold2 = creatureData?.evoThreshold2 || 300;
 
-    let xpForNextLevel = 0;
-    let currentLevelMaxXp = 0;
-    
-    if (instance.evolutionStage === 1) {
-        xpForNextLevel = instance.xp;
-        currentLevelMaxXp = evoThreshold1;
-    } else if (instance.evolutionStage === 2) {
-        xpForNextLevel = instance.xp - evoThreshold1;
-        currentLevelMaxXp = evoThreshold2 - evoThreshold1;
-    } else {
-        xpForNextLevel = 1; 
-        currentLevelMaxXp = 1;
-    }
-    
-    const xpPercentage = currentLevelMaxXp > 0 ? (xpForNextLevel / currentLevelMaxXp) * 100 : 100;
+    // Level-based progress
+    const currentLevel = instance.level;
+    const isMaxLevel = currentLevel >= MAX_LEVEL;
+    const xpForCurrentLevel = currentLevel * XP_PER_LEVEL;
+    const xpForNextLevel = (currentLevel + 1) * XP_PER_LEVEL;
+    const xpIntoCurrentLevel = instance.xp - xpForCurrentLevel;
+    const xpNeededForNext = xpForNextLevel - xpForCurrentLevel;
+    const levelProgress = isMaxLevel ? 100 : Math.min(100, (xpIntoCurrentLevel / xpNeededForNext) * 100);
 
     const renderSprite = (size: number) => {
         if (isCustom) {
@@ -122,7 +118,7 @@ const CreatureCard: React.FC<CreatureCardProps> = ({ instance, isLarge = false, 
             );
         }
         if (creatureData) {
-            return <PixelCreature creature={creatureData} evolutionStage={instance.evolutionStage} pixelSize={size} />;
+            return <PixelCreature creature={creatureData} evolutionStage={effectiveStage} pixelSize={size} />;
         }
         return <div className="text-4xl">?</div>;
     };
@@ -136,9 +132,9 @@ const CreatureCard: React.FC<CreatureCardProps> = ({ instance, isLarge = false, 
                 <h3 className="text-xl font-bold">{displayName}</h3>
                 <p className={`font-semibold ${rarityClasses.text}`}>{displayRarity}</p>
                 <div className="mt-4">
-                    <p className="text-xs text-text-main">XP: {instance.xp}</p>
+                    <p className="text-xs text-text-main">Lv. {currentLevel || 5} {isMaxLevel ? '(MAX)' : ''}</p>
                      <div className="w-full bg-background/50 h-2 mt-1 border border-text-dark rounded-full overflow-hidden">
-                        <div className="bg-success h-full transition-all duration-500" style={{ width: `${xpPercentage}%` }}></div>
+                        <div className="bg-success h-full transition-all duration-500" style={{ width: `${levelProgress}%` }}></div>
                     </div>
                 </div>
             </div>
@@ -146,15 +142,6 @@ const CreatureCard: React.FC<CreatureCardProps> = ({ instance, isLarge = false, 
     }
     
     if (showDetails) {
-        let xpDisplay: string;
-        if (instance.evolutionStage === 1) {
-            xpDisplay = `${instance.xp}/${evoThreshold1}`;
-        } else if (instance.evolutionStage === 2) {
-            xpDisplay = `${instance.xp}/${evoThreshold2}`;
-        } else {
-            xpDisplay = 'Max';
-        }
-
         return (
             <div className={`p-2 ${rarityClasses.bg} border-2 ${rarityClasses.border} h-full flex flex-col justify-between text-center rounded-md`}>
                 <div>
@@ -165,9 +152,9 @@ const CreatureCard: React.FC<CreatureCardProps> = ({ instance, isLarge = false, 
                   <p className={`text-[10px] font-semibold ${rarityClasses.text}`}>{displayRarity}</p>
                 </div>
                 <div className="mt-2">
-                    <p className="text-[10px] text-text-dim leading-none">XP: {xpDisplay}</p>
+                    <p className="text-[10px] text-text-dim leading-none">Lv. {currentLevel || 5}</p>
                     <div className="w-full bg-background/50 h-1 mt-1 border border-text-dark rounded-full overflow-hidden">
-                        <div className="bg-success h-full" style={{ width: `${xpPercentage}%` }}></div>
+                        <div className="bg-success h-full" style={{ width: `${levelProgress}%` }}></div>
                     </div>
                 </div>
             </div>

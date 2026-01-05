@@ -8,6 +8,7 @@ export interface QuestionIndex {
         Easy: DBQuestion[];
         Medium: DBQuestion[];
         Hard: DBQuestion[];
+        'Extra Hard': DBQuestion[];
     };
 }
 
@@ -23,7 +24,8 @@ const buildQuestionIndex = (): QuestionIndex => {
             index[category] = {
                 Easy: [],
                 Medium: [],
-                Hard: []
+                Hard: [],
+                'Extra Hard': []
             };
         }
 

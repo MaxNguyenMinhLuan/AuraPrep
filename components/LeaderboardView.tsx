@@ -225,26 +225,29 @@ const LeaderboardView: React.FC<LeaderboardViewProps> = ({ weeklyGain, league, c
             {/* Social / PvP Buttons */}
             <div className="fixed bottom-20 right-6 lg:bottom-10 lg:right-10 flex flex-col items-end gap-3 z-30">
                 <div className={`flex flex-col items-end gap-3 transition-all duration-300 transform ${isMenuOpen ? 'translate-y-0 opacity-100 scale-100' : 'translate-y-10 opacity-0 scale-50 pointer-events-none'}`}>
-                    <button 
-                        onClick={() => handleAction("Summoning Random Duel...")}
-                        className="bg-accent text-white px-4 py-2 rounded-full flex items-center gap-3 shadow-xl hover:scale-105 transition-transform border-2 border-accent-dark"
+                    <button
+                        onClick={() => handleAction("Coming Soon!")}
+                        className="bg-accent/50 text-white/80 px-4 py-2 rounded-full flex items-center gap-3 shadow-xl cursor-not-allowed border-2 border-accent-dark/50 relative"
                     >
                         <span className="text-[10px] font-bold uppercase tracking-widest">Random PvP</span>
                         <span className="text-lg">⚔️</span>
+                        <span className="absolute -top-2 -right-2 bg-highlight text-[7px] text-white px-1.5 py-0.5 rounded-full font-bold shadow-md">SOON</span>
                     </button>
-                    <button 
-                        onClick={() => handleAction("Searching for Friend PvP...")}
-                        className="bg-primary text-white px-4 py-2 rounded-full flex items-center gap-3 shadow-xl hover:scale-105 transition-transform border-2 border-primary"
+                    <button
+                        onClick={() => handleAction("Coming Soon!")}
+                        className="bg-primary/50 text-white/80 px-4 py-2 rounded-full flex items-center gap-3 shadow-xl cursor-not-allowed border-2 border-primary/50 relative"
                     >
                         <span className="text-[10px] font-bold uppercase tracking-widest">Friend PvP</span>
                         <span className="text-lg">🤝</span>
+                        <span className="absolute -top-2 -right-2 bg-highlight text-[7px] text-white px-1.5 py-0.5 rounded-full font-bold shadow-md">SOON</span>
                     </button>
-                    <button 
-                        onClick={() => handleAction("Opening Friend Scroll...")}
-                        className="bg-surface text-text-main px-4 py-2 rounded-full flex items-center gap-3 shadow-xl border-2 border-secondary hover:scale-105 transition-transform"
+                    <button
+                        onClick={() => handleAction("Coming Soon!")}
+                        className="bg-surface/50 text-text-main/80 px-4 py-2 rounded-full flex items-center gap-3 shadow-xl border-2 border-secondary/50 cursor-not-allowed relative"
                     >
                         <span className="text-[10px] font-bold uppercase tracking-widest">Add Friend</span>
                         <UserPlusIcon className="h-5 w-5" />
+                        <span className="absolute -top-2 -right-2 bg-highlight text-[7px] text-white px-1.5 py-0.5 rounded-full font-bold shadow-md">SOON</span>
                     </button>
                 </div>
 

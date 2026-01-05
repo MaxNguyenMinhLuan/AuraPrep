@@ -1,6 +1,6 @@
 
 import React from 'react';
-import { View, User } from '../types';
+import { View, User, TutorialState } from '../types';
 import SwordsIcon from './icons/SwordsIcon';
 import SparklesIcon from './icons/SparklesIcon';
 import BookOpenIcon from './icons/BookOpenIcon';
@@ -11,6 +11,7 @@ interface BottomNavBarProps {
     currentView: View;
     setCurrentView: (view: View) => void;
     user: User | null;
+    tutorialState?: TutorialState;
 }
 
 const NavItem: React.FC<{
@@ -18,23 +19,34 @@ const NavItem: React.FC<{
     icon: React.ReactNode;
     isActive: boolean;
     onClick: () => void;
-}> = ({ label, icon, isActive, onClick }) => {
+    isLocked?: boolean;
+}> = ({ label, icon, isActive, onClick, isLocked }) => {
     return (
         <button
-            onClick={onClick}
-            className={`flex lg:flex-row flex-col items-center justify-center lg:justify-start lg:gap-4 lg:px-6 lg:py-4 w-full transition-colors duration-200 group ${isActive ? 'text-highlight' : 'text-text-dim hover:text-text-main'}`}
+            onClick={isLocked ? undefined : onClick}
+            className={`flex lg:flex-row flex-col items-center justify-center lg:justify-start lg:gap-4 lg:px-6 lg:py-4 w-full transition-colors duration-200 group relative ${
+                isLocked
+                    ? 'text-text-dark/40 cursor-not-allowed opacity-50'
+                    : isActive
+                        ? 'text-highlight'
+                        : 'text-text-dim hover:text-text-main'
+            }`}
+            title={isLocked ? 'Complete Baseline Test to unlock' : undefined}
         >
             <div className={`transition-transform duration-200 ${isActive ? 'scale-125 lg:scale-100' : 'scale-110 lg:scale-100 group-hover:scale-125 lg:group-hover:scale-100'}`}>
                 {icon}
             </div>
             {/* Labels hidden on mobile to prevent cramping, shown only on desktop sidebar */}
             <span className="hidden lg:block text-sm font-medium truncate">{label}</span>
-            {isActive && <div className="hidden lg:block ml-auto w-1.5 h-1.5 rounded-full bg-highlight"></div>}
+            {isLocked && <span className="text-lg absolute top-2 right-2 lg:relative lg:ml-auto">🔒</span>}
+            {!isLocked && isActive && <div className="hidden lg:block ml-auto w-1.5 h-1.5 rounded-full bg-highlight"></div>}
         </button>
     );
 };
 
-const BottomNavBar: React.FC<BottomNavBarProps> = ({ currentView, setCurrentView, user }) => {
+const BottomNavBar: React.FC<BottomNavBarProps> = ({ currentView, setCurrentView, user, tutorialState }) => {
+    const isBaselineComplete = tutorialState?.baselineCompleted ?? true;
+
     return (
         <>
             {/* Desktop Sidebar (Visible on lg+) */}
@@ -43,33 +55,35 @@ const BottomNavBar: React.FC<BottomNavBarProps> = ({ currentView, setCurrentView
                     <h1 className="font-serif text-xl text-highlight font-bold tracking-tight">AuraPrep</h1>
                     <p className="text-xs text-text-dim">Summoner's Academy</p>
                 </div>
-                
+
                 <div className="flex flex-col w-full gap-1 overflow-y-auto">
-                    <NavItem 
+                    <NavItem
                         label="Mission"
                         icon={<SwordsIcon />}
                         isActive={currentView === View.DASHBOARD || currentView === View.MISSION}
                         onClick={() => setCurrentView(View.DASHBOARD)}
                     />
-                    <NavItem 
+                    <NavItem
                         label="Progress"
                         icon={<ChartBarIcon />}
                         isActive={currentView === View.PROGRESS}
                         onClick={() => setCurrentView(View.PROGRESS)}
+                        isLocked={!isBaselineComplete}
                     />
-                    <NavItem 
+                    <NavItem
                         label="Leader Board"
                         icon={<CrownIcon />}
                         isActive={currentView === View.LEADERBOARD}
                         onClick={() => setCurrentView(View.LEADERBOARD)}
+                        isLocked={!isBaselineComplete}
                     />
-                    <NavItem 
+                    <NavItem
                         label="Summon"
                         icon={<SparklesIcon />}
                         isActive={currentView === View.SUMMON}
                         onClick={() => setCurrentView(View.SUMMON)}
                     />
-                    <NavItem 
+                    <NavItem
                         label="Bestiary"
                         icon={<BookOpenIcon />}
                         isActive={currentView === View.BESTIARY}
@@ -93,31 +107,33 @@ const BottomNavBar: React.FC<BottomNavBarProps> = ({ currentView, setCurrentView
 
             {/* Mobile Bottom Bar (Hidden on lg+) */}
             <nav className="lg:hidden fixed bottom-0 left-0 right-0 h-16 bg-background/95 backdrop-blur-sm border-t border-secondary/50 flex items-center justify-around z-20 pb-safe shadow-[0_-4px_10px_rgba(0,0,0,0.05)]">
-                <NavItem 
+                <NavItem
                     label="Mission"
                     icon={<SwordsIcon />}
                     isActive={currentView === View.DASHBOARD || currentView === View.MISSION}
                     onClick={() => setCurrentView(View.DASHBOARD)}
                 />
-                <NavItem 
+                <NavItem
                     label="Progress"
                     icon={<ChartBarIcon />}
                     isActive={currentView === View.PROGRESS}
                     onClick={() => setCurrentView(View.PROGRESS)}
+                    isLocked={!isBaselineComplete}
                 />
-                <NavItem 
+                <NavItem
                     label="Leader Board"
                     icon={<CrownIcon />}
                     isActive={currentView === View.LEADERBOARD}
                     onClick={() => setCurrentView(View.LEADERBOARD)}
+                    isLocked={!isBaselineComplete}
                 />
-                <NavItem 
+                <NavItem
                     label="Summon"
                     icon={<SparklesIcon />}
                     isActive={currentView === View.SUMMON}
                     onClick={() => setCurrentView(View.SUMMON)}
                 />
-                <NavItem 
+                <NavItem
                     label="Bestiary"
                     icon={<BookOpenIcon />}
                     isActive={currentView === View.BESTIARY}

@@ -1,6 +1,6 @@
 
 import React, { useState, useMemo, useEffect } from 'react';
-import { UserProfile, CreatureInstance, View, DailyActivity, SkillLevel, MissionInstance, Question, User, LeagueType } from './types';
+import { UserProfile, CreatureInstance, View, DailyActivity, SkillLevel, MissionInstance, Question, User, LeagueType, TutorialState } from './types';
 import { SUBTOPICS, INITIAL_CREATURES, AURA_POINTS_PER_PRACTICE_STREAK, LEAGUES } from './constants';
 import useLocalStorage from './hooks/useLocalStorage';
 import { generateDailyMissions } from './utils/missionGenerator';
@@ -18,11 +18,21 @@ import LoginView from './components/LoginView';
 import { generateSatQuestion } from './services/questionService';
 import { getDifficultyForLevel } from './utils/mastery';
 import { AuthService } from './services/authService';
+import PikachuGuide from './components/Tutorial/PikachuGuide';
+import TutorialOverlay from './components/Tutorial/TutorialOverlay';
+import StarterSelection from './components/Tutorial/StarterSelection';
+import BaselineTest from './components/Tutorial/BaselineTest';
+import BaselineResults from './components/Tutorial/BaselineResults';
+import UnlockAnimation from './components/Tutorial/UnlockAnimation';
+import { INITIAL_TUTORIAL_STATE, TUTORIAL_DIALOGUE, STARTER_IDS } from './utils/tutorialSteps';
+import { processBaselineResults, baselineResultsToStats } from './utils/baselineScoring';
 
 const App: React.FC = () => {
     const [user, setUser] = useLocalStorage<User | null>('user', null);
     const [currentView, setCurrentView] = useState<View>(View.DASHBOARD);
     const [isCheckingSession, setIsCheckingSession] = useState(true);
+    const [tutorialState, setTutorialState] = useLocalStorage<TutorialState>('tutorialState', INITIAL_TUTORIAL_STATE);
+    const [baselineResults, setBaselineResults] = useState<any>(null);
 
     // Check for valid session on app load
     useEffect(() => {
@@ -129,12 +139,36 @@ const App: React.FC = () => {
                 }
             }
 
-            const newMissions = generateDailyMissions(profile).map(mission => ({ 
-                ...mission, 
-                completed: false,
-                progress: 0,
-                correctAnswers: 0,
-            }));
+            // Tutorial: Generate special missions during tutorial phases
+            let newMissions: MissionInstance[];
+            if (!tutorialState.baselineCompleted) {
+                // During tutorial: Show only baseline test mission
+                if (tutorialState.currentPhase === 'baseline-test' || tutorialState.currentPhase === 'baseline-intro') {
+                    newMissions = [{
+                        id: 'baseline-assessment',
+                        title: 'Baseline Assessment',
+                        description: 'Complete your skill assessment',
+                        subtopic: 'Assessment',
+                        questionCount: 1,
+                        reward: 1000,
+                        xp: 0,
+                        completed: false,
+                        progress: 0,
+                        correctAnswers: 0
+                    }];
+                } else {
+                    // Tutorial missions (empty array or tutorial-specific missions)
+                    newMissions = [];
+                }
+            } else {
+                // Normal mission generation after tutorial
+                newMissions = generateDailyMissions(profile).map(mission => ({
+                    ...mission,
+                    completed: false,
+                    progress: 0,
+                    correctAnswers: 0,
+                }));
+            }
             
             setDailyActivity({
                 date: today,
@@ -316,13 +350,25 @@ const App: React.FC = () => {
             if (c.id === activeCreatureId) {
                 const newXp = c.xp + xp;
                 const creatureData = INITIAL_CREATURES.find(ic => ic.id === c.creatureId);
-                const threshold1 = creatureData?.evoThreshold1 || 100;
-                const threshold2 = creatureData?.evoThreshold2 || 300;
+                const maxStage = creatureData?.maxEvolutionStage || 3;
+                const evolveLevel1 = creatureData?.evolveLevel1;
+                const evolveLevel2 = creatureData?.evolveLevel2;
+
+                // Calculate new level from XP (level = floor(xp / XP_PER_LEVEL), min 5)
+                const XP_PER_LEVEL = 10;
+                const MIN_LEVEL = 5;
+                const MAX_LEVEL = 100;
+                const newLevel = Math.min(MAX_LEVEL, Math.max(MIN_LEVEL, Math.floor(newXp / XP_PER_LEVEL) + MIN_LEVEL));
 
                 let newStage = c.evolutionStage;
-                if (c.evolutionStage === 1 && newXp >= threshold1) newStage = 2;
-                if (c.evolutionStage === 2 && newXp >= threshold2) newStage = 3;
-                return { ...c, xp: newXp, evolutionStage: newStage as 1|2|3 };
+                // Only evolve if the creature has that evolution stage available and reached the level
+                if (c.evolutionStage === 1 && maxStage >= 2 && evolveLevel1 && newLevel >= evolveLevel1) {
+                    newStage = 2;
+                }
+                if (newStage === 2 && maxStage >= 3 && evolveLevel2 && newLevel >= evolveLevel2) {
+                    newStage = 3;
+                }
+                return { ...c, xp: newXp, level: newLevel, evolutionStage: newStage as 1|2|3 };
             }
             return c;
         }));
@@ -374,14 +420,14 @@ const App: React.FC = () => {
         const activeMission = dailyActivity.missions.find(m => m.id === activeMissionId);
         switch (currentView) {
             case View.DASHBOARD:
-                return <Dashboard 
+                return <Dashboard
                             user={user!}
-                            auraPoints={auraPoints} 
+                            auraPoints={auraPoints}
                             dailyStreak={profile.dailyStreak}
                             creatures={creatures}
                             activeCreatureId={activeCreatureId}
                             setActiveCreatureId={setActiveCreatureId}
-                            startMission={startMission} 
+                            startMission={startMission}
                             dailyMissions={dailyActivity.missions}
                             preparingMissionId={preparingMissionId}
                             reviewQueueCount={reviewQueue.length}
@@ -389,6 +435,7 @@ const App: React.FC = () => {
                             onOpenShop={() => setCurrentView(View.SHOP)}
                             onUpdateUser={handleUpdateUser}
                             onLogout={handleLogout}
+                            tutorialState={tutorialState}
                         />;
             case View.MISSION:
                 if (!activeMission || !activeMission.questions) { return null; }
@@ -440,22 +487,30 @@ const App: React.FC = () => {
                             competitors={mockCompetitors}
                         />;
             case View.SUMMON:
-                return <SummonView 
-                            auraPoints={auraPoints} 
-                            setAuraPoints={setAuraPoints} 
+                return <SummonView
+                            auraPoints={auraPoints}
+                            setAuraPoints={setAuraPoints}
                             userCreatures={creatures}
                             addCreature={(id, customData) => {
-                                setCreatures(p => [...p, { 
-                                    id: Date.now() + Math.random(), 
-                                    creatureId: id, 
-                                    xp: 0, 
+                                setCreatures(p => [...p, {
+                                    id: Date.now() + Math.random(),
+                                    creatureId: id,
+                                    xp: 50,  // Start with 50 XP (level 5)
+                                    level: 5,  // Starting level
                                     evolutionStage: 1,
                                     ...customData
                                 }]);
                             }}
                         />;
             case View.BESTIARY:
-                return <BestiaryView userCreatures={creatures} />;
+                return <BestiaryView
+                    userCreatures={creatures}
+                    onToggleFavorite={(instanceId) => {
+                        setCreatures(prev => prev.map(c =>
+                            c.id === instanceId ? { ...c, isFavorite: !c.isFavorite } : c
+                        ));
+                    }}
+                />;
             default:
                 return null;
         }
@@ -467,6 +522,198 @@ const App: React.FC = () => {
             newStats[subtopic] = { ...newStats[subtopic], level: nextLevel };
             return { ...prev, stats: newStats };
         });
+    };
+
+    // Tutorial handlers
+    const handleTutorialNext = () => {
+        const { currentPhase } = tutorialState;
+
+        switch (currentPhase) {
+            case 'welcome':
+                setTutorialState(prev => ({ ...prev, currentPhase: 'first-mission' }));
+                break;
+            case 'first-mission':
+                setTutorialState(prev => ({ ...prev, currentPhase: 'first-summon' }));
+                setCurrentView(View.SUMMON);
+                break;
+            case 'first-summon':
+                // After starter selected, go to guardian bond
+                setCurrentView(View.DASHBOARD);
+                setTimeout(() => {
+                    setTutorialState(prev => ({ ...prev, currentPhase: 'second-mission' }));
+                }, 1000);
+                break;
+            case 'second-mission':
+                setTutorialState(prev => ({ ...prev, currentPhase: 'second-summon' }));
+                setCurrentView(View.SUMMON);
+                break;
+            case 'second-summon':
+                setTutorialState(prev => ({ ...prev, currentPhase: 'baseline-intro' }));
+                setCurrentView(View.DASHBOARD);
+                break;
+            case 'baseline-intro':
+                setTutorialState(prev => ({ ...prev, currentPhase: 'baseline-test' }));
+                break;
+            default:
+                break;
+        }
+    };
+
+    const handleStarterSelect = (starterId: number) => {
+        // Add starter to creatures with free aura (give 500 aura first)
+        setAuraPoints(prev => prev + 500);
+
+        // Add the starter
+        const newCreatureId = Date.now();
+        setCreatures(prev => [...prev, {
+            id: newCreatureId,
+            creatureId: starterId,
+            xp: 50,
+            level: 5,
+            evolutionStage: 1,
+        }]);
+
+        // Set as active creature
+        setActiveCreatureId(newCreatureId);
+
+        // Update tutorial state and move to next phase
+        setTutorialState(prev => ({
+            ...prev,
+            starterPokemonId: starterId,
+            currentPhase: 'second-mission'
+        }));
+
+        // Navigate back to dashboard
+        setCurrentView(View.DASHBOARD);
+    };
+
+    const handleBaselineComplete = (answers: { subtopic: string; isCorrect: boolean }[]) => {
+        const results = processBaselineResults(answers);
+        setBaselineResults(results);
+
+        // Award 1000 Aura
+        setAuraPoints(prev => prev + 1000);
+
+        // Update skill levels in profile
+        const newStats = baselineResultsToStats(results);
+        setProfile(prev => ({
+            ...prev,
+            stats: { ...prev.stats, ...newStats }
+        }));
+
+        // Mark baseline as completed
+        setTutorialState(prev => ({
+            ...prev,
+            baselineCompleted: true,
+            currentPhase: 'post-baseline'
+        }));
+    };
+
+    const handleUnlockComplete = () => {
+        // Show feature tour or complete tutorial
+        setTutorialState(prev => ({
+            ...prev,
+            currentPhase: 'complete',
+            isComplete: true
+        }));
+        setBaselineResults(null);
+    };
+
+    // Tutorial rendering logic
+    const renderTutorial = () => {
+        const { currentPhase } = tutorialState;
+
+        switch (currentPhase) {
+            case 'welcome':
+                return (
+                    <PikachuGuide
+                        message={TUTORIAL_DIALOGUE.welcome.greeting}
+                        onNext={handleTutorialNext}
+                        buttonText={TUTORIAL_DIALOGUE.welcome.button}
+                    />
+                );
+
+            case 'first-mission':
+                return (
+                    <PikachuGuide
+                        message={TUTORIAL_DIALOGUE.firstMission.intro}
+                        onNext={handleTutorialNext}
+                        position="top"
+                    />
+                );
+
+            case 'first-summon':
+                return (
+                    <StarterSelection onSelect={handleStarterSelect} />
+                );
+
+            case 'second-mission':
+                return (
+                    <PikachuGuide
+                        message={TUTORIAL_DIALOGUE.secondMission.intro}
+                        onNext={handleTutorialNext}
+                        position="top"
+                    />
+                );
+
+            case 'second-summon':
+                if (currentView === View.SUMMON) {
+                    return (
+                        <PikachuGuide
+                            message={TUTORIAL_DIALOGUE.secondSummon.intro}
+                            onNext={handleTutorialNext}
+                            position="top"
+                            showPikachu={false}
+                        />
+                    );
+                }
+                return null;
+
+            case 'baseline-intro':
+                return (
+                    <PikachuGuide
+                        message={`${TUTORIAL_DIALOGUE.baselineIntro.intro}\n\n${TUTORIAL_DIALOGUE.baselineIntro.explanation}\n\n${TUTORIAL_DIALOGUE.baselineIntro.reward}`}
+                        onNext={handleTutorialNext}
+                    />
+                );
+
+            case 'baseline-test':
+                return (
+                    <BaselineTest
+                        onComplete={handleBaselineComplete}
+                        onSaveAndExit={(progress) => {
+                            setTutorialState(prev => ({
+                                ...prev,
+                                baselineProgress: progress
+                            }));
+                            setCurrentView(View.DASHBOARD);
+                        }}
+                        savedProgress={tutorialState.baselineProgress}
+                    />
+                );
+
+            case 'post-baseline':
+                if (baselineResults) {
+                    return (
+                        <>
+                            <BaselineResults
+                                results={baselineResults}
+                                onContinue={() => setBaselineResults(null)}
+                            />
+                        </>
+                    );
+                } else {
+                    return (
+                        <UnlockAnimation
+                            features={['Progress', 'Shop', 'Training', 'Leaderboard']}
+                            onComplete={handleUnlockComplete}
+                        />
+                    );
+                }
+
+            default:
+                return null;
+        }
     };
 
     // Show loading while checking session
@@ -487,20 +734,23 @@ const App: React.FC = () => {
 
     return (
         <div className="min-h-screen w-full bg-background text-text-main font-sans text-sm flex flex-col lg:flex-row">
-            <BottomNavBar 
-                currentView={currentView} 
-                setCurrentView={setCurrentView} 
+            <BottomNavBar
+                currentView={currentView}
+                setCurrentView={setCurrentView}
                 user={user}
+                tutorialState={tutorialState}
             />
             <main className="flex-grow p-4 pb-24 lg:pb-8 lg:p-8 lg:ml-64 w-full max-w-7xl mx-auto transition-all duration-300">
                 {renderView()}
             </main>
             {streakToShow !== null && (
-                <StreakPopup 
-                    streak={streakToShow} 
-                    onClose={() => setStreakToShow(null)} 
+                <StreakPopup
+                    streak={streakToShow}
+                    onClose={() => setStreakToShow(null)}
                 />
             )}
+            {/* Tutorial overlay */}
+            {!tutorialState.isComplete && renderTutorial()}
         </div>
     );
 };

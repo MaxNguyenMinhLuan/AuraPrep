@@ -1,6 +1,6 @@
 
 import React, { useState } from 'react';
-import { CreatureInstance, MissionInstance, User } from '../types';
+import { CreatureInstance, MissionInstance, User, TutorialState } from '../types';
 import { INITIAL_CREATURES } from '../constants';
 import CreatureCard from './CreatureCard';
 import LoadingSpinner from './icons/LoadingSpinner';
@@ -21,28 +21,38 @@ interface DashboardProps {
     onOpenShop: () => void;
     onUpdateUser: (updates: Partial<User>) => void;
     onLogout: () => void;
+    tutorialState?: TutorialState;
 }
 
-const Dashboard: React.FC<DashboardProps> = ({ 
+const Dashboard: React.FC<DashboardProps> = ({
     user,
-    auraPoints, 
+    auraPoints,
     dailyStreak,
-    creatures, 
-    activeCreatureId, 
-    setActiveCreatureId, 
-    startMission, 
-    dailyMissions, 
+    creatures,
+    activeCreatureId,
+    setActiveCreatureId,
+    startMission,
+    dailyMissions,
     preparingMissionId,
     reviewQueueCount,
     onOpenReview,
     onOpenShop,
     onUpdateUser,
-    onLogout
+    onLogout,
+    tutorialState
 }) => {
     const [isProfileOpen, setIsProfileOpen] = useState(false);
-    
+    const isBaselineComplete = tutorialState?.baselineCompleted ?? true;
+
     const activeCreatureInstance = creatures.find(c => c.id === activeCreatureId);
     const activeCreatureData = activeCreatureInstance ? INITIAL_CREATURES.find(c => c.id === activeCreatureInstance.creatureId) : null;
+
+    // Sort creatures: favorites first, then by id
+    const sortedCreatures = [...creatures].sort((a, b) => {
+        if (a.isFavorite && !b.isFavorite) return -1;
+        if (!a.isFavorite && b.isFavorite) return 1;
+        return a.id - b.id;
+    });
 
     return (
         <div className="flex flex-col h-full animate-fadeIn space-y-6 lg:space-y-0 lg:grid lg:grid-cols-12 lg:gap-8 lg:h-auto">
@@ -100,10 +110,17 @@ const Dashboard: React.FC<DashboardProps> = ({
                 {/* Collection List */}
                 <div className="w-full flex-grow lg:flex-grow-0">
                     <h3 className="text-xs text-text-dim mb-2 text-left pl-1 uppercase font-bold">Your Guardians</h3>
-                    {creatures.length > 0 ? (
+                    {sortedCreatures.length > 0 ? (
                         <div className="flex flex-wrap gap-2 justify-center lg:justify-start p-3 bg-background/50 border-2 border-text-dark max-h-32 lg:max-h-64 overflow-y-auto shadow-inner rounded-md scrollbar-thin">
-                            {creatures.map(c => (
-                                 <button key={c.id} onClick={() => setActiveCreatureId(c.id)} className={`p-1 transition-all duration-200 border-2 rounded ${activeCreatureId === c.id ? 'bg-highlight/20 border-highlight scale-105 shadow-md' : 'bg-surface border-transparent hover:border-secondary/50'}`}>
+                            {sortedCreatures.map(c => (
+                                 <button key={c.id} onClick={() => setActiveCreatureId(c.id)} className={`p-1 transition-all duration-200 border-2 rounded relative ${activeCreatureId === c.id ? 'bg-highlight/20 border-highlight scale-105 shadow-md' : 'bg-surface border-transparent hover:border-secondary/50'}`}>
+                                    {c.isFavorite && (
+                                        <div className="absolute -top-1 -right-1 z-10 text-red-500">
+                                            <svg className="w-3 h-3" fill="currentColor" viewBox="0 0 24 24">
+                                                <path d="M4.318 6.318a4.5 4.5 0 000 6.364L12 20.364l7.682-7.682a4.5 4.5 0 00-6.364-6.364L12 7.636l-1.318-1.318a4.5 4.5 0 00-6.364 0z" />
+                                            </svg>
+                                        </div>
+                                    )}
                                     <CreatureCard instance={c} isLarge={false} />
                                 </button>
                             ))}
@@ -161,31 +178,52 @@ const Dashboard: React.FC<DashboardProps> = ({
                 {/* Action Buttons Row */}
                 <div className="flex gap-4 w-full h-auto">
                      <button
-                        onClick={onOpenReview}
-                        disabled={reviewQueueCount === 0}
-                        className={`flex-1 p-4 lg:p-6 border-2 flex flex-col items-center justify-center gap-3 transition-all shadow-md active:translate-y-0.5 rounded-lg ${reviewQueueCount > 0 ? 'bg-surface border-accent text-accent hover:bg-accent/5 hover:border-accent/80 border-b-4 active:border-b-2' : 'bg-background border-text-dark text-text-dark opacity-60 cursor-not-allowed border-b-4'}`}
+                        onClick={isBaselineComplete ? onOpenReview : undefined}
+                        disabled={!isBaselineComplete || reviewQueueCount === 0}
+                        title={!isBaselineComplete ? 'Complete Baseline Test to unlock' : undefined}
+                        className={`flex-1 p-4 lg:p-6 border-2 flex flex-col items-center justify-center gap-3 transition-all shadow-md rounded-lg relative ${
+                            !isBaselineComplete
+                                ? 'bg-background border-text-dark text-text-dark opacity-60 cursor-not-allowed border-b-4'
+                                : reviewQueueCount > 0
+                                    ? 'bg-surface border-accent text-accent hover:bg-accent/5 hover:border-accent/80 border-b-4 active:border-b-2 active:translate-y-0.5'
+                                    : 'bg-background border-text-dark text-text-dark opacity-60 cursor-not-allowed border-b-4'
+                        }`}
                     >
+                        {!isBaselineComplete && <span className="absolute top-2 right-2 text-lg">🔒</span>}
                         <span className="text-3xl lg:text-4xl filter drop-shadow-sm">🏋️</span>
                         <div className="flex flex-col items-center">
                              <span className="font-bold text-sm lg:text-base uppercase tracking-tight">Training</span>
-                             {reviewQueueCount > 0 ? (
+                             {isBaselineComplete && reviewQueueCount > 0 ? (
                                 <span className="text-[10px] font-bold bg-accent text-white px-2 py-0.5 rounded-full mt-1 shadow-sm animate-pulse">
                                     {reviewQueueCount} Pending
                                 </span>
                              ) : (
-                                 <span className="text-[10px] mt-1 opacity-70">Up to date</span>
+                                 <span className="text-[10px] mt-1 opacity-70">
+                                     {isBaselineComplete ? 'Up to date' : 'Locked'}
+                                 </span>
                              )}
                         </div>
                     </button>
 
                     <button
-                        onClick={onOpenShop}
-                        className="flex-1 p-4 lg:p-6 border-2 border-highlight bg-surface text-text-main hover:bg-highlight/5 hover:border-highlight/80 flex flex-col items-center justify-center gap-3 transition-all shadow-md active:translate-y-0.5 border-b-4 border-highlight active:border-b-2 rounded-lg"
+                        onClick={isBaselineComplete ? onOpenShop : undefined}
+                        disabled={!isBaselineComplete}
+                        title={!isBaselineComplete ? 'Complete Baseline Test to unlock' : undefined}
+                        className={`flex-1 p-4 lg:p-6 border-2 flex flex-col items-center justify-center gap-3 transition-all shadow-md rounded-lg relative ${
+                            !isBaselineComplete
+                                ? 'bg-background border-text-dark text-text-dark opacity-60 cursor-not-allowed border-b-4'
+                                : 'bg-surface border-highlight text-text-main hover:bg-highlight/5 hover:border-highlight/80 border-b-4 border-highlight active:border-b-2 active:translate-y-0.5'
+                        }`}
                     >
+                        {!isBaselineComplete && <span className="absolute top-2 right-2 text-lg">🔒</span>}
                         <span className="text-3xl lg:text-4xl filter drop-shadow-sm">🛒</span>
                         <div className="flex flex-col items-center">
-                            <span className="font-bold text-sm lg:text-base uppercase tracking-tight text-highlight">Shop</span>
-                            <span className="text-[10px] text-text-dim mt-1">Power-ups</span>
+                            <span className={`font-bold text-sm lg:text-base uppercase tracking-tight ${isBaselineComplete ? 'text-highlight' : ''}`}>
+                                Shop
+                            </span>
+                            <span className="text-[10px] text-text-dim mt-1">
+                                {isBaselineComplete ? 'Power-ups' : 'Locked'}
+                            </span>
                         </div>
                     </button>
                 </div>
