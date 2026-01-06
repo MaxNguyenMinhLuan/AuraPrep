@@ -22,6 +22,7 @@ interface DashboardProps {
     onUpdateUser: (updates: Partial<User>) => void;
     onLogout: () => void;
     tutorialState?: TutorialState;
+    onResumeBaseline?: () => void;
 }
 
 const Dashboard: React.FC<DashboardProps> = ({
@@ -39,7 +40,8 @@ const Dashboard: React.FC<DashboardProps> = ({
     onOpenShop,
     onUpdateUser,
     onLogout,
-    tutorialState
+    tutorialState,
+    onResumeBaseline
 }) => {
     const [isProfileOpen, setIsProfileOpen] = useState(false);
     const isBaselineComplete = tutorialState?.baselineCompleted ?? true;
@@ -146,17 +148,46 @@ const Dashboard: React.FC<DashboardProps> = ({
                     
                     <div className="grid grid-cols-1 gap-3">
                         {dailyMissions.map(mission => {
-                            const progressPercent = (mission.progress / mission.questionCount) * 100;
+                            // Special handling for baseline assessment mission
+                            const isBaselineMission = mission.id === 'baseline-assessment';
+                            const baselineProgress = tutorialState?.baselineProgress;
+                            const baselineTotalQuestions = 27; // 9 subtopics * 3 difficulties
+
+                            let progressPercent: number;
+                            let progressText: string;
+                            let handleClick: () => void;
+
+                            if (isBaselineMission) {
+                                const currentProgress = baselineProgress?.currentIndex || 0;
+                                progressPercent = (currentProgress / baselineTotalQuestions) * 100;
+                                progressText = currentProgress > 0
+                                    ? `${currentProgress}/${baselineTotalQuestions} (Resume)`
+                                    : `0/${baselineTotalQuestions}`;
+                                handleClick = () => onResumeBaseline?.();
+                            } else {
+                                progressPercent = (mission.progress / mission.questionCount) * 100;
+                                progressText = mission.completed ? 'DONE' : `${mission.progress}/${mission.questionCount}`;
+                                handleClick = () => startMission(mission);
+                            }
+
                             const isPreparing = preparingMissionId === mission.id;
                             return (
-                                <button 
+                                <button
                                     key={mission.id}
-                                    onClick={() => startMission(mission)}
+                                    onClick={handleClick}
                                     disabled={mission.completed || isPreparing}
-                                    className="w-full text-left bg-surface hover:bg-secondary/20 text-text-main font-bold p-4 shadow-sm transition-all duration-200 border-2 border-secondary hover:border-primary/50 active:translate-y-0.5 disabled:bg-background disabled:opacity-60 disabled:cursor-not-allowed disabled:border-none rounded-md group"
+                                    className={`w-full text-left bg-surface hover:bg-secondary/20 text-text-main font-bold p-4 shadow-sm transition-all duration-200 border-2 hover:border-primary/50 active:translate-y-0.5 disabled:bg-background disabled:opacity-60 disabled:cursor-not-allowed disabled:border-none rounded-md group ${
+                                        isBaselineMission && baselineProgress?.currentIndex
+                                            ? 'border-highlight animate-pulse'
+                                            : 'border-secondary'
+                                    }`}
                                 >
                                     <div className="flex justify-between items-center mb-2">
-                                        <span className="text-sm flex-1 pr-2 whitespace-normal group-hover:text-primary transition-colors">{mission.description}</span>
+                                        <span className="text-sm flex-1 pr-2 whitespace-normal group-hover:text-primary transition-colors">
+                                            {isBaselineMission && baselineProgress?.currentIndex ? '📋 ' : ''}
+                                            {mission.description}
+                                            {isBaselineMission && baselineProgress?.currentIndex ? ' (In Progress)' : ''}
+                                        </span>
                                         <span className="flex items-center text-xs font-bold bg-primary/10 px-2 py-1 rounded text-primary border border-primary/20">
                                             {mission.reward} 💎
                                         </span>
@@ -166,7 +197,7 @@ const Dashboard: React.FC<DashboardProps> = ({
                                             <div className="bg-highlight h-full transition-all duration-500" style={{width: `${progressPercent}%`}}></div>
                                         </div>
                                          <span className="text-[10px] text-text-dim font-mono min-w-[40px] text-right">
-                                            {isPreparing ? <LoadingSpinner className="h-3 w-3 inline-block" /> : (mission.completed ? 'DONE' : `${mission.progress}/${mission.questionCount}`)}
+                                            {isPreparing ? <LoadingSpinner className="h-3 w-3 inline-block" /> : progressText}
                                         </span>
                                     </div>
                                 </button>

@@ -436,6 +436,13 @@ const App: React.FC = () => {
                             onUpdateUser={handleUpdateUser}
                             onLogout={handleLogout}
                             tutorialState={tutorialState}
+                            onResumeBaseline={() => {
+                                // Resume the baseline test - go directly to baseline-test phase
+                                setTutorialState(prev => ({
+                                    ...prev,
+                                    currentPhase: 'baseline-test'
+                                }));
+                            }}
                         />;
             case View.MISSION:
                 if (!activeMission || !activeMission.questions) { return null; }
@@ -657,19 +664,19 @@ const App: React.FC = () => {
                 );
 
             case 'second-summon':
-                if (currentView === View.SUMMON) {
-                    return (
-                        <PikachuGuide
-                            message={TUTORIAL_DIALOGUE.secondSummon.intro}
-                            onNext={handleTutorialNext}
-                            position="top"
-                            showPikachu={false}
-                        />
-                    );
-                }
-                return null;
+                return (
+                    <PikachuGuide
+                        message={TUTORIAL_DIALOGUE.secondSummon.intro}
+                        onNext={handleTutorialNext}
+                        position="top"
+                    />
+                );
 
             case 'baseline-intro':
+                // If there's saved progress, don't show intro dialogue - let user resume from dashboard
+                if (tutorialState.baselineProgress && tutorialState.baselineProgress.currentIndex > 0) {
+                    return null;
+                }
                 return (
                     <PikachuGuide
                         message={`${TUTORIAL_DIALOGUE.baselineIntro.intro}\n\n${TUTORIAL_DIALOGUE.baselineIntro.explanation}\n\n${TUTORIAL_DIALOGUE.baselineIntro.reward}`}
@@ -682,10 +689,33 @@ const App: React.FC = () => {
                     <BaselineTest
                         onComplete={handleBaselineComplete}
                         onSaveAndExit={(progress) => {
+                            // Save progress and go back to dashboard with baseline-intro phase
+                            // This allows the baseline mission to appear on dashboard
                             setTutorialState(prev => ({
                                 ...prev,
-                                baselineProgress: progress
+                                baselineProgress: progress,
+                                currentPhase: 'baseline-intro'
                             }));
+                            // Ensure baseline mission appears on dashboard
+                            setDailyActivity(prev => {
+                                const hasBaselineMission = prev.missions.some(m => m.id === 'baseline-assessment');
+                                if (hasBaselineMission) return prev;
+                                return {
+                                    ...prev,
+                                    missions: [{
+                                        id: 'baseline-assessment',
+                                        title: 'Baseline Assessment',
+                                        description: 'Complete your skill assessment',
+                                        subtopic: 'Assessment',
+                                        questionCount: 1,
+                                        reward: 1000,
+                                        xp: 0,
+                                        completed: false,
+                                        progress: 0,
+                                        correctAnswers: 0
+                                    }]
+                                };
+                            });
                             setCurrentView(View.DASHBOARD);
                         }}
                         savedProgress={tutorialState.baselineProgress}
