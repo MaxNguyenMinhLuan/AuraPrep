@@ -249,7 +249,10 @@ const SummonView: React.FC<SummonViewProps> = ({ auraPoints, setAuraPoints, user
 
     const performSummon = (count: number) => {
         const totalCost = SUMMON_COST * count;
-        if (auraPoints < totalCost || phase !== 'idle') return;
+        if (auraPoints < totalCost) return;
+
+        // Allow summoning from idle or display phase (not during animation)
+        if (phase !== 'idle' && phase !== 'display') return;
 
         setAuraPoints(prev => prev - totalCost);
         setSummonedResults([]);
@@ -312,11 +315,6 @@ const SummonView: React.FC<SummonViewProps> = ({ auraPoints, setAuraPoints, user
         } else if (phase !== 'idle') {
             setPhase('display');
         }
-    };
-
-    const handleClose = () => {
-        setPhase('idle');
-        setSummonedResults([]);
     };
 
     // Get the highest rarity from results for color theming
@@ -461,13 +459,6 @@ const SummonView: React.FC<SummonViewProps> = ({ auraPoints, setAuraPoints, user
                                 </div>
                             )}
 
-                            {/* Close button */}
-                            <button
-                                onClick={handleClose}
-                                className="absolute bottom-4 right-4 bg-slate-700 hover:bg-slate-600 text-white px-4 py-2 rounded-lg text-xs font-bold transition-all"
-                            >
-                                Continue
-                            </button>
                         </div>
                     )}
 
@@ -491,7 +482,7 @@ const SummonView: React.FC<SummonViewProps> = ({ auraPoints, setAuraPoints, user
                 <div className="flex flex-col sm:flex-row gap-4 max-w-2xl mx-auto">
                     <button
                         onClick={() => performSummon(1)}
-                        disabled={(auraPoints < SUMMON_COST) || phase !== 'idle'}
+                        disabled={(auraPoints < SUMMON_COST) || (phase !== 'idle' && phase !== 'display')}
                         className="flex-1 bg-surface hover:bg-secondary/20 text-text-main font-bold py-4 px-6 shadow-md transition-all duration-200 border-2 border-secondary disabled:opacity-40 disabled:cursor-not-allowed border-b-4 active:border-b-0 active:translate-y-0.5 rounded-lg flex items-center justify-center gap-3 uppercase tracking-tighter text-[10px]"
                     >
                         <span>Summon x1</span>
@@ -499,7 +490,7 @@ const SummonView: React.FC<SummonViewProps> = ({ auraPoints, setAuraPoints, user
                     </button>
                     <button
                         onClick={() => performSummon(10)}
-                        disabled={(auraPoints < SUMMON_COST * 10) || phase !== 'idle'}
+                        disabled={(auraPoints < SUMMON_COST * 10) || (phase !== 'idle' && phase !== 'display')}
                         className="flex-1 bg-highlight hover:brightness-110 text-white font-bold py-4 px-6 shadow-md transition-all duration-200 border-2 border-yellow-800 disabled:opacity-40 disabled:cursor-not-allowed border-b-4 border-yellow-900 active:border-b-0 active:translate-y-0.5 rounded-lg flex items-center justify-center gap-3 uppercase tracking-tighter text-[10px]"
                     >
                         <span>Summon x10</span>
