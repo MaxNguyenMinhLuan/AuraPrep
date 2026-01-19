@@ -30,3 +30,8 @@ build/
 
 # Server
 server/node_modules/
+node_modules
+node_modules
+ 
+# Ignore accidental Windows device filename created in repo root
+nul
