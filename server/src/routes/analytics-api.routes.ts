@@ -8,7 +8,7 @@
  */
 
 import express, { Router, Request, Response } from 'express';
-import { authenticateToken } from '../middleware/auth';
+import { authMiddleware } from '../middleware/auth.middleware';
 import {
   UserMetrics,
   PerformanceLog,
@@ -30,7 +30,7 @@ const router = Router();
  * GET /api/analytics/user/learning
  * Get user's learning progress
  */
-router.get('/user/learning', authenticateToken, async (req: Request, res: Response) => {
+router.get('/user/learning', authMiddleware, async (req: Request, res: Response) => {
   try {
     const userId = req.user?.id;
     if (!userId) {
@@ -49,7 +49,7 @@ router.get('/user/learning', authenticateToken, async (req: Request, res: Respon
  * GET /api/analytics/user/engagement
  * Get user's engagement metrics
  */
-router.get('/user/engagement', authenticateToken, async (req: Request, res: Response) => {
+router.get('/user/engagement', authMiddleware, async (req: Request, res: Response) => {
   try {
     const userId = req.user?.id;
     if (!userId) {
@@ -68,7 +68,7 @@ router.get('/user/engagement', authenticateToken, async (req: Request, res: Resp
  * GET /api/analytics/user/gacha
  * Get user's gacha economics
  */
-router.get('/user/gacha', authenticateToken, async (req: Request, res: Response) => {
+router.get('/user/gacha', authMiddleware, async (req: Request, res: Response) => {
   try {
     const userId = req.user?.id;
     if (!userId) {
@@ -87,7 +87,7 @@ router.get('/user/gacha', authenticateToken, async (req: Request, res: Response)
  * GET /api/analytics/user/performance
  * Get user's recent performance logs
  */
-router.get('/user/performance', authenticateToken, async (req: Request, res: Response) => {
+router.get('/user/performance', authMiddleware, async (req: Request, res: Response) => {
   try {
     const userId = req.user?.id;
     if (!userId) {

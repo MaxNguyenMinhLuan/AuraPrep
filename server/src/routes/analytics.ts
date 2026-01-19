@@ -1,11 +1,11 @@
 import express, { Router, Request, Response } from 'express';
-import { authenticateToken } from '../middleware/auth';
+import { authMiddleware } from '../middleware/auth.middleware';
 import UserGameData from '../models/UserGameData';
 
 const router = Router();
 
 // Middleware to ensure user is authenticated
-router.use(authenticateToken);
+router.use(authMiddleware);
 
 /**
  * GET /api/analytics/email-metrics

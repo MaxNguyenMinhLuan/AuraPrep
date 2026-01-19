@@ -1,12 +1,12 @@
 import express, { Router, Request, Response } from 'express';
-import { authenticateToken } from '../middleware/auth';
+import { authMiddleware } from '../middleware/auth.middleware';
 import UserGameData from '../models/UserGameData';
 import { User } from '../models/User';
 
 const router = Router();
 
 // Middleware to ensure user is authenticated
-router.use(authenticateToken);
+router.use(authMiddleware);
 
 /**
  * POST /api/game-data/sync
