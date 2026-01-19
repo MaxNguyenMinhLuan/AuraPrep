@@ -38,8 +38,8 @@ const StarterSelection: React.FC<StarterSelectionProps> = ({ onSelect }) => {
     };
 
     return (
-        <div className={`fixed inset-0 z-[110] bg-black/80 backdrop-blur-sm flex items-center justify-center p-4 ${confirmed ? 'animate-fadeOut' : 'animate-fadeIn'}`}>
-            <div className="bg-surface border-4 border-highlight rounded-xl shadow-2xl max-w-4xl w-full p-8 animate-reveal">
+        <div className={`fixed inset-0 z-[50] flex items-center justify-center p-4 ${confirmed ? 'animate-fadeOut' : 'animate-fadeIn'} pointer-events-none`}>
+            <div className="bg-surface border-4 border-highlight rounded-xl shadow-2xl max-w-4xl w-full p-8 animate-reveal pointer-events-auto">
                 <h2 className="text-3xl font-serif text-center text-highlight mb-2">Choose Your Starter!</h2>
                 <p className="text-center text-text-dim mb-8">This Guardian will be your first partner on your SAT journey.</p>
 

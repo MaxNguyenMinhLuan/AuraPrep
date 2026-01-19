@@ -1034,7 +1034,7 @@ export const INITIAL_CREATURES: Creature[] = [
         id: 68,
         name: 'Pinsir',
         names: ['Pinsir'],
-        rarity: Rarity.Common,
+        rarity: Rarity.Rare,
         type: CreatureType.Leaf,
         pixelSprite: EMPTY_SPRITE,
         pixelColors: EMPTY_COLORS,

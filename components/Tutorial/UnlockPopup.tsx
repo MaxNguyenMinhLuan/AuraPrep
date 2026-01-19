@@ -63,7 +63,7 @@ const UnlockPopup: React.FC<UnlockPopupProps> = ({ feature, onContinue }) => {
     };
 
     return (
-        <div className="fixed inset-0 z-[100] bg-black/70 backdrop-blur-sm flex items-center justify-center p-4">
+        <div className="fixed inset-0 z-[50] flex items-center justify-center p-4 pointer-events-none">
             {/* Particle burst effect */}
             <div className="absolute inset-0 overflow-hidden pointer-events-none">
                 {Array.from({ length: 30 }).map((_, i) => (
@@ -94,7 +94,7 @@ const UnlockPopup: React.FC<UnlockPopupProps> = ({ feature, onContinue }) => {
                 </div>
 
                 {showContent && (
-                    <div className={`bg-surface border-4 ${colorClasses[data.color as keyof typeof colorClasses]} rounded-2xl p-6 animate-scaleIn shadow-2xl`}>
+                    <div className={`bg-surface border-4 ${colorClasses[data.color as keyof typeof colorClasses]} rounded-2xl p-6 animate-scaleIn shadow-2xl pointer-events-auto`}>
                         {/* Feature icon */}
                         <div className="text-6xl mb-4 animate-gentleBounce">
                             {data.icon}

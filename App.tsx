@@ -38,6 +38,7 @@ import { INITIAL_TUTORIAL_STATE, TUTORIAL_DIALOGUE, STARTER_IDS, PROGRESS_UNLOCK
 // import BaselineResults from './components/Tutorial/BaselineResults';
 // import { processBaselineResults, baselineResultsToStats } from './utils/baselineScoring';
 import { hasCompletedStealthPlacement } from './services/stealthMissionService';
+import { migrateLocalStorageToBackend, syncGameDataToBackend } from './services/gameDataService';
 
 const App: React.FC = () => {
     const [user, setUser] = useLocalStorage<User | null>('user', null);
@@ -68,6 +69,120 @@ const App: React.FC = () => {
         };
         checkSession();
     }, []);
+
+    // Handle auto-login from email deep link
+    useEffect(() => {
+        const handleEmailAutoLogin = async () => {
+            // Check if there's an auto-login token in URL
+            const params = new URLSearchParams(window.location.search);
+            const token = params.get('token');
+
+            if (!token) return;
+
+            try {
+                // Verify token with backend
+                const API_URL = import.meta.env.VITE_API_URL || 'http://localhost:5000/api';
+                const response = await fetch(`${API_URL}/auth/verify-email-token`, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ token })
+                });
+
+                if (!response.ok) {
+                    console.error('Failed to verify email token');
+                    // Clear the token from URL
+                    window.history.replaceState({}, document.title, window.location.pathname);
+                    return;
+                }
+
+                const data = await response.json();
+
+                if (data.success && data.data.user) {
+                    // Manually set user as authenticated
+                    setUser(data.data.user);
+
+                    // Store tokens in localStorage for Firebase Auth compatibility
+                    localStorage.setItem('aura_current_user', JSON.stringify(data.data.user));
+
+                    // Navigate to mission view
+                    setCurrentView(View.DASHBOARD);
+
+                    // Clean up URL
+                    window.history.replaceState({}, document.title, window.location.pathname);
+
+                    console.log('Auto-login successful from email link');
+                }
+            } catch (error) {
+                console.error('Email auto-login error:', error);
+                window.history.replaceState({}, document.title, window.location.pathname);
+            }
+        };
+
+        // Only run on initial load
+        if (isCheckingSession) {
+            handleEmailAutoLogin();
+        }
+    }, [isCheckingSession]);
+
+    // Sync game data to backend on user login
+    useEffect(() => {
+        if (!user || isCheckingSession) return;
+
+        const syncData = async () => {
+            try {
+                const token = await AuthService.getAuthToken();
+                if (!token) return;
+
+                // Try to migrate localStorage data on first login
+                const migrated = await migrateLocalStorageToBackend(user.uid, token);
+
+                if (!migrated) {
+                    // If no localStorage data to migrate, just sync current state
+                    await syncGameDataToBackend(
+                        profile,
+                        creatures,
+                        activeCreatureId,
+                        auraPoints,
+                        dailyActivity,
+                        reviewQueue,
+                        token
+                    );
+                }
+            } catch (error) {
+                console.error('Failed to sync game data:', error);
+                // Continue app operation even if sync fails
+            }
+        };
+
+        syncData();
+    }, [user, isCheckingSession]);
+
+    // Periodic sync every 5 minutes to keep backend up-to-date
+    useEffect(() => {
+        if (!user) return;
+
+        const interval = setInterval(async () => {
+            try {
+                const token = await AuthService.getAuthToken();
+                if (!token) return;
+
+                await syncGameDataToBackend(
+                    profile,
+                    creatures,
+                    activeCreatureId,
+                    auraPoints,
+                    dailyActivity,
+                    reviewQueue,
+                    token
+                );
+            } catch (error) {
+                console.error('Periodic sync failed:', error);
+            }
+        }, 5 * 60 * 1000); // 5 minutes
+
+        return () => clearInterval(interval);
+    }, [user, profile, creatures, activeCreatureId, auraPoints, dailyActivity, reviewQueue]);
+
     const [activeMissionId, setActiveMissionId] = useState<string | null>(null);
     const [preparingMissionId, setPreparingMissionId] = useState<string | null>(null);
     const [streakToShow, setStreakToShow] = useState<number | null>(null);
@@ -98,7 +213,7 @@ const App: React.FC = () => {
     // User-specific storage - each user has their own data
     const [tutorialState, setTutorialState] = useUserStorage<TutorialState>(userId, 'tutorialState', INITIAL_TUTORIAL_STATE);
     const [profile, setProfile] = useUserStorage<UserProfile>(userId, 'userProfile', createInitialProfile);
-    const [auraPoints, setAuraPoints] = useUserStorage<number>(userId, 'auraPoints', 1500);
+    const [auraPoints, setAuraPoints] = useUserStorage<number>(userId, 'auraPoints', 500);
     const [creatures, setCreatures] = useUserStorage<CreatureInstance[]>(userId, 'userCreatures', []);
     const [activeCreatureId, setActiveCreatureId] = useUserStorage<number | null>(userId, 'activeCreatureId', null);
     const [reviewQueue, setReviewQueue] = useUserStorage<Question[]>(userId, 'reviewQueue', []);

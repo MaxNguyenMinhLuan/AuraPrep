@@ -160,6 +160,21 @@ class AuthServiceClass {
         return this.currentUser;
     }
 
+    /**
+     * Get Firebase ID token for API calls
+     */
+    async getAuthToken(): Promise<string | null> {
+        try {
+            if (auth.currentUser) {
+                return await auth.currentUser.getIdToken();
+            }
+            return null;
+        } catch (error) {
+            console.error('Error getting auth token:', error);
+            return null;
+        }
+    }
+
     // ============ Helper Methods ============
 
     private mapFirebaseUserToUser(firebaseUser: FirebaseUser): User {

@@ -22,8 +22,8 @@ const PikachuGuide: React.FC<PikachuGuideProps> = ({
     };
 
     return (
-        <div className={`fixed inset-0 z-[100] bg-black/60 backdrop-blur-sm flex ${positionClasses[position]} p-4 animate-fadeIn`}>
-            <div className="bg-surface border-4 border-highlight rounded-xl shadow-2xl max-w-md w-full p-6 animate-reveal">
+        <div className={`fixed inset-0 z-[50] flex ${positionClasses[position]} p-4 animate-fadeIn pointer-events-none`}>
+            <div className="bg-surface border-4 border-highlight rounded-xl shadow-2xl max-w-md w-full p-6 animate-reveal pointer-events-auto">
                 {showPikachu && (
                     <div className="flex justify-center mb-4">
                         {/* Pikachu sprite placeholder - using emoji for now */}

@@ -1,6 +1,7 @@
 import mongoose from 'mongoose';
 import app from './app';
 import { config, validateConfig } from './config';
+import { AnalyticsScheduler } from './jobs/scheduler';
 
 async function startServer(): Promise<void> {
     try {
@@ -13,6 +14,9 @@ async function startServer(): Promise<void> {
 
         await mongoose.connect(config.mongodb.uri, config.mongodb.options);
         console.log(`Connected to MongoDB (pool size: ${config.mongodb.options.maxPoolSize})`);
+
+        // Initialize analytics cron jobs
+        AnalyticsScheduler.initializeJobs();
 
         // Start server
         app.listen(config.port, () => {
@@ -52,12 +56,14 @@ async function startServer(): Promise<void> {
 // Handle graceful shutdown
 process.on('SIGINT', async () => {
     console.log('Shutting down gracefully...');
+    AnalyticsScheduler.stopAllJobs();
     await mongoose.connection.close();
     process.exit(0);
 });
 
 process.on('SIGTERM', async () => {
     console.log('Shutting down gracefully...');
+    AnalyticsScheduler.stopAllJobs();
     await mongoose.connection.close();
     process.exit(0);
 });

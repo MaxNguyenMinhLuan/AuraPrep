@@ -1,10 +1,8 @@
 /**
  * ForcedNavigation Component
  *
- * Handles tutorial phases that require the user to take specific actions.
- * Shows spotlight on target elements and blocks interaction with other parts of the UI.
- *
- * KEY: Uses CSS pointer-events to allow clicking ONLY the target element.
+ * Simple tutorial guidance component that shows a message with an arrow
+ * pointing to the target element. No overlays or blocking.
  */
 
 import React, { useEffect, useState } from 'react';
@@ -12,7 +10,7 @@ import { TutorialPhase, View } from '../../types';
 
 interface ForcedNavigationProps {
     phase: TutorialPhase;
-    targetId?: string;           // Element to spotlight (desktop ID - mobile version auto-detected)
+    targetId?: string;           // Element to point to
     message: string;             // Message to display
     subMessage?: string;         // Optional secondary message
     buttonText?: string;         // Optional button text (if button needed)
@@ -28,11 +26,10 @@ const ForcedNavigation: React.FC<ForcedNavigationProps> = ({
     subMessage,
     buttonText,
     onAction,
-    showArrow = false,
+    showArrow = true,
     arrowPosition = 'top'
 }) => {
     const [targetRect, setTargetRect] = useState<DOMRect | null>(null);
-    const [activeTargetId, setActiveTargetId] = useState<string | null>(null);
 
     useEffect(() => {
         const updateTargetRect = () => {
@@ -40,7 +37,6 @@ const ForcedNavigation: React.FC<ForcedNavigationProps> = ({
                 // Try mobile ID first (for smaller screens), then desktop
                 const mobileId = `${targetId}-mobile`;
                 let element = document.getElementById(mobileId);
-                let usedId = mobileId;
 
                 // Check if mobile element exists AND is visible
                 if (element) {
@@ -48,30 +44,15 @@ const ForcedNavigation: React.FC<ForcedNavigationProps> = ({
                     if (rect.width === 0 || rect.height === 0) {
                         // Mobile element hidden (lg+ screen), try desktop
                         element = document.getElementById(targetId);
-                        usedId = targetId;
                     }
                 } else {
                     // No mobile element, use desktop
                     element = document.getElementById(targetId);
-                    usedId = targetId;
                 }
 
                 if (element) {
                     const rect = element.getBoundingClientRect();
                     setTargetRect(rect);
-                    setActiveTargetId(usedId);
-
-                    // CRITICAL: Make the target element clickable above the overlay (z-index 95)
-                    // Need to ensure the element AND its parent containers can display above the overlay
-                    element.style.position = 'relative';
-                    element.style.zIndex = '200';
-                    element.style.pointerEvents = 'auto';
-
-                    // Also need to elevate parent nav container above the overlay
-                    const navParent = element.closest('nav');
-                    if (navParent) {
-                        (navParent as HTMLElement).style.zIndex = '150';
-                    }
                 }
             }
         };
@@ -90,25 +71,6 @@ const ForcedNavigation: React.FC<ForcedNavigationProps> = ({
             window.removeEventListener('resize', updateTargetRect);
             window.removeEventListener('scroll', updateTargetRect);
             clearInterval(interval);
-
-            // Clean up: Reset the target element's styles for both mobile and desktop versions
-            if (targetId) {
-                const mobileId = `${targetId}-mobile`;
-                [targetId, mobileId].forEach(id => {
-                    const element = document.getElementById(id);
-                    if (element) {
-                        element.style.position = '';
-                        element.style.zIndex = '';
-                        element.style.pointerEvents = '';
-
-                        // Reset parent nav z-index
-                        const navParent = element.closest('nav');
-                        if (navParent) {
-                            (navParent as HTMLElement).style.zIndex = '';
-                        }
-                    }
-                });
-            }
         };
     }, [targetId]);
 
@@ -201,58 +163,10 @@ const ForcedNavigation: React.FC<ForcedNavigationProps> = ({
 
     return (
         <>
-            {/* Full screen blocking overlay - blocks ALL clicks except target */}
-            <div
-                className="fixed inset-0 z-[95] pointer-events-none"
-            >
-                {/* Dark overlay with spotlight cutout using CSS clip-path */}
-                <div
-                    className="absolute inset-0 bg-black/80 transition-all duration-300"
-                    style={{
-                        pointerEvents: 'auto',
-                        ...( targetRect ? {
-                            clipPath: `polygon(
-                                0% 0%,
-                                0% 100%,
-                                ${targetRect.x - 12}px 100%,
-                                ${targetRect.x - 12}px ${targetRect.y - 12}px,
-                                ${targetRect.x + targetRect.width + 12}px ${targetRect.y - 12}px,
-                                ${targetRect.x + targetRect.width + 12}px ${targetRect.y + targetRect.height + 12}px,
-                                ${targetRect.x - 12}px ${targetRect.y + targetRect.height + 12}px,
-                                ${targetRect.x - 12}px 100%,
-                                100% 100%,
-                                100% 0%
-                            )`
-                        } : {})
-                    }}
-                    onClick={(e) => e.stopPropagation()}
-                />
-            </div>
-
-            {/* Pulsing glow ring around target (visual only, no blocking) */}
-            {targetRect && (
-                <div
-                    className="fixed z-[96] pointer-events-none"
-                    style={{
-                        left: targetRect.x - 16,
-                        top: targetRect.y - 16,
-                        width: targetRect.width + 32,
-                        height: targetRect.height + 32,
-                    }}
-                >
-                    <div
-                        className="w-full h-full rounded-2xl animate-pulse"
-                        style={{
-                            boxShadow: '0 0 0 4px rgba(202, 138, 4, 0.8), 0 0 40px 10px rgba(202, 138, 4, 0.5), 0 0 80px 20px rgba(202, 138, 4, 0.3)',
-                        }}
-                    />
-                </div>
-            )}
-
             {/* Pointing arrow */}
             {showArrow && targetRect && (
                 <div
-                    className="fixed z-[96] text-highlight pointer-events-none"
+                    className="fixed z-[50] text-highlight pointer-events-none"
                     style={getArrowStyle()}
                 >
                     <div className="animate-bounce">
@@ -263,12 +177,12 @@ const ForcedNavigation: React.FC<ForcedNavigationProps> = ({
                 </div>
             )}
 
-            {/* Message box - high z-index to be above overlay */}
+            {/* Message box */}
             <div
-                className="fixed z-[97] max-w-sm w-full px-4 pointer-events-none"
+                className="fixed z-[50] max-w-sm w-full px-4 pointer-events-auto"
                 style={getMessageStyle()}
             >
-                <div className="bg-surface border-4 border-highlight rounded-xl shadow-2xl p-5 animate-scaleIn pointer-events-auto">
+                <div className="bg-surface border-4 border-highlight rounded-xl shadow-2xl p-5 animate-scaleIn">
                     {/* Pikachu icon */}
                     <div className="flex justify-center mb-3">
                         <div className="text-4xl">⚡</div>

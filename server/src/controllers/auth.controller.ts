@@ -430,4 +430,96 @@ export class AuthController {
             res.status(500).json(response);
         }
     }
+
+    /**
+     * POST /api/auth/verify-email-token
+     * Verify JWT token from email link and return access/refresh tokens
+     * Used for auto-login from email deep links
+     */
+    static async verifyEmailToken(req: Request, res: Response): Promise<void> {
+        try {
+            const { token } = req.body;
+
+            if (!token || typeof token !== 'string') {
+                const response: ApiResponse = {
+                    success: false,
+                    error: {
+                        code: 'INVALID_TOKEN',
+                        message: 'No token provided'
+                    }
+                };
+                res.status(400).json(response);
+                return;
+            }
+
+            // Verify the JWT token
+            const decoded = TokenService.verifyEmailToken(token);
+
+            if (!decoded) {
+                const response: ApiResponse = {
+                    success: false,
+                    error: {
+                        code: 'INVALID_TOKEN',
+                        message: 'Invalid or expired token'
+                    }
+                };
+                res.status(401).json(response);
+                return;
+            }
+
+            // Find user by ID
+            const user = await User.findById(decoded.userId);
+
+            if (!user) {
+                const response: ApiResponse = {
+                    success: false,
+                    error: {
+                        code: 'USER_NOT_FOUND',
+                        message: 'User not found'
+                    }
+                };
+                res.status(404).json(response);
+                return;
+            }
+
+            // Generate new access and refresh tokens
+            const accessToken = TokenService.generateAccessToken(
+                user._id.toString(),
+                user.email
+            );
+            const { token: refreshToken } = await TokenService.generateRefreshToken(
+                user._id,
+                req.headers['user-agent'],
+                req.ip || undefined
+            );
+
+            const response: ApiResponse<AuthResponseData> = {
+                success: true,
+                data: {
+                    user: {
+                        id: user._id.toString(),
+                        email: user.email,
+                        name: user.name,
+                        photoUrl: user.photoUrl || null
+                    },
+                    accessToken,
+                    refreshToken,
+                    expiresIn: TokenService.getAccessTokenExpirySeconds(),
+                    isNewUser: false
+                }
+            };
+
+            res.status(200).json(response);
+        } catch (error) {
+            console.error('Email token verification error:', error);
+            const response: ApiResponse = {
+                success: false,
+                error: {
+                    code: 'INTERNAL_ERROR',
+                    message: 'Token verification failed'
+                }
+            };
+            res.status(500).json(response);
+        }
+    }
 }

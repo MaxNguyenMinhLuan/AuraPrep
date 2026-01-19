@@ -46,6 +46,14 @@ const UserSchema = new Schema<UserDocument>({
     lastLoginAt: {
         type: Date,
         default: Date.now
+    },
+    timezone: {
+        type: String,
+        default: 'America/New_York'
+    },
+    emailNotificationsEnabled: {
+        type: Boolean,
+        default: true
     }
 }, {
     timestamps: true

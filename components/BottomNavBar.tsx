@@ -91,24 +91,6 @@ const BottomNavBar: React.FC<BottomNavBarProps> = ({ currentView, setCurrentView
                         lockMessage={progressQuestionsRemaining > 0 ? `Answer ${progressQuestionsRemaining} more questions to unlock` : undefined}
                     />
                     <NavItem
-                        id="nav-training"
-                        label="Training"
-                        icon={<BookOpenIcon />}
-                        isActive={currentView === View.REVIEW}
-                        onClick={() => setCurrentView(View.REVIEW)}
-                        isLocked={!trainingUnlocked && !isBaselineComplete}
-                        lockMessage="Unlocks after Progress tutorial"
-                    />
-                    <NavItem
-                        id="nav-shop"
-                        label="Shop"
-                        icon={<SparklesIcon />}
-                        isActive={currentView === View.SHOP}
-                        onClick={() => setCurrentView(View.SHOP)}
-                        isLocked={!shopUnlocked && !isBaselineComplete}
-                        lockMessage="Unlocks after Training tutorial"
-                    />
-                    <NavItem
                         id="nav-leaderboard"
                         label="Leader Board"
                         icon={<CrownIcon />}

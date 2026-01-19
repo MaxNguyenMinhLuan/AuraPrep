@@ -5,6 +5,8 @@ import compression from 'compression';
 import rateLimit from 'express-rate-limit';
 import { config } from './config';
 import authRoutes from './routes/auth.routes';
+import gameDataRoutes from './routes/gameData';
+import analyticsRoutes from './routes/analytics';
 import { ApiResponse } from './types';
 
 const app: Express = express();
@@ -81,6 +83,12 @@ app.get('/api/health', (_req: Request, res: Response) => {
 
 // Auth routes with stricter rate limiting
 app.use('/api/auth', authLimiter, authRoutes);
+
+// Game data routes
+app.use('/api/game-data', gameDataRoutes);
+
+// Analytics routes
+app.use('/api/analytics', analyticsRoutes);
 
 // 404 handler
 app.use((_req: Request, res: Response) => {
