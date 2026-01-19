@@ -3,6 +3,7 @@ import React, { useState, useMemo, useEffect } from 'react';
 import { UserProfile, CreatureInstance, View, DailyActivity, SkillLevel, MissionInstance, Question, User, LeagueType, TutorialState } from './types';
 import { SUBTOPICS, INITIAL_CREATURES, AURA_POINTS_PER_PRACTICE_STREAK, LEAGUES } from './constants';
 import useLocalStorage from './hooks/useLocalStorage';
+import useUserStorage, { clearLegacyData } from './hooks/useUserStorage';
 import { generateDailyMissions } from './utils/missionGenerator';
 import Dashboard from './components/Dashboard';
 import MissionView from './components/MissionView';
@@ -18,21 +19,34 @@ import LoginView from './components/LoginView';
 import { generateSatQuestion } from './services/questionService';
 import { getDifficultyForLevel } from './utils/mastery';
 import { AuthService } from './services/authService';
+
+// Tutorial components
 import PikachuGuide from './components/Tutorial/PikachuGuide';
 import TutorialOverlay from './components/Tutorial/TutorialOverlay';
 import StarterSelection from './components/Tutorial/StarterSelection';
-import BaselineTest from './components/Tutorial/BaselineTest';
-import BaselineResults from './components/Tutorial/BaselineResults';
+import ForcedNavigation from './components/Tutorial/ForcedNavigation';
+import FirstMissionQuestion from './components/Tutorial/FirstMissionQuestion';
+import RewardCelebration from './components/Tutorial/RewardCelebration';
+import DailyMissionsExplainer from './components/Tutorial/DailyMissionsExplainer';
+import UnlockPopup from './components/Tutorial/UnlockPopup';
 import UnlockAnimation from './components/Tutorial/UnlockAnimation';
-import { INITIAL_TUTORIAL_STATE, TUTORIAL_DIALOGUE, STARTER_IDS } from './utils/tutorialSteps';
-import { processBaselineResults, baselineResultsToStats } from './utils/baselineScoring';
+import { INITIAL_TUTORIAL_STATE, TUTORIAL_DIALOGUE, STARTER_IDS, PROGRESS_UNLOCK_QUESTIONS, LEADERBOARD_UNLOCK_QUESTIONS } from './utils/tutorialSteps';
+
+// Legacy imports - preserved for potential rollback
+// import WelcomeMission from './components/Tutorial/WelcomeMission';
+// import BaselineTest from './components/Tutorial/BaselineTest';
+// import BaselineResults from './components/Tutorial/BaselineResults';
+// import { processBaselineResults, baselineResultsToStats } from './utils/baselineScoring';
+import { hasCompletedStealthPlacement } from './services/stealthMissionService';
 
 const App: React.FC = () => {
     const [user, setUser] = useLocalStorage<User | null>('user', null);
     const [currentView, setCurrentView] = useState<View>(View.DASHBOARD);
     const [isCheckingSession, setIsCheckingSession] = useState(true);
-    const [tutorialState, setTutorialState] = useLocalStorage<TutorialState>('tutorialState', INITIAL_TUTORIAL_STATE);
     const [baselineResults, setBaselineResults] = useState<any>(null);
+
+    // Get user ID for user-specific storage
+    const userId = user?.uid || null;
 
     // Check for valid session on app load
     useEffect(() => {
@@ -58,8 +72,9 @@ const App: React.FC = () => {
     const [preparingMissionId, setPreparingMissionId] = useState<string | null>(null);
     const [streakToShow, setStreakToShow] = useState<number | null>(null);
 
-    const [profile, setProfile] = useLocalStorage<UserProfile>('userProfile', () => {
-        const initialProfile: UserProfile = { 
+    // Initial profile factory
+    const createInitialProfile = (): UserProfile => {
+        const initialProfile: UserProfile = {
             stats: {},
             inventory: {
                 'ELIMINATE': 0,
@@ -78,20 +93,20 @@ const App: React.FC = () => {
             initialProfile.stats[subtopic] = { correct: 0, incorrect: 0, level: 'Easy' };
         });
         return initialProfile;
-    });
+    };
 
-    const [auraPoints, setAuraPoints] = useLocalStorage<number>('auraPoints', 1500);
-    const [creatures, setCreatures] = useLocalStorage<CreatureInstance[]>('userCreatures', []);
-    const [activeCreatureId, setActiveCreatureId] = useLocalStorage<number | null>('activeCreatureId', null);
-    const [reviewQueue, setReviewQueue] = useLocalStorage<Question[]>('reviewQueue', []);
-    
-    const [dailyActivity, setDailyActivity] = useLocalStorage<DailyActivity>('dailyActivity', {
+    // User-specific storage - each user has their own data
+    const [tutorialState, setTutorialState] = useUserStorage<TutorialState>(userId, 'tutorialState', INITIAL_TUTORIAL_STATE);
+    const [profile, setProfile] = useUserStorage<UserProfile>(userId, 'userProfile', createInitialProfile);
+    const [auraPoints, setAuraPoints] = useUserStorage<number>(userId, 'auraPoints', 1500);
+    const [creatures, setCreatures] = useUserStorage<CreatureInstance[]>(userId, 'userCreatures', []);
+    const [activeCreatureId, setActiveCreatureId] = useUserStorage<number | null>(userId, 'activeCreatureId', null);
+    const [reviewQueue, setReviewQueue] = useUserStorage<Question[]>(userId, 'reviewQueue', []);
+    const [dailyActivity, setDailyActivity] = useUserStorage<DailyActivity>(userId, 'dailyActivity', {
         date: '',
         missions: [],
     });
-
-    // Mock competitors for the week - generated once per reset
-    const [mockCompetitors, setMockCompetitors] = useLocalStorage<any[]>('mockCompetitors', []);
+    const [mockCompetitors, setMockCompetitors] = useUserStorage<any[]>(userId, 'mockCompetitors', []);
 
     // Helper to get ISO week number
     const getWeekNumber = (date: Date) => {
@@ -139,35 +154,38 @@ const App: React.FC = () => {
                 }
             }
 
-            // Tutorial: Generate special missions during tutorial phases
+            // Tutorial: Generate missions based on current phase
             let newMissions: MissionInstance[];
-            if (!tutorialState.baselineCompleted) {
-                // During tutorial: Show only baseline test mission
-                if (tutorialState.currentPhase === 'baseline-test' || tutorialState.currentPhase === 'baseline-intro') {
-                    newMissions = [{
-                        id: 'baseline-assessment',
-                        title: 'Baseline Assessment',
-                        description: 'Complete your skill assessment',
-                        subtopic: 'Assessment',
-                        questionCount: 1,
-                        reward: 1000,
-                        xp: 0,
-                        completed: false,
-                        progress: 0,
-                        correctAnswers: 0
-                    }];
-                } else {
-                    // Tutorial missions (empty array or tutorial-specific missions)
-                    newMissions = [];
-                }
-            } else {
-                // Normal mission generation after tutorial
+
+            // Check if user has access to daily missions yet
+            const hasDailyMissionsAccess = [
+                'daily-missions-unlocked',
+                'progress-unlocked',
+                'progress-tour',
+                'tutorial-practice',
+                'training-unlocked',
+                'forced-training',
+                'shop-unlocked',
+                'forced-shop',
+                'tutorial-boss',
+                'tutorial-skill-complete',
+                'leaderboard-unlocked',
+                'leaderboard-tour',
+                'complete'
+            ].includes(tutorialState.currentPhase);
+
+            if (hasDailyMissionsAccess) {
+                // User has unlocked daily missions - generate normal missions
                 newMissions = generateDailyMissions(profile).map(mission => ({
                     ...mission,
                     completed: false,
                     progress: 0,
                     correctAnswers: 0,
                 }));
+            } else {
+                // Still in early tutorial - no missions shown
+                // (missions are handled by tutorial components)
+                newMissions = [];
             }
             
             setDailyActivity({
@@ -291,6 +309,9 @@ const App: React.FC = () => {
                 const incorrectQuestion = mission.questions[mission.progress];
                 addToReviewQueue(incorrectQuestion);
             }
+
+            // Track question for milestone unlocks (Progress at 60, Leaderboard at 120)
+            incrementQuestionsAnswered();
         }
 
         // Streak implementation: progress resets to 0 on incorrect answer unless Double Jeopardy saves it (handled by forceEarlyEnd/loseAllRewards flag)
@@ -408,6 +429,8 @@ const App: React.FC = () => {
         await AuthService.logout();
         setUser(null);
         setCurrentView(View.DASHBOARD);
+        // Clear any legacy non-user-specific data
+        clearLegacyData();
     };
 
     const handleUpdateUser = (updates: Partial<User>) => {
@@ -437,11 +460,16 @@ const App: React.FC = () => {
                             onLogout={handleLogout}
                             tutorialState={tutorialState}
                             onResumeBaseline={() => {
-                                // Resume the baseline test - go directly to baseline-test phase
+                                // Resume the baseline test - go directly to baseline-test phase (legacy)
                                 setTutorialState(prev => ({
                                     ...prev,
                                     currentPhase: 'baseline-test'
                                 }));
+                            }}
+                            onStartWelcomeMission={() => {
+                                // Start the welcome mission (stealth diagnostic)
+                                // The WelcomeMission component will be shown via renderTutorial
+                                // This is called from the dashboard mission card
                             }}
                         />;
             case View.MISSION:
@@ -508,6 +536,12 @@ const App: React.FC = () => {
                                     ...customData
                                 }]);
                             }}
+                            onSummonComplete={() => {
+                                // During tutorial forced-summon phase, advance to next phase
+                                if (tutorialState.currentPhase === 'forced-summon') {
+                                    handleTutorialSummonComplete();
+                                }
+                            }}
                         />;
             case View.BESTIARY:
                 return <BestiaryView
@@ -531,46 +565,42 @@ const App: React.FC = () => {
         });
     };
 
-    // Tutorial handlers
-    const handleTutorialNext = () => {
-        const { currentPhase } = tutorialState;
+    // ===============================================
+    // NEW TUTORIAL FLOW HANDLERS
+    // ===============================================
 
-        switch (currentPhase) {
-            case 'welcome':
-                setTutorialState(prev => ({ ...prev, currentPhase: 'first-mission' }));
-                break;
-            case 'first-mission':
-                setTutorialState(prev => ({ ...prev, currentPhase: 'first-summon' }));
-                setCurrentView(View.SUMMON);
-                break;
-            case 'first-summon':
-                // After starter selected, go to guardian bond
-                setCurrentView(View.DASHBOARD);
-                setTimeout(() => {
-                    setTutorialState(prev => ({ ...prev, currentPhase: 'second-mission' }));
-                }, 1000);
-                break;
-            case 'second-mission':
-                setTutorialState(prev => ({ ...prev, currentPhase: 'second-summon' }));
-                setCurrentView(View.SUMMON);
-                break;
-            case 'second-summon':
-                setTutorialState(prev => ({ ...prev, currentPhase: 'baseline-intro' }));
-                setCurrentView(View.DASHBOARD);
-                break;
-            case 'baseline-intro':
-                setTutorialState(prev => ({ ...prev, currentPhase: 'baseline-test' }));
-                break;
-            default:
-                break;
-        }
+    // Track questions answered for milestone unlocks
+    const incrementQuestionsAnswered = () => {
+        setTutorialState(prev => {
+            const newTotal = prev.totalQuestionsAnswered + 1;
+
+            // Check for Progress unlock at 60 questions
+            if (!prev.progressUnlocked && newTotal >= PROGRESS_UNLOCK_QUESTIONS) {
+                return {
+                    ...prev,
+                    totalQuestionsAnswered: newTotal,
+                    progressUnlocked: true,
+                    currentPhase: 'progress-unlocked'
+                };
+            }
+
+            // Check for Leaderboard unlock at 120 questions
+            if (prev.progressUnlocked && !prev.leaderboardUnlocked && newTotal >= LEADERBOARD_UNLOCK_QUESTIONS) {
+                return {
+                    ...prev,
+                    totalQuestionsAnswered: newTotal,
+                    leaderboardUnlocked: true,
+                    currentPhase: 'leaderboard-unlocked'
+                };
+            }
+
+            return { ...prev, totalQuestionsAnswered: newTotal };
+        });
     };
 
+    // Handle starter selection
     const handleStarterSelect = (starterId: number) => {
-        // Add starter to creatures with free aura (give 500 aura first)
-        setAuraPoints(prev => prev + 500);
-
-        // Add the starter
+        // Add the starter creature
         const newCreatureId = Date.now();
         setCreatures(prev => [...prev, {
             id: newCreatureId,
@@ -583,41 +613,186 @@ const App: React.FC = () => {
         // Set as active creature
         setActiveCreatureId(newCreatureId);
 
-        // Update tutorial state and move to next phase
+        // Update tutorial state - move to first easy mission
         setTutorialState(prev => ({
             ...prev,
             starterPokemonId: starterId,
-            currentPhase: 'second-mission'
+            currentPhase: 'first-easy-mission'
         }));
 
-        // Navigate back to dashboard
+        // Stay on dashboard to do the first question
         setCurrentView(View.DASHBOARD);
     };
 
-    const handleBaselineComplete = (answers: { subtopic: string; isCorrect: boolean }[]) => {
-        const results = processBaselineResults(answers);
-        setBaselineResults(results);
-
-        // Award 1000 Aura
-        setAuraPoints(prev => prev + 1000);
-
-        // Update skill levels in profile
-        const newStats = baselineResultsToStats(results);
-        setProfile(prev => ({
-            ...prev,
-            stats: { ...prev.stats, ...newStats }
-        }));
-
-        // Mark baseline as completed
+    // Handle first mission completion
+    const handleFirstMissionComplete = (isCorrect: boolean) => {
+        // Always award 500 aura for completing first mission
+        // (Even if wrong, for encouragement)
         setTutorialState(prev => ({
             ...prev,
-            baselineCompleted: true,
-            currentPhase: 'post-baseline'
+            currentPhase: 'first-reward',
+            totalQuestionsAnswered: 1
         }));
     };
 
+    // Handle reward screen continue
+    const handleFirstRewardContinue = () => {
+        // Award the 500 aura
+        awardAura(500);
+
+        // Move to forced summon phase
+        setTutorialState(prev => ({
+            ...prev,
+            currentPhase: 'forced-summon'
+        }));
+
+        // Navigate to summon view
+        setCurrentView(View.SUMMON);
+    };
+
+    // Handle summon complete during tutorial
+    const handleTutorialSummonComplete = () => {
+        // User has summoned, now force them to bestiary
+        setTutorialState(prev => ({
+            ...prev,
+            currentPhase: 'forced-bestiary'
+        }));
+        setCurrentView(View.BESTIARY);
+    };
+
+    // Handle bestiary view complete
+    const handleBestiaryViewComplete = () => {
+        // Now they need to choose active creature
+        setTutorialState(prev => ({
+            ...prev,
+            currentPhase: 'choose-active-creature'
+        }));
+    };
+
+    // Handle active creature selection
+    const handleActiveCreatureChosen = () => {
+        setTutorialState(prev => ({
+            ...prev,
+            hasChosenActiveCreature: true,
+            currentPhase: 'explain-daily-missions'
+        }));
+    };
+
+    // Handle daily missions explainer complete
+    const handleDailyMissionsExplained = () => {
+        // Generate daily missions and unlock the main flow
+        const today = new Date().toISOString().split('T')[0];
+        const newMissions = generateDailyMissions(profile).map(mission => ({
+            ...mission,
+            completed: false,
+            progress: 0,
+            correctAnswers: 0,
+        }));
+
+        setDailyActivity({
+            date: today,
+            missions: newMissions,
+        });
+
+        setTutorialState(prev => ({
+            ...prev,
+            currentPhase: 'daily-missions-unlocked'
+        }));
+        setCurrentView(View.DASHBOARD);
+    };
+
+    // Handle progress unlock continue
+    const handleProgressUnlockContinue = () => {
+        setTutorialState(prev => ({
+            ...prev,
+            currentPhase: 'progress-tour'
+        }));
+        setCurrentView(View.PROGRESS);
+    };
+
+    // Handle progress tour complete - start tutorial practice
+    const handleProgressTourComplete = () => {
+        setTutorialState(prev => ({
+            ...prev,
+            currentPhase: 'tutorial-practice'
+        }));
+    };
+
+    // Handle training unlock
+    const handleTrainingUnlockContinue = () => {
+        setTutorialState(prev => ({
+            ...prev,
+            currentPhase: 'forced-training'
+        }));
+        setCurrentView(View.REVIEW);
+    };
+
+    // Handle training complete
+    const handleTrainingComplete = () => {
+        setTutorialState(prev => ({
+            ...prev,
+            currentPhase: 'shop-unlocked'
+        }));
+    };
+
+    // Handle shop unlock continue
+    const handleShopUnlockContinue = () => {
+        setTutorialState(prev => ({
+            ...prev,
+            currentPhase: 'forced-shop'
+        }));
+        setCurrentView(View.SHOP);
+    };
+
+    // Handle shop purchase during tutorial
+    const handleTutorialShopPurchase = () => {
+        setTutorialState(prev => ({
+            ...prev,
+            tutorialShopPurchased: true,
+            currentPhase: 'tutorial-boss'
+        }));
+        setCurrentView(View.PROGRESS);
+    };
+
+    // Handle tutorial boss complete
+    const handleTutorialBossComplete = () => {
+        setTutorialState(prev => ({
+            ...prev,
+            tutorialBossCompleted: true,
+            currentPhase: 'tutorial-skill-complete'
+        }));
+    };
+
+    // Handle tutorial skill complete - back to daily missions
+    const handleTutorialSkillComplete = () => {
+        setTutorialState(prev => ({
+            ...prev,
+            currentPhase: 'daily-missions-unlocked'
+        }));
+        setCurrentView(View.DASHBOARD);
+    };
+
+    // Handle leaderboard unlock continue
+    const handleLeaderboardUnlockContinue = () => {
+        setTutorialState(prev => ({
+            ...prev,
+            currentPhase: 'leaderboard-tour'
+        }));
+        setCurrentView(View.LEADERBOARD);
+    };
+
+    // Handle leaderboard tour complete - tutorial done!
+    const handleLeaderboardTourComplete = () => {
+        setTutorialState(prev => ({
+            ...prev,
+            currentPhase: 'complete',
+            isComplete: true
+        }));
+        setCurrentView(View.DASHBOARD);
+    };
+
+    // Legacy handlers - preserved for potential rollback
     const handleUnlockComplete = () => {
-        // Show feature tour or complete tutorial
         setTutorialState(prev => ({
             ...prev,
             currentPhase: 'complete',
@@ -631,116 +806,254 @@ const App: React.FC = () => {
         const { currentPhase } = tutorialState;
 
         switch (currentPhase) {
+            // ===============================================
+            // PHASE 1: Onboarding
+            // ===============================================
+
             case 'welcome':
                 return (
                     <PikachuGuide
                         message={TUTORIAL_DIALOGUE.welcome.greeting}
-                        onNext={handleTutorialNext}
+                        onNext={() => setTutorialState(prev => ({ ...prev, currentPhase: 'choose-starter' }))}
                         buttonText={TUTORIAL_DIALOGUE.welcome.button}
                     />
                 );
 
-            case 'first-mission':
-                return (
-                    <PikachuGuide
-                        message={TUTORIAL_DIALOGUE.firstMission.intro}
-                        onNext={handleTutorialNext}
-                        position="top"
-                    />
-                );
-
-            case 'first-summon':
+            case 'choose-starter':
                 return (
                     <StarterSelection onSelect={handleStarterSelect} />
                 );
 
-            case 'second-mission':
+            case 'first-easy-mission':
                 return (
-                    <PikachuGuide
-                        message={TUTORIAL_DIALOGUE.secondMission.intro}
-                        onNext={handleTutorialNext}
-                        position="top"
+                    <FirstMissionQuestion onComplete={handleFirstMissionComplete} />
+                );
+
+            case 'first-reward':
+                return (
+                    <RewardCelebration
+                        auraAmount={500}
+                        message="Amazing work!"
+                        subMessage={TUTORIAL_DIALOGUE.firstReward.explanation}
+                        onContinue={handleFirstRewardContinue}
                     />
                 );
 
-            case 'second-summon':
-                return (
-                    <PikachuGuide
-                        message={TUTORIAL_DIALOGUE.secondSummon.intro}
-                        onNext={handleTutorialNext}
-                        position="top"
-                    />
-                );
-
-            case 'baseline-intro':
-                // If there's saved progress, don't show intro dialogue - let user resume from dashboard
-                if (tutorialState.baselineProgress && tutorialState.baselineProgress.currentIndex > 0) {
-                    return null;
-                }
-                return (
-                    <PikachuGuide
-                        message={`${TUTORIAL_DIALOGUE.baselineIntro.intro}\n\n${TUTORIAL_DIALOGUE.baselineIntro.explanation}\n\n${TUTORIAL_DIALOGUE.baselineIntro.reward}`}
-                        onNext={handleTutorialNext}
-                    />
-                );
-
-            case 'baseline-test':
-                return (
-                    <BaselineTest
-                        onComplete={handleBaselineComplete}
-                        onSaveAndExit={(progress) => {
-                            // Save progress and go back to dashboard with baseline-intro phase
-                            // This allows the baseline mission to appear on dashboard
-                            setTutorialState(prev => ({
-                                ...prev,
-                                baselineProgress: progress,
-                                currentPhase: 'baseline-intro'
-                            }));
-                            // Ensure baseline mission appears on dashboard
-                            setDailyActivity(prev => {
-                                const hasBaselineMission = prev.missions.some(m => m.id === 'baseline-assessment');
-                                if (hasBaselineMission) return prev;
-                                return {
-                                    ...prev,
-                                    missions: [{
-                                        id: 'baseline-assessment',
-                                        title: 'Baseline Assessment',
-                                        description: 'Complete your skill assessment',
-                                        subtopic: 'Assessment',
-                                        questionCount: 1,
-                                        reward: 1000,
-                                        xp: 0,
-                                        completed: false,
-                                        progress: 0,
-                                        correctAnswers: 0
-                                    }]
-                                };
-                            });
-                            setCurrentView(View.DASHBOARD);
-                        }}
-                        savedProgress={tutorialState.baselineProgress}
-                    />
-                );
-
-            case 'post-baseline':
-                if (baselineResults) {
+            case 'forced-summon':
+                // If user is not on summon view, show forced navigation
+                if (currentView !== View.SUMMON) {
                     return (
-                        <>
-                            <BaselineResults
-                                results={baselineResults}
-                                onContinue={() => setBaselineResults(null)}
-                            />
-                        </>
-                    );
-                } else {
-                    return (
-                        <UnlockAnimation
-                            features={['Progress', 'Shop', 'Training', 'Leaderboard']}
-                            onComplete={handleUnlockComplete}
+                        <ForcedNavigation
+                            phase="forced-summon"
+                            targetId="nav-summon"
+                            message={TUTORIAL_DIALOGUE.forcedSummon.intro}
+                            subMessage={TUTORIAL_DIALOGUE.forcedSummon.instruction}
+                            showArrow
+                            arrowPosition="top"
                         />
                     );
                 }
+                // On summon view - show guidance overlay
+                return (
+                    <PikachuGuide
+                        message={TUTORIAL_DIALOGUE.forcedSummon.instruction}
+                        position="top"
+                        showPikachu={false}
+                    />
+                );
 
+            case 'forced-bestiary':
+                if (currentView !== View.BESTIARY) {
+                    return (
+                        <ForcedNavigation
+                            phase="forced-bestiary"
+                            targetId="nav-bestiary"
+                            message={TUTORIAL_DIALOGUE.forcedBestiary.intro}
+                            showArrow
+                            arrowPosition="top"
+                        />
+                    );
+                }
+                return (
+                    <PikachuGuide
+                        message={TUTORIAL_DIALOGUE.forcedBestiary.tapToSee}
+                        onNext={handleBestiaryViewComplete}
+                        buttonText="Got it!"
+                        position="top"
+                    />
+                );
+
+            case 'choose-active-creature':
+                return (
+                    <PikachuGuide
+                        message={TUTORIAL_DIALOGUE.chooseActiveCreature.instruction}
+                        onNext={handleActiveCreatureChosen}
+                        buttonText="I've chosen!"
+                        position="bottom"
+                    />
+                );
+
+            case 'explain-daily-missions':
+                return (
+                    <DailyMissionsExplainer onComplete={handleDailyMissionsExplained} />
+                );
+
+            // ===============================================
+            // PHASE 2: Daily Missions (Stealth Diagnostic)
+            // ===============================================
+
+            case 'daily-missions-unlocked':
+                // No overlay - user is free to do missions
+                // But show subtle progress indicator
+                return null;
+
+            // ===============================================
+            // PHASE 3: Progress Tab Unlock (60 questions)
+            // ===============================================
+
+            case 'progress-unlocked':
+                return (
+                    <UnlockPopup
+                        feature="Progress"
+                        onContinue={handleProgressUnlockContinue}
+                    />
+                );
+
+            case 'progress-tour':
+                return (
+                    <PikachuGuide
+                        message={TUTORIAL_DIALOGUE.progressTour.intro + '\n\n' + TUTORIAL_DIALOGUE.progressTour.tutorialSkill}
+                        onNext={handleProgressTourComplete}
+                        buttonText="Start Tutorial Practice"
+                        position="top"
+                    />
+                );
+
+            case 'tutorial-practice':
+                // Handled by ProgressView with special tutorial mode
+                return null;
+
+            case 'training-unlocked':
+                return (
+                    <UnlockPopup
+                        feature="Training"
+                        onContinue={handleTrainingUnlockContinue}
+                    />
+                );
+
+            case 'forced-training':
+                if (currentView !== View.REVIEW) {
+                    return (
+                        <ForcedNavigation
+                            phase="forced-training"
+                            targetId="nav-training"
+                            message={TUTORIAL_DIALOGUE.forcedTraining.intro}
+                            subMessage={TUTORIAL_DIALOGUE.forcedTraining.instruction}
+                            showArrow
+                            arrowPosition="top"
+                        />
+                    );
+                }
+                return (
+                    <PikachuGuide
+                        message={TUTORIAL_DIALOGUE.forcedTraining.purpose}
+                        onNext={handleTrainingComplete}
+                        buttonText="Continue"
+                        position="top"
+                    />
+                );
+
+            case 'shop-unlocked':
+                return (
+                    <UnlockPopup
+                        feature="Shop"
+                        onContinue={handleShopUnlockContinue}
+                    />
+                );
+
+            case 'forced-shop':
+                if (currentView !== View.SHOP) {
+                    return (
+                        <ForcedNavigation
+                            phase="forced-shop"
+                            targetId="nav-shop"
+                            message={TUTORIAL_DIALOGUE.forcedShop.intro}
+                            showArrow
+                            arrowPosition="top"
+                        />
+                    );
+                }
+                // Shop view will handle the forced purchase
+                return (
+                    <PikachuGuide
+                        message={TUTORIAL_DIALOGUE.forcedShop.instruction}
+                        position="top"
+                        showPikachu={false}
+                    />
+                );
+
+            case 'tutorial-boss':
+                // Handled by ProgressView
+                return (
+                    <PikachuGuide
+                        message={TUTORIAL_DIALOGUE.tutorialBoss.intro}
+                        onNext={() => {}}
+                        buttonText="Let's fight!"
+                        position="top"
+                    />
+                );
+
+            case 'tutorial-skill-complete':
+                return (
+                    <PikachuGuide
+                        message={TUTORIAL_DIALOGUE.tutorialSkillComplete.celebration + '\n\n' + TUTORIAL_DIALOGUE.tutorialSkillComplete.encouragement}
+                        onNext={handleTutorialSkillComplete}
+                        buttonText={TUTORIAL_DIALOGUE.tutorialSkillComplete.button}
+                    />
+                );
+
+            // ===============================================
+            // PHASE 4: Leaderboard Unlock (120 questions)
+            // ===============================================
+
+            case 'leaderboard-unlocked':
+                return (
+                    <UnlockPopup
+                        feature="Leaderboard"
+                        onContinue={handleLeaderboardUnlockContinue}
+                    />
+                );
+
+            case 'leaderboard-tour':
+                return (
+                    <PikachuGuide
+                        message={TUTORIAL_DIALOGUE.leaderboardTour.intro + '\n\n' + TUTORIAL_DIALOGUE.leaderboardTour.promotion + '\n\n' + TUTORIAL_DIALOGUE.leaderboardTour.encouragement}
+                        onNext={handleLeaderboardTourComplete}
+                        buttonText="Let's compete!"
+                    />
+                );
+
+            // ===============================================
+            // LEGACY PHASES (preserved for rollback)
+            // ===============================================
+
+            case 'first-mission':
+            case 'first-summon':
+            case 'second-mission':
+            case 'second-summon':
+            case 'welcome-mission':
+            case 'baseline-intro':
+            case 'baseline-test':
+            case 'post-baseline':
+                // Legacy phases - show unlock animation as fallback
+                return (
+                    <UnlockAnimation
+                        features={['Progress', 'Shop', 'Training', 'Leaderboard']}
+                        onComplete={handleUnlockComplete}
+                    />
+                );
+
+            case 'complete':
             default:
                 return null;
         }
@@ -763,14 +1076,14 @@ const App: React.FC = () => {
     }
 
     return (
-        <div className="min-h-screen w-full bg-background text-text-main font-sans text-sm flex flex-col lg:flex-row">
+        <div className="min-h-screen w-full bg-background text-text-main font-sans text-sm flex flex-col lg:flex-row pt-safe">
             <BottomNavBar
                 currentView={currentView}
                 setCurrentView={setCurrentView}
                 user={user}
                 tutorialState={tutorialState}
             />
-            <main className="flex-grow p-4 pb-24 lg:pb-8 lg:p-8 lg:ml-64 w-full max-w-7xl mx-auto transition-all duration-300">
+            <main className="flex-grow p-3 md:p-4 pb-20 md:pb-24 lg:pb-8 lg:p-8 lg:ml-64 w-full max-w-7xl mx-auto transition-all duration-300">
                 {renderView()}
             </main>
             {streakToShow !== null && (

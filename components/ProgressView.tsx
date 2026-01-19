@@ -107,15 +107,15 @@ const PracticeSession: React.FC<{
     };
 
     return (
-        <div className="flex flex-col h-full animate-fadeIn max-w-3xl mx-auto overflow-y-auto pr-1">
+        <div className="flex flex-col h-full animate-fadeIn max-w-3xl mx-auto overflow-y-auto pr-1 scroll-smooth">
             {showStreakToast && (
-                <div className="fixed top-20 left-1/2 -translate-x-1/2 bg-highlight text-background font-bold p-3 animate-fadeIn z-20 shadow-lg border-2 border-highlight rounded-lg">
+                <div className="fixed top-20 left-1/2 -translate-x-1/2 bg-highlight text-background font-bold p-3 animate-fadeIn z-20 shadow-lg border-2 border-highlight rounded-lg text-xs md:text-sm">
                     Streak Complete! +{AURA_POINTS_PER_PRACTICE_STREAK} Aura!
                 </div>
             )}
-            <div className="mb-4 flex justify-between items-center">
-                <button onClick={onExit} className="text-text-dim hover:text-highlight flex items-center gap-2">&larr; Back</button>
-                 <p className="text-primary font-bold">Streak: {'🔥'.repeat(streak)}{'⚫'.repeat(3 - streak)}</p>
+            <div className="mb-3 md:mb-4 flex justify-between items-center">
+                <button onClick={onExit} className="text-text-dim hover:text-highlight active:text-highlight flex items-center gap-2 p-2 -ml-2 touch-target">&larr; Back</button>
+                 <p className="text-primary font-bold text-sm md:text-base">Streak: {'🔥'.repeat(streak)}{'⚫'.repeat(3 - streak)}</p>
             </div>
 
             {isLoading || !currentQuestion ? (
@@ -124,23 +124,23 @@ const PracticeSession: React.FC<{
                     <p className="text-text-dim mt-2 text-[10px]">Loading {difficulty} question...</p>
                 </div>
             ) : (
-                <div className="bg-background/50 p-6 border-2 border-text-dark flex-grow flex flex-col justify-between rounded-lg shadow-sm">
+                <div className="bg-background/50 p-4 md:p-6 border-2 border-text-dark flex-grow flex flex-col justify-between rounded-lg shadow-sm">
                     <div>
-                        <div className="flex justify-between items-start mb-4">
-                            <p className="text-[10px] text-text-dim uppercase font-bold tracking-wider">{subtopic}</p>
-                            <span className="text-[10px] bg-secondary/30 px-2 py-1 rounded text-primary">{difficulty}</span>
+                        <div className="flex justify-between items-start mb-3 md:mb-4">
+                            <p className="text-[9px] md:text-[10px] text-text-dim uppercase font-bold tracking-wider">{subtopic}</p>
+                            <span className="text-[9px] md:text-[10px] bg-secondary/30 px-2 py-1 rounded text-primary">{difficulty}</span>
                         </div>
 
                         {currentQuestion.graphData && <QuestionGraph data={currentQuestion.graphData} />}
 
-                        <p className="text-[10px] mb-8 whitespace-pre-wrap leading-relaxed">{currentQuestion.question}</p>
-                        <div className="space-y-4">
+                        <p className="text-[9px] md:text-[10px] mb-6 md:mb-8 whitespace-pre-wrap leading-relaxed">{currentQuestion.question}</p>
+                        <div className="space-y-3 md:space-y-4">
                             {currentQuestion.options.map((option, index) => (
                                 <button
                                     key={index}
                                     onClick={() => handleAnswerSelect(index)}
                                     disabled={selectedAnswer !== null}
-                                    className={`w-full text-left p-4 transition-all duration-200 rounded-md shadow-sm ${getButtonClass(index)}`}
+                                    className={`w-full text-left p-3 md:p-4 transition-all duration-200 rounded-md shadow-sm touch-target text-xs md:text-sm ${getButtonClass(index)}`}
                                 >
                                     <span className="font-bold mr-2">{String.fromCharCode(65 + index)}.</span> {option}
                                 </button>
@@ -148,10 +148,10 @@ const PracticeSession: React.FC<{
                         </div>
                     </div>
                     {selectedAnswer !== null && (
-                        <div className="mt-8 p-6 bg-background animate-fadeIn border-2 border-secondary rounded-lg shadow-md">
-                            <h3 className={`text-xl font-bold ${isCorrect ? 'text-success' : 'text-accent'}`}>{isCorrect ? 'Correct!' : 'Incorrect'}</h3>
-                            <p className="text-text-main mt-2 text-[10px] leading-relaxed">{currentQuestion.explanation}</p>
-                            <button onClick={handleNextQuestion} className="mt-6 w-full bg-primary text-light font-bold py-4 border-b-4 border-primary/70 rounded-md hover:bg-primary/90 transition-colors">Next Question</button>
+                        <div className="mt-6 md:mt-8 p-4 md:p-6 bg-background animate-fadeIn border-2 border-secondary rounded-lg shadow-md">
+                            <h3 className={`text-lg md:text-xl font-bold ${isCorrect ? 'text-success' : 'text-accent'}`}>{isCorrect ? 'Correct!' : 'Incorrect'}</h3>
+                            <p className="text-text-main mt-2 text-[9px] md:text-[10px] leading-relaxed">{currentQuestion.explanation}</p>
+                            <button onClick={handleNextQuestion} className="mt-4 md:mt-6 w-full bg-primary text-light font-bold py-3 md:py-4 border-b-4 border-primary/70 rounded-md hover:bg-primary/90 active:bg-primary/90 transition-colors touch-target">Next Question</button>
                         </div>
                     )}
                 </div>
@@ -622,29 +622,34 @@ const ProgressView: React.FC<ProgressViewProps & { addToReviewQueue: (q: Questio
 
     return (
         <div className="animate-fadeIn">
-            <div className="text-center mb-6">
-                <h1 className="text-xl lg:text-2xl bg-highlight text-text-light px-4 py-2 inline-block rounded shadow-sm">Progress</h1>
-                <p className="text-text-dim mt-2 text-sm">Practice skills or defeat bosses to level up.</p>
+            <div className="text-center mb-4 md:mb-6">
+                <h1 className="text-lg md:text-xl lg:text-2xl bg-highlight text-text-light px-3 md:px-4 py-2 inline-block rounded-lg shadow-card animate-slideDown">Progress</h1>
+                <p className="text-text-dim mt-2 text-xs md:text-sm">Practice skills or defeat bosses to level up.</p>
             </div>
-            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4 pb-20">
-                {SUBTOPICS.map(subtopic => {
+            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-3 md:gap-4 pb-20">
+                {SUBTOPICS.map((subtopic, index) => {
                     const stat = profile.stats[subtopic] || { correct: 0, incorrect: 0, level: 'Easy' };
                     const { level } = stat;
                     const progress = getSkillProgress(level);
                     const qCount = QUESTION_BANK.filter(q => q.Type === subtopic).length;
 
                     return (
-                        <button key={subtopic} onClick={() => handleSelectSubtopic(subtopic)} className="w-full text-left p-4 bg-surface hover:bg-secondary border-b-4 border-secondary/50 transition-all duration-200 rounded-lg shadow-sm hover:-translate-y-1 relative group overflow-hidden">
-                            <div className={`absolute top-0 right-0 px-1.5 py-0.5 rounded-bl uppercase tracking-tighter text-[8px] font-bold ${qCount > 0 ? 'bg-success/20 text-success' : 'bg-text-dark/20 text-text-dim'}`}>
+                        <button
+                            key={subtopic}
+                            onClick={() => handleSelectSubtopic(subtopic)}
+                            className="w-full text-left p-4 bg-surface hover:bg-secondary/30 border-b-4 border-secondary/30 transition-premium rounded-xl shadow-card hover:shadow-card-hover hover:-translate-y-1 relative group overflow-hidden press-effect animate-fadeInScale"
+                            style={{ animationDelay: `${index * 0.03}s` }}
+                        >
+                            <div className={`absolute top-0 right-0 px-1.5 py-0.5 rounded-bl-lg uppercase tracking-tighter text-[8px] font-bold ${qCount > 0 ? 'bg-success/20 text-success' : 'bg-text-dark/20 text-text-dim'}`}>
                                 {qCount} Question{qCount !== 1 ? 's' : ''}
                             </div>
-                            
+
                             <div className="flex justify-between items-center mb-2">
                                 <span className={`text-[10px] font-bold flex-1 pr-2 truncate ${qCount > 0 ? 'text-text-main' : 'text-text-dim'}`}>{subtopic}</span>
-                                <span className={`text-[8px] font-bold px-2 py-0.5 rounded ${getLevelColor(level)} text-text-light uppercase`}>{level}</span>
+                                <span className={`text-[8px] font-bold px-2 py-0.5 rounded-full ${getLevelColor(level)} text-text-light uppercase shadow-button`}>{level}</span>
                             </div>
-                            <div className="w-full bg-background/50 h-2 border border-text-dark rounded-full overflow-hidden">
-                                <div className={`${getLevelColor(level)} h-full ${qCount === 0 ? 'opacity-30' : ''}`} style={{ width: `${progress}%` }}></div>
+                            <div className="w-full bg-background/50 h-2.5 border border-secondary/30 rounded-full overflow-hidden shadow-inner-soft">
+                                <div className={`${getLevelColor(level)} h-full ${qCount === 0 ? 'opacity-30' : ''} rounded-full transition-all duration-500`} style={{ width: `${progress}%` }}></div>
                             </div>
                         </button>
                     )

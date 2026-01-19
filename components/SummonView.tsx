@@ -14,6 +14,7 @@ interface SummonViewProps {
     setAuraPoints: React.Dispatch<React.SetStateAction<number>>;
     userCreatures: CreatureInstance[];
     addCreature: (creatureId: number, customData?: Partial<CreatureInstance>) => void;
+    onSummonComplete?: () => void;  // Optional callback when summon animation completes
 }
 
 // Shooting stars that fly across screen (Genshin meteor effect)
@@ -225,7 +226,7 @@ const AtmosphericParticles: React.FC = () => {
 // Animation phases
 type SummonPhase = 'idle' | 'charging' | 'shooting' | 'reveal' | 'display';
 
-const SummonView: React.FC<SummonViewProps> = ({ auraPoints, setAuraPoints, userCreatures, addCreature }) => {
+const SummonView: React.FC<SummonViewProps> = ({ auraPoints, setAuraPoints, userCreatures, addCreature, onSummonComplete }) => {
     const [phase, setPhase] = useState<SummonPhase>('idle');
     const [summonedResults, setSummonedResults] = useState<SummonResult[]>([]);
 
@@ -305,7 +306,11 @@ const SummonView: React.FC<SummonViewProps> = ({ auraPoints, setAuraPoints, user
         setTimeout(() => setPhase('reveal'), 2000);
 
         // Phase 4: Display (after 3.5s)
-        setTimeout(() => setPhase('display'), 3500);
+        setTimeout(() => {
+            setPhase('display');
+            // Notify parent that summon is complete
+            onSummonComplete?.();
+        }, 3500);
     };
 
     const handleSkip = () => {
@@ -330,13 +335,13 @@ const SummonView: React.FC<SummonViewProps> = ({ auraPoints, setAuraPoints, user
     const themeColor = getRarityColor(highestRarity);
 
     return (
-        <div className="flex flex-col items-center h-full text-center p-4 max-w-4xl mx-auto">
-            <h1 className="font-sans text-lg bg-highlight text-text-light px-6 py-2 inline-block mb-2 mt-4 shadow-lg rounded-sm transform -rotate-1">Divine Portal</h1>
-            <p className="text-text-dim mb-8 text-[10px] uppercase tracking-widest font-bold">Bridge the gap between worlds</p>
+        <div className="flex flex-col items-center h-full text-center p-2 md:p-4 max-w-4xl mx-auto">
+            <h1 className="font-sans text-base md:text-lg bg-highlight text-text-light px-4 md:px-6 py-2 inline-block mb-2 mt-2 md:mt-4 shadow-lg rounded-sm transform -rotate-1">Divine Portal</h1>
+            <p className="text-text-dim mb-4 md:mb-8 text-[9px] md:text-[10px] uppercase tracking-widest font-bold">Bridge the gap between worlds</p>
 
             <div className="flex-grow w-full flex items-center justify-center">
                 <div
-                    className={`w-full min-h-[400px] lg:min-h-[500px] bg-slate-900 border-4 border-slate-800 flex items-center justify-center relative overflow-hidden transition-all duration-700 rounded-3xl shadow-[0_20px_50px_rgba(0,0,0,0.3)] ${phase === 'charging' ? 'animate-shake' : ''}`}
+                    className={`w-full min-h-[300px] md:min-h-[400px] lg:min-h-[500px] bg-slate-900 border-4 border-slate-800 flex items-center justify-center relative overflow-hidden transition-all duration-700 rounded-2xl md:rounded-3xl shadow-[0_20px_50px_rgba(0,0,0,0.3)] ${phase === 'charging' ? 'animate-shake' : ''}`}
                     onClick={phase !== 'idle' ? handleSkip : undefined}
                     style={{ cursor: phase !== 'idle' ? 'pointer' : 'default' }}
                 >
@@ -388,7 +393,7 @@ const SummonView: React.FC<SummonViewProps> = ({ auraPoints, setAuraPoints, user
 
                     {/* Phase: Display results */}
                     {phase === 'display' && summonedResults.length > 0 && (
-                        <div className="w-full h-full p-4 overflow-y-auto max-h-[60vh] lg:max-h-full flex items-center justify-center">
+                        <div className="w-full h-full p-2 md:p-4 overflow-y-auto max-h-[50vh] md:max-h-[60vh] lg:max-h-full flex items-center justify-center scroll-smooth">
                             <GlitterParticles color={themeColor} />
 
                             {summonedResults.length === 1 ? (
@@ -427,7 +432,7 @@ const SummonView: React.FC<SummonViewProps> = ({ auraPoints, setAuraPoints, user
                                 </div>
                             ) : (
                                 // Multi summon - grid display
-                                <div className="grid grid-cols-2 md:grid-cols-5 gap-6 w-full max-w-3xl">
+                                <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-5 gap-3 md:gap-6 w-full max-w-3xl">
                                     {summonedResults.map((result, idx) => (
                                         <div
                                             key={idx}
@@ -478,30 +483,30 @@ const SummonView: React.FC<SummonViewProps> = ({ auraPoints, setAuraPoints, user
             </div>
 
             {/* Summon buttons */}
-            <div className="w-full mt-10 space-y-4">
-                <div className="flex flex-col sm:flex-row gap-4 max-w-2xl mx-auto">
+            <div className="w-full mt-6 md:mt-10 space-y-4">
+                <div className="flex flex-col sm:flex-row gap-3 md:gap-4 max-w-2xl mx-auto">
                     <button
                         onClick={() => performSummon(1)}
                         disabled={(auraPoints < SUMMON_COST) || (phase !== 'idle' && phase !== 'display')}
-                        className="flex-1 bg-surface hover:bg-secondary/20 text-text-main font-bold py-4 px-6 shadow-md transition-all duration-200 border-2 border-secondary disabled:opacity-40 disabled:cursor-not-allowed border-b-4 active:border-b-0 active:translate-y-0.5 rounded-lg flex items-center justify-center gap-3 uppercase tracking-tighter text-[10px]"
+                        className="flex-1 bg-surface hover:bg-secondary/20 active:bg-secondary/20 text-text-main font-bold py-3 md:py-4 px-4 md:px-6 shadow-card hover:shadow-card-hover transition-premium border-2 border-secondary/50 disabled:opacity-40 disabled:cursor-not-allowed border-b-4 active:border-b-0 active:translate-y-0.5 rounded-xl flex items-center justify-center gap-2 md:gap-3 uppercase tracking-tighter text-[9px] md:text-[10px] touch-target press-effect"
                     >
                         <span>Summon x1</span>
-                        <span className="bg-primary/10 text-primary px-2 py-1 rounded font-mono">{SUMMON_COST} 💎</span>
+                        <span className="bg-primary/10 text-primary px-2.5 py-1 rounded-full font-mono">{SUMMON_COST} 💎</span>
                     </button>
                     <button
                         onClick={() => performSummon(10)}
                         disabled={(auraPoints < SUMMON_COST * 10) || (phase !== 'idle' && phase !== 'display')}
-                        className="flex-1 bg-highlight hover:brightness-110 text-white font-bold py-4 px-6 shadow-md transition-all duration-200 border-2 border-yellow-800 disabled:opacity-40 disabled:cursor-not-allowed border-b-4 border-yellow-900 active:border-b-0 active:translate-y-0.5 rounded-lg flex items-center justify-center gap-3 uppercase tracking-tighter text-[10px]"
+                        className="flex-1 bg-highlight hover:brightness-110 active:brightness-110 text-white font-bold py-3 md:py-4 px-4 md:px-6 shadow-card hover:shadow-glow-highlight transition-premium border-2 border-yellow-800 disabled:opacity-40 disabled:cursor-not-allowed border-b-4 border-yellow-900 active:border-b-0 active:translate-y-0.5 rounded-xl flex items-center justify-center gap-2 md:gap-3 uppercase tracking-tighter text-[9px] md:text-[10px] touch-target press-effect"
                     >
                         <span>Summon x10</span>
-                        <span className="bg-white/20 px-2 py-1 rounded font-mono">{SUMMON_COST * 10} 💎</span>
+                        <span className="bg-white/20 px-2.5 py-1 rounded-full font-mono">{SUMMON_COST * 10} 💎</span>
                     </button>
                 </div>
             </div>
 
-            <div className="mt-8 bg-surface/80 backdrop-blur px-8 py-3 rounded-lg border-2 border-secondary shadow-sm animate-fadeIn flex items-center gap-3">
-                <span className="text-lg">💎</span>
-                <p className="text-xs tracking-widest uppercase font-bold text-primary">Your Aura: <span className="text-highlight font-black ml-1">{auraPoints.toLocaleString()}</span></p>
+            <div className="mt-4 md:mt-8 glass px-4 md:px-8 py-2 md:py-3 rounded-xl border-2 border-secondary/30 shadow-card animate-fadeIn flex items-center gap-2 md:gap-3 hover-lift">
+                <span className="text-base md:text-lg animate-gentleBounce">💎</span>
+                <p className="text-[10px] md:text-xs tracking-widest uppercase font-bold text-primary">Your Aura: <span className="text-highlight font-black ml-1">{auraPoints.toLocaleString()}</span></p>
             </div>
         </div>
     );

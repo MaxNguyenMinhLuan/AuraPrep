@@ -38,7 +38,9 @@ const parseLegacyGraphData = (text: string): GraphData | undefined => {
 export const generateSatQuestion = async (subtopic: string, difficulty: Difficulty): Promise<Omit<Question, 'subtopic'>> => {
     // Removed artificial delay for instant loading
     // Use pre-indexed questions for O(1) lookup instead of O(n) filtering
-    const candidates = getQuestionsByCategory(subtopic, difficulty);
+    // Map 'Extra Hard' to 'Hard' for the indexed lookup
+    const mappedDifficulty: 'Easy' | 'Medium' | 'Hard' = difficulty === 'Extra Hard' ? 'Hard' : difficulty;
+    const candidates = getQuestionsByCategory(subtopic, mappedDifficulty);
 
     if (candidates.length > 0) {
         const randomIndex = Math.floor(Math.random() * candidates.length);

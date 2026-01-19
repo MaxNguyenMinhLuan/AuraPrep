@@ -105,43 +105,43 @@ const LeaderboardView: React.FC<LeaderboardViewProps> = ({ weeklyGain, league, c
 
     return (
         <div className="animate-fadeIn max-w-4xl mx-auto pb-32 relative">
-            <div className="text-center mb-8">
+            <div className="text-center mb-6 md:mb-8">
                 <div className="flex flex-col items-center gap-2">
-                    <span className="text-[10px] bg-primary text-white px-3 py-0.5 rounded-full font-bold uppercase tracking-widest shadow-sm">
+                    <span className="text-[9px] md:text-[10px] bg-primary text-white px-3 py-0.5 rounded-full font-bold uppercase tracking-widest shadow-button animate-subtlePulse">
                         {league} League
                     </span>
-                    <h1 className="font-sans text-xl lg:text-3xl bg-highlight text-text-light px-6 py-2 inline-block rounded-lg shadow-md uppercase tracking-tight">
+                    <h1 className="font-sans text-lg md:text-xl lg:text-3xl bg-highlight text-text-light px-4 md:px-6 py-2 inline-block rounded-xl shadow-card uppercase tracking-tight animate-slideDown">
                         Leaderboard
                     </h1>
                 </div>
-                <p className="text-text-dim mt-2 text-xs">League Pool: 20 Scholars</p>
-                <p className="text-[10px] text-primary font-bold mt-1 uppercase tracking-widest animate-pulse">Resets Monday Morning</p>
+                <p className="text-text-dim mt-2 text-[10px] md:text-xs">League Pool: 20 Scholars</p>
+                <p className="text-[9px] md:text-[10px] text-primary font-bold mt-1 uppercase tracking-widest animate-subtlePulse">Resets Monday Morning</p>
             </div>
 
             {/* Podium Section */}
-            <div className="flex flex-wrap justify-center items-end gap-4 mb-10 mt-16 lg:mt-24 px-4">
+            <div className="flex flex-wrap justify-center items-end gap-2 md:gap-4 mb-8 md:mb-10 mt-12 md:mt-16 lg:mt-24 px-2 md:px-4">
                 {top3.map((entry) => {
                     const displayRank = entry.rank;
                     const order = displayRank === 1 ? 'order-2' : (displayRank === 2 ? 'order-1' : 'order-3');
-                    const scale = displayRank === 1 ? 'lg:scale-110' : 'scale-90';
-                    const height = displayRank === 1 ? 'h-40 lg:h-56' : (displayRank === 2 ? 'h-32 lg:h-40' : 'h-24 lg:h-32');
+                    const scale = displayRank === 1 ? 'md:scale-110 lg:scale-110' : 'scale-90';
+                    const height = displayRank === 1 ? 'h-32 md:h-40 lg:h-56' : (displayRank === 2 ? 'h-24 md:h-32 lg:h-40' : 'h-20 md:h-24 lg:h-32');
                     const emoji = displayRank === 1 ? '👑' : (displayRank === 2 ? '🥈' : '🥉');
 
                     return (
-                        <div key={entry.username} className={`${order} flex flex-col items-center ${displayRank === 1 ? '-mt-8' : ''}`}>
-                            <div className={`mb-4 transform ${scale} ${displayRank === 1 ? 'animate-bounce' : ''}`}>
-                                <PixelCreature 
-                                    creature={INITIAL_CREATURES.find(c => c.id === entry.guardianId) || INITIAL_CREATURES[0]} 
-                                    evolutionStage={displayRank === 1 ? 3 : 2} 
-                                    pixelSize={displayRank === 1 ? 5 : 4} 
+                        <div key={entry.username} className={`${order} flex flex-col items-center ${displayRank === 1 ? '-mt-6 md:-mt-8' : ''}`}>
+                            <div className={`mb-2 md:mb-4 transform ${scale} ${displayRank === 1 ? 'animate-bounce' : ''}`}>
+                                <PixelCreature
+                                    creature={INITIAL_CREATURES.find(c => c.id === entry.guardianId) || INITIAL_CREATURES[0]}
+                                    evolutionStage={displayRank === 1 ? 3 : 2}
+                                    pixelSize={displayRank === 1 ? 4 : 3}
                                 />
                             </div>
-                            <div className={`w-28 lg:w-40 ${height} border-t-4 ${getPodiumColor(displayRank)} flex flex-col items-center pt-4 rounded-t-xl shadow-lg relative ${displayRank === 1 ? 'z-10' : ''} ${entry.isUser ? 'ring-2 ring-highlight ring-inset bg-highlight/5' : ''}`}>
-                                <span className="absolute -top-10 text-2xl lg:text-4xl">{emoji}</span>
-                                <p className="font-bold text-[10px] lg:text-xs truncate w-full px-2 text-center tracking-tighter">
+                            <div className={`w-24 md:w-28 lg:w-40 ${height} border-t-4 ${getPodiumColor(displayRank)} flex flex-col items-center pt-3 md:pt-4 rounded-t-xl shadow-lg relative ${displayRank === 1 ? 'z-10' : ''} ${entry.isUser ? 'ring-2 ring-highlight ring-inset bg-highlight/5' : ''}`}>
+                                <span className="absolute -top-8 md:-top-10 text-xl md:text-2xl lg:text-4xl">{emoji}</span>
+                                <p className="font-bold text-[9px] md:text-[10px] lg:text-xs truncate w-full px-2 text-center tracking-tighter">
                                     {entry.username} {entry.isUser ? '(You)' : ''}
                                 </p>
-                                <p className="text-[9px] lg:text-[10px] font-bold opacity-80 mt-1">+{entry.weeklyGain} 💎</p>
+                                <p className="text-[8px] md:text-[9px] lg:text-[10px] font-bold opacity-80 mt-1">+{entry.weeklyGain} 💎</p>
                             </div>
                         </div>
                     );
@@ -159,8 +159,8 @@ const LeaderboardView: React.FC<LeaderboardViewProps> = ({ weeklyGain, league, c
             )}
 
             {/* Scrollable List Container */}
-            <div ref={listContainerRef} className="bg-surface border-2 border-secondary/50 rounded-xl shadow-sm overflow-hidden mx-2">
-                <div className="bg-secondary/20 px-6 py-3 border-b-2 border-secondary/30 flex justify-between text-[10px] font-bold text-primary uppercase tracking-widest">
+            <div ref={listContainerRef} className="bg-surface border-2 border-secondary/30 rounded-xl shadow-card overflow-hidden mx-2 animate-scaleIn">
+                <div className="glass px-6 py-3 border-b-2 border-secondary/20 flex justify-between text-[10px] font-bold text-primary uppercase tracking-widest">
                     <span>Rank / Seeker</span>
                     <span>Weekly Gain</span>
                 </div>
@@ -204,14 +204,14 @@ const LeaderboardView: React.FC<LeaderboardViewProps> = ({ weeklyGain, league, c
             </div>
             
             {/* Legend / Info Cards */}
-            <div className="mt-6 grid grid-cols-2 gap-4 mx-2">
-                <div className="p-4 bg-success/10 border-2 border-success/30 rounded-xl shadow-sm text-center">
-                    <p className="text-[10px] font-bold text-success uppercase tracking-tight mb-1">Promotion Zone</p>
-                    <p className="text-[8px] text-text-dim uppercase tracking-tighter leading-tight">Top 5 advance to the next league</p>
+            <div className="mt-4 md:mt-6 grid grid-cols-2 gap-2 md:gap-4 mx-2">
+                <div className="p-3 md:p-4 bg-success/10 border-2 border-success/30 rounded-xl shadow-card text-center hover-lift transition-premium">
+                    <p className="text-[9px] md:text-[10px] font-bold text-success uppercase tracking-tight mb-1">Promotion Zone</p>
+                    <p className="text-[7px] md:text-[8px] text-text-dim uppercase tracking-tighter leading-tight">Top 5 advance to the next league</p>
                 </div>
-                <div className="p-4 bg-accent/10 border-2 border-accent/30 rounded-xl shadow-sm text-center">
-                    <p className="text-[10px] font-bold text-accent uppercase tracking-tight mb-1">Demotion Zone</p>
-                    <p className="text-[8px] text-text-dim uppercase tracking-tighter leading-tight">Bottom 3 fall to lower league</p>
+                <div className="p-3 md:p-4 bg-accent/10 border-2 border-accent/30 rounded-xl shadow-card text-center hover-lift transition-premium">
+                    <p className="text-[9px] md:text-[10px] font-bold text-accent uppercase tracking-tight mb-1">Demotion Zone</p>
+                    <p className="text-[7px] md:text-[8px] text-text-dim uppercase tracking-tighter leading-tight">Bottom 3 fall to lower league</p>
                 </div>
             </div>
 

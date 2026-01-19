@@ -4307,130 +4307,178 @@ export const QUESTION_BANK: DBQuestion[] = [
         Source: "Original",
         Explanation: "'In summary' signals a conclusion that brings together the main points."
     },
-    // R/W: Vocabulary in Context
+    // R/W: Vocabulary in Context (Updated to match Digital SAT Module 1 difficulty)
     {
-        Question: "In the sentence 'The scientist conducted a rigorous analysis of the data,' 'rigorous' most nearly means:",
-        A: "Casual",
-        B: "Thorough and careful",
-        C: "Quick",
-        D: "Inaccurate",
+        Question: "Marine biologists studying coral reef ecosystems have found that certain fish species demonstrate remarkable ________ to their home territories. Tagged specimens returned to the same coral formations year after year, even when environmental conditions changed significantly in surrounding areas.\n\nWhich choice completes the text with the most logical and precise word or phrase?",
+        A: "indifference",
+        B: "hostility",
+        C: "fidelity",
+        D: "sensitivity",
+        CorrectAns: "C",
+        Type: "R/W: Vocabulary in Context",
+        Difficulty: "Easy",
+        Source: "Original",
+        Explanation: "The passage describes fish returning to the same location repeatedly, demonstrating loyalty or faithfulness to their territory. 'Fidelity' means faithfulness or loyalty, which fits this context of consistent return behavior."
+    },
+    {
+        Question: "The architectural firm's newest design ________ traditional Japanese building principles with contemporary sustainability features. The structure incorporates sliding screen walls reminiscent of shoji panels alongside solar energy systems and rainwater collection.\n\nWhich choice completes the text with the most logical and precise word or phrase?",
+        A: "abandons",
+        B: "integrates",
+        C: "complicates",
+        D: "imitates",
         CorrectAns: "B",
         Type: "R/W: Vocabulary in Context",
         Difficulty: "Easy",
         Source: "Original",
-        Explanation: "In scientific contexts, 'rigorous' means thorough, careful, and methodologically sound."
+        Explanation: "The passage describes combining ('traditional...with contemporary') two different elements into a single design. 'Integrates' means to combine or bring together into a unified whole, which matches this context."
     },
     {
-        Question: "The passage states that the policy was 'implemented gradually.' In this context, 'implemented' means:",
-        A: "Discussed",
-        B: "Put into effect",
-        C: "Rejected",
-        D: "Forgotten",
+        Question: "Despite decades of research into renewable energy sources, fossil fuels remain the ________ source of electricity generation worldwide. According to recent data, coal, natural gas, and oil still account for over sixty percent of global power production.\n\nWhich choice completes the text with the most logical and precise word or phrase?",
+        A: "controversial",
+        B: "obsolete",
+        C: "predominant",
+        D: "experimental",
+        CorrectAns: "C",
+        Type: "R/W: Vocabulary in Context",
+        Difficulty: "Easy",
+        Source: "Original",
+        Explanation: "The passage indicates fossil fuels make up over 60% of power production—they are the main or dominant source. 'Predominant' means having superior strength, influence, or authority; being most common or widespread."
+    },
+    {
+        Question: "Food historian Dr. Sarah Chen argues that cookbooks do more than preserve recipes—they ________ the social values and cultural priorities of their time. A 1950s American cookbook, for instance, reveals assumptions about family structure and gender roles that modern readers may find surprising.\n\nWhich choice completes the text with the most logical and precise word or phrase?",
+        A: "distort",
+        B: "reflect",
+        C: "challenge",
+        D: "simplify",
         CorrectAns: "B",
         Type: "R/W: Vocabulary in Context",
         Difficulty: "Easy",
         Source: "Original",
-        Explanation: "To implement a policy means to put it into action or effect."
+        Explanation: "The passage suggests cookbooks show or reveal ('reveals assumptions') the values of their era. 'Reflect' means to show, express, or be a sign of something, which matches this idea of cookbooks demonstrating cultural values."
     },
     {
-        Question: "'The novel's protagonist undergoes a profound transformation.' Here, 'profound' most nearly means:",
-        A: "Superficial",
-        B: "Deep and significant",
-        C: "Confusing",
-        D: "Temporary",
-        CorrectAns: "B",
-        Type: "R/W: Vocabulary in Context",
-        Difficulty: "Easy",
-        Source: "Original",
-        Explanation: "A 'profound transformation' is one that is deep, meaningful, and significant."
-    },
-    {
-        Question: "The author describes the evidence as 'compelling.' In this context, 'compelling' means:",
-        A: "Weak",
-        B: "Convincing and persuasive",
-        C: "Boring",
-        D: "False",
-        CorrectAns: "B",
-        Type: "R/W: Vocabulary in Context",
-        Difficulty: "Easy",
-        Source: "Original",
-        Explanation: "'Compelling' evidence is convincing and hard to argue against."
-    },
-    {
-        Question: "'The ecosystem demonstrated remarkable resilience after the disaster.' 'Resilience' refers to:",
-        A: "Fragility",
-        B: "The ability to recover from difficulties",
-        C: "Permanence",
-        D: "Collapse",
+        Question: "After the wildfire devastated over two thousand acres of forest, ecologists were surprised by the ecosystem's rapid recovery. Within three years, native plant species had reestablished themselves, and animal populations were approaching pre-fire levels. Researchers attributed this ________ to the forest's long evolutionary history with periodic fires.\n\nWhich choice completes the text with the most logical and precise word or phrase?",
+        A: "fragility",
+        B: "resilience",
+        C: "deterioration",
+        D: "stagnation",
         CorrectAns: "B",
         Type: "R/W: Vocabulary in Context",
         Difficulty: "Medium",
         Source: "Original",
-        Explanation: "Resilience is the capacity to recover quickly from difficulties—to bounce back."
+        Explanation: "The passage describes the ecosystem's ability to recover quickly from the fire damage ('rapid recovery,' plants reestablished, populations returning). 'Resilience' means the capacity to recover quickly from difficulties."
     },
     {
-        Question: "The passage notes that support for the initiative 'waned over time.' 'Waned' most nearly means:",
-        A: "Increased",
-        B: "Decreased gradually",
-        C: "Stayed constant",
-        D: "Exploded",
+        Question: "Public enthusiasm for the space program, which had reached historic heights during the moon landings, gradually ________ throughout the following decades. By the 1990s, surveys showed that most Americans could not name a single active astronaut or describe any ongoing missions.\n\nWhich choice completes the text with the most logical and precise word or phrase?",
+        A: "intensified",
+        B: "waned",
+        C: "stabilized",
+        D: "fluctuated",
         CorrectAns: "B",
         Type: "R/W: Vocabulary in Context",
         Difficulty: "Medium",
         Source: "Original",
-        Explanation: "To wane means to decrease in strength, intensity, or size over time."
+        Explanation: "The passage shows a decline from 'historic heights' to public ignorance about the space program ('gradually...throughout the following decades'). 'Waned' means to decrease gradually in strength, intensity, or importance."
     },
     {
-        Question: "'The hypothesis was subsequently validated by independent research.' 'Validated' means:",
-        A: "Disproven",
-        B: "Confirmed as accurate",
-        C: "Ignored",
-        D: "Modified",
+        Question: "Dr. Martinez's theory about early human migration patterns remained controversial for years, with many scholars dismissing it as speculation. However, DNA analysis of ancient remains has now ________ her original hypothesis, confirming that early humans did indeed travel along the coastal routes she proposed.\n\nWhich choice completes the text with the most logical and precise word or phrase?",
+        A: "contradicted",
+        B: "validated",
+        C: "complicated",
+        D: "revised",
         CorrectAns: "B",
         Type: "R/W: Vocabulary in Context",
         Difficulty: "Easy",
         Source: "Original",
-        Explanation: "To validate a hypothesis means to confirm it is accurate through evidence."
+        Explanation: "The passage indicates the DNA evidence 'confirmed' her hypothesis after it was previously dismissed. 'Validated' means to confirm or prove the truth or value of something."
     },
     {
-        Question: "The speaker's argument was described as 'tenuous.' In context, 'tenuous' means:",
-        A: "Strong and convincing",
-        B: "Weak or flimsy",
-        C: "Long and detailed",
-        D: "Emotional",
+        Question: "Critics noted that while the documentary presented compelling footage, its central argument about climate change remained ________. The filmmakers relied heavily on anecdotal evidence and emotional appeals rather than presenting robust scientific data or peer-reviewed research.\n\nWhich choice completes the text with the most logical and precise word or phrase?",
+        A: "persuasive",
+        B: "tenuous",
+        C: "comprehensive",
+        D: "objective",
         CorrectAns: "B",
         Type: "R/W: Vocabulary in Context",
         Difficulty: "Medium",
         Source: "Original",
-        Explanation: "A tenuous argument is one that is weak, thin, or not well-supported."
+        Explanation: "The passage criticizes the argument for lacking strong evidence ('anecdotal evidence,' 'emotional appeals' instead of 'robust scientific data'). 'Tenuous' means weak, flimsy, or insubstantial—describing an argument that is not well-supported."
     },
     {
-        Question: "'The findings corroborate earlier research on the topic.' 'Corroborate' most nearly means:",
-        A: "Contradict",
-        B: "Support or confirm",
-        C: "Ignore",
-        D: "Replace",
+        Question: "Recent archaeological discoveries in Turkey have ________ earlier theories about the origins of agriculture. Artifacts from multiple sites now support the view that farming developed independently in the region, rather than spreading from a single origin point as previously believed.\n\nWhich choice completes the text with the most logical and precise word or phrase?",
+        A: "undermined",
+        B: "corroborated",
+        C: "oversimplified",
+        D: "contradicted",
         CorrectAns: "B",
         Type: "R/W: Vocabulary in Context",
         Difficulty: "Medium",
         Source: "Original",
-        Explanation: "To corroborate means to confirm or give support to a statement or finding."
+        Explanation: "The passage states the discoveries 'support the view' of earlier theories about agriculture. 'Corroborated' means to confirm or give support to a statement, theory, or finding."
     },
     {
-        Question: "The article describes the solution as 'feasible.' This means the solution is:",
-        A: "Impossible",
-        B: "Possible and practical",
-        C: "Expensive",
-        D: "Unpopular",
+        Question: "City planners initially dismissed the proposal to convert abandoned rail lines into public parks as impractical and expensive. However, after examining successful projects in other cities, they concluded that the plan was actually quite ________ and could be completed within the existing budget.\n\nWhich choice completes the text with the most logical and precise word or phrase?",
+        A: "idealistic",
+        B: "feasible",
+        C: "controversial",
+        D: "unprecedented",
         CorrectAns: "B",
         Type: "R/W: Vocabulary in Context",
         Difficulty: "Easy",
         Source: "Original",
-        Explanation: "Feasible means possible to do, practical, and achievable."
+        Explanation: "The planners changed their view from 'impractical' to believing the plan 'could be completed within the existing budget.' 'Feasible' means possible and practical to do easily or conveniently."
     },
-    // Grammar: Subject-Verb Agreement
     {
-        Question: "The list of items _____ on the table.",
+        Question: "The museum's newest exhibit ________ artifacts from three ancient civilizations, allowing visitors to compare pottery styles, burial practices, and religious symbols across different cultures and time periods.\n\nWhich choice completes the text with the most logical and precise word or phrase?",
+        A: "juxtaposes",
+        B: "conceals",
+        C: "replicates",
+        D: "minimizes",
+        CorrectAns: "A",
+        Type: "R/W: Vocabulary in Context",
+        Difficulty: "Easy",
+        Source: "Original",
+        Explanation: "The passage describes placing items from different civilizations together for comparison. 'Juxtaposes' means to place things side by side, especially for contrast or comparison, which fits the idea of comparing artifacts across cultures."
+    },
+    {
+        Question: "Unlike her predecessor, who made decisions impulsively and often reversed course, the new CEO took a more ________ approach, carefully analyzing data and consulting with advisors before committing to any major strategic changes.\n\nWhich choice completes the text with the most logical and precise word or phrase?",
+        A: "spontaneous",
+        B: "methodical",
+        C: "aggressive",
+        D: "ambiguous",
+        CorrectAns: "B",
+        Type: "R/W: Vocabulary in Context",
+        Difficulty: "Easy",
+        Source: "Original",
+        Explanation: "The passage contrasts the new CEO with her impulsive predecessor. The new approach involves 'carefully analyzing data' and 'consulting with advisors'—systematic, organized behavior. 'Methodical' means done in a systematic, orderly way."
+    },
+    {
+        Question: "The novelist's early works received modest attention, but her fifth book became a sensation that ________ her career. Within a year, she had signed a multi-book deal and seen her previous titles return to bestseller lists.\n\nWhich choice completes the text with the most logical and precise word or phrase?",
+        A: "concluded",
+        B: "transformed",
+        C: "hindered",
+        D: "maintained",
+        CorrectAns: "B",
+        Type: "R/W: Vocabulary in Context",
+        Difficulty: "Easy",
+        Source: "Original",
+        Explanation: "The passage shows a dramatic change: from 'modest attention' to 'sensation,' 'multi-book deal,' and bestseller lists. 'Transformed' means to change completely in form, appearance, or character—capturing this major positive shift."
+    },
+    {
+        Question: "Astronomers studying the distant galaxy were surprised to find that its stars appeared ________ distributed rather than concentrated in a central bulge. The unusual pattern suggested a different formation history than most galaxies of similar size.\n\nWhich choice completes the text with the most logical and precise word or phrase?",
+        A: "uniformly",
+        B: "randomly",
+        C: "densely",
+        D: "temporarily",
+        CorrectAns: "A",
+        Type: "R/W: Vocabulary in Context",
+        Difficulty: "Easy",
+        Source: "Original",
+        Explanation: "The passage contrasts the observed pattern with 'concentrated in a central bulge.' The stars are spread out rather than clustered. 'Uniformly' means evenly distributed or consistent throughout, which describes the opposite of concentration."
+    },
+    // Grammar: Subject-Verb Agreement (Updated to match Digital SAT format)
+    {
+        Question: "The collection of rare manuscripts, which includes letters from several prominent nineteenth-century authors, ________ now available for public viewing at the university library.\n\nWhich choice completes the text so that it conforms to the conventions of Standard English?",
         A: "is",
         B: "are",
         C: "were",
@@ -4439,22 +4487,22 @@ export const QUESTION_BANK: DBQuestion[] = [
         Type: "Grammar: Subject-Verb Agreement",
         Difficulty: "Easy",
         Source: "Original",
-        Explanation: "The subject is 'list' (singular), not 'items.' Use 'is.'"
+        Explanation: "The subject is 'collection' (singular), not 'manuscripts' or 'authors.' The intervening clause 'which includes letters...' does not change this. A singular subject requires the singular verb 'is.'"
     },
     {
-        Question: "Neither the students nor the teacher _____ ready for the exam.",
-        A: "are",
-        B: "is",
-        C: "were",
-        D: "have been",
+        Question: "Neither the professor's original research nor the subsequent studies conducted by her graduate students ________ able to replicate the unexpected results from the 2019 experiment.\n\nWhich choice completes the text so that it conforms to the conventions of Standard English?",
+        A: "was",
+        B: "were",
+        C: "is",
+        D: "has been",
         CorrectAns: "B",
         Type: "Grammar: Subject-Verb Agreement",
         Difficulty: "Medium",
         Source: "Original",
-        Explanation: "With 'neither...nor,' the verb agrees with the nearer subject ('teacher' = singular)."
+        Explanation: "With 'neither...nor,' the verb agrees with the nearer subject. 'Studies' is plural, so the verb must be plural: 'were.'"
     },
     {
-        Question: "Each of the participants _____ required to sign a waiver.",
+        Question: "Each of the participating schools in the regional science competition ________ required to submit detailed documentation of their students' experimental procedures before the judging begins.\n\nWhich choice completes the text so that it conforms to the conventions of Standard English?",
         A: "are",
         B: "is",
         C: "were",
@@ -4463,10 +4511,10 @@ export const QUESTION_BANK: DBQuestion[] = [
         Type: "Grammar: Subject-Verb Agreement",
         Difficulty: "Easy",
         Source: "Original",
-        Explanation: "'Each' is singular and requires a singular verb: 'is.'"
+        Explanation: "'Each' is always singular and requires a singular verb, regardless of what follows. The prepositional phrase 'of the participating schools' does not affect the verb agreement."
     },
     {
-        Question: "The committee _____ reached a unanimous decision.",
+        Question: "The advisory committee, after reviewing testimony from environmental scientists and community stakeholders, ________ voted to recommend additional funding for the watershed restoration project.\n\nWhich choice completes the text so that it conforms to the conventions of Standard English?",
         A: "have",
         B: "has",
         C: "are",
@@ -4475,22 +4523,22 @@ export const QUESTION_BANK: DBQuestion[] = [
         Type: "Grammar: Subject-Verb Agreement",
         Difficulty: "Easy",
         Source: "Original",
-        Explanation: "'Committee' is a collective noun acting as a unit, so use singular 'has.'"
+        Explanation: "'Committee' is a collective noun that functions as a singular unit when acting together. The phrase 'after reviewing...' is a parenthetical that does not affect subject-verb agreement. Use the singular 'has.'"
     },
     {
-        Question: "Mathematics _____ my favorite subject.",
-        A: "are",
-        B: "is",
+        Question: "The economics of renewable energy production, particularly with respect to solar panel manufacturing costs, ________ changed dramatically over the past decade.\n\nWhich choice completes the text so that it conforms to the conventions of Standard English?",
+        A: "have",
+        B: "has",
         C: "were",
-        D: "have been",
+        D: "are",
         CorrectAns: "B",
         Type: "Grammar: Subject-Verb Agreement",
         Difficulty: "Easy",
         Source: "Original",
-        Explanation: "'Mathematics' is a singular noun despite ending in 's.' Use 'is.'"
+        Explanation: "'Economics' is a singular noun (a field of study) despite ending in 's.' The intervening phrase 'particularly with respect to...' does not change the subject. Use the singular verb 'has.'"
     },
     {
-        Question: "Either the manager or the employees _____ responsible for the error.",
+        Question: "Either the museum director or the curators on the acquisitions committee ________ responsible for approving purchases that exceed the department's annual budget allocation.\n\nWhich choice completes the text so that it conforms to the conventions of Standard English?",
         A: "is",
         B: "are",
         C: "was",
@@ -8361,58 +8409,58 @@ export const QUESTION_BANK: DBQuestion[] = [
         Explanation: "$\\frac{x}{y} = \\frac{2}{5}$ and $\\frac{y}{z} = \\frac{3}{4}$. So $\\frac{x}{z} = \\frac{x}{y} \\times \\frac{y}{z} = \\frac{2}{5} \\times \\frac{3}{4} = \\frac{6}{20} = \\frac{3}{10}$."
     },
 
-    // R/W: Multiple Text Analysis - Easy
+    // R/W: Multiple Text Analysis - Easy (Updated to Digital SAT format with passages)
     {
-        Question: "Text 1 states that exercise improves mood. Text 2 states that exercise reduces stress hormones. Which statement best describes the relationship?",
-        A: "Text 2 provides a mechanism for Text 1's claim",
-        B: "Text 2 contradicts Text 1",
-        C: "They discuss unrelated topics",
-        D: "Text 1 disproves Text 2",
+        Question: "Text 1\nRegular physical exercise has been consistently linked to improvements in mood and emotional well-being. Individuals who exercise at least three times per week report significantly lower rates of anxiety and depression than sedentary individuals.\n\nText 2\nResearch in endocrinology has demonstrated that physical activity reduces cortisol levels in the bloodstream. Cortisol, often called the 'stress hormone,' is associated with feelings of anxiety when present in elevated amounts.\n\nBased on the texts, how would the author of Text 2 most likely respond to the findings described in Text 1?",
+        A: "By suggesting that the mood improvements may result from the physiological reduction in stress hormones that exercise produces",
+        B: "By arguing that the correlation between exercise and mood is coincidental",
+        C: "By questioning whether self-reported well-being data is reliable",
+        D: "By proposing that only certain types of exercise affect mood",
         CorrectAns: "A",
         Type: "R/W: Multiple Text Analysis",
         Difficulty: "Easy",
         Source: "Original",
-        Explanation: "Text 2 explains HOW exercise improves mood (by reducing stress hormones), supporting Text 1."
+        Explanation: "Text 2 provides a biological mechanism (reduced cortisol) that could explain Text 1's findings (improved mood). The author of Text 2 would likely see the hormone reduction as the explanation for the mood benefits."
     },
     // R/W: Multiple Text Analysis - Medium
     {
-        Question: "Text 1 argues that technology increases productivity. Text 2 argues that technology creates distractions. How do these texts relate?",
-        A: "They present contrasting perspectives on technology's impact",
-        B: "Text 2 supports Text 1",
-        C: "They discuss different types of technology",
-        D: "Text 1 refutes Text 2",
-        CorrectAns: "A",
+        Question: "Text 1\nWorkplace productivity has increased substantially since the widespread adoption of digital communication tools. Email, instant messaging, and video conferencing allow employees to collaborate efficiently regardless of physical location, reducing time spent in unproductive meetings.\n\nText 2\nThe constant availability enabled by digital communication tools has created a culture of perpetual interruption in many workplaces. Studies show that employees now check their email an average of 74 times per day, with each interruption requiring an average of 23 minutes to return to focused work.\n\nBased on the texts, how would the authors of Text 1 and Text 2 most likely view the impact of digital communication on work?",
+        A: "Both authors would agree that digital tools have improved collaboration",
+        B: "The authors present contrasting perspectives: Text 1 emphasizes efficiency gains while Text 2 highlights productivity losses from interruptions",
+        C: "Both authors would agree that employees spend too much time on email",
+        D: "The authors discuss entirely unrelated aspects of digital communication",
+        CorrectAns: "B",
         Type: "R/W: Multiple Text Analysis",
         Difficulty: "Medium",
         Source: "Original",
-        Explanation: "The texts offer opposing views on technology's effects in the workplace."
+        Explanation: "Text 1 presents digital tools positively (increased productivity, efficient collaboration), while Text 2 presents them negatively (perpetual interruption, lost focus). These are contrasting perspectives on the same phenomenon."
     },
     // R/W: Multiple Text Analysis - Hard
     {
-        Question: "Text 1 discusses Mozart's influence on classical music. Text 2 examines Beethoven's innovations. Text 3 analyzes how Beethoven built upon Mozart's techniques. Which best describes Text 3's function?",
-        A: "It synthesizes the information in Texts 1 and 2 by showing connections",
-        B: "It contradicts both previous texts",
-        C: "It provides unrelated information",
-        D: "It repeats Text 1",
-        CorrectAns: "A",
+        Question: "Text 1\nMozart's compositions established many conventions of the Classical period, including the sonata form structure that would influence generations of composers. His ability to balance complexity with accessibility set a standard for musical craftsmanship.\n\nText 2\nBeethoven's later works broke dramatically from Classical conventions. His extended symphonies, unpredictable harmonic progressions, and emotionally intense expression anticipated the Romantic era and expanded what audiences expected from orchestral music.\n\nText 3\nMany scholars note that Beethoven's earliest compositions closely followed Mozartean models. Only after thoroughly mastering these Classical forms did Beethoven begin experimenting with extensions and modifications that would eventually transform them beyond recognition.\n\nBased on all three texts, which statement best describes the relationship between Mozart's and Beethoven's contributions to music?",
+        A: "Beethoven's innovations represented a complete rejection of everything Mozart had established",
+        B: "Beethoven first internalized Mozart's Classical structures before transforming them into something new, suggesting evolution rather than revolution",
+        C: "Mozart and Beethoven developed their musical styles independently of one another",
+        D: "Text 3 contradicts the claims made in Texts 1 and 2 about both composers",
+        CorrectAns: "B",
         Type: "R/W: Multiple Text Analysis",
         Difficulty: "Hard",
         Source: "Original",
-        Explanation: "Text 3 connects the two composers by explaining their relationship, synthesizing Texts 1 and 2."
+        Explanation: "Text 3 bridges Texts 1 and 2 by showing that Beethoven 'mastered' Mozart's forms before 'transforming them,' suggesting his innovations grew from rather than rejected the Classical tradition."
     },
 
-    // R/W: Quantitative Analysis - Easy
+    // R/W: Quantitative Analysis - Easy (Updated to Digital SAT format)
     {
-        Question: "A graph shows that sales increased from 100 units in January to 150 units in June. What was the increase?",
-        A: "50 units",
-        B: "50%",
-        C: "150 units",
-        D: "250 units",
-        CorrectAns: "A",
+        Question: "A researcher tracking monthly sales data for a small business recorded the following:\n\n| Month | Units Sold |\n|-------|------------|\n| January | 100 |\n| February | 115 |\n| March | 125 |\n| April | 140 |\n| May | 145 |\n| June | 150 |\n\nWhich choice best describes the pattern in the data?",
+        A: "Sales remained constant throughout the six-month period",
+        B: "Sales increased each month, with the most significant growth occurring early in the period",
+        C: "Sales decreased steadily from January to June",
+        D: "Sales fluctuated unpredictably with no clear trend",
+        CorrectAns: "B",
         Type: "R/W: Quantitative Analysis",
         Difficulty: "Easy",
         Source: "Original",
-        Explanation: "Increase = $150 - 100 = 50$ units."
+        Explanation: "Sales increased every month. The largest monthly increase was 15 units (Jan to Feb), followed by 10 (Feb to Mar), then smaller increases of 5 units in later months. This shows consistent growth with larger gains early in the period."
     },
     // R/W: Quantitative Analysis - Medium
     {
@@ -8561,84 +8609,84 @@ export const QUESTION_BANK: DBQuestion[] = [
         Explanation: "Cost-cutting despite current profits suggests preparation for expected difficulties ahead."
     },
 
-    // R/W: Identifying Main Idea - Easy
+    // R/W: Identifying Main Idea - Easy (Updated to Digital SAT format with passage)
     {
-        Question: "A paragraph discusses bees' role in pollination, crop production, and ecosystem health. What is the main idea?",
-        A: "Bees are essential to ecosystems and agriculture",
-        B: "Bees make honey",
-        C: "Bees can sting",
-        D: "Bees are insects",
+        Question: "Honeybees contribute to approximately one-third of the food consumed in the United States through their pollination of crops such as almonds, apples, and blueberries. Beyond agriculture, these insects play a vital role in maintaining wild plant populations that form the foundation of numerous food webs. Scientists have grown increasingly concerned about declining bee populations, noting that habitat loss, pesticide exposure, and disease have reduced hive numbers by nearly forty percent in recent decades.\n\nWhich choice best states the main idea of the text?",
+        A: "Honeybees are critical to both agricultural production and natural ecosystems, making their declining populations a significant concern",
+        B: "Honeybees pollinate approximately one-third of American food crops",
+        C: "Scientists are working to reverse the forty percent decline in bee populations",
+        D: "Habitat loss is the primary threat to honeybee survival",
         CorrectAns: "A",
         Type: "R/W: Identifying Main Idea",
         Difficulty: "Easy",
         Source: "Original",
-        Explanation: "All details support bees' importance to natural and agricultural systems."
+        Explanation: "The passage covers three main points: bees' agricultural importance, ecological role, and population decline. Choice A synthesizes all these elements, while the other options focus on only one detail."
     },
     // R/W: Identifying Main Idea - Medium
     {
-        Question: "An article describes streaming services' growth, their impact on traditional TV, and changing viewing habits. What is the central idea?",
-        A: "Streaming services are transforming how people consume media",
-        B: "TV is obsolete",
-        C: "Streaming is expensive",
-        D: "Everyone watches Netflix",
-        CorrectAns: "A",
+        Question: "When streaming services first emerged, industry analysts predicted they would supplement rather than replace traditional television viewing. This forecast proved dramatically incorrect. Cable subscriptions have declined by over fifty percent since 2015, while streaming subscriptions have tripled. More significantly, viewer behavior has fundamentally shifted: audiences now expect on-demand access to content, the ability to binge entire seasons at once, and algorithm-driven recommendations tailored to their preferences.\n\nWhich choice best states the main idea of the text?",
+        A: "Streaming services have completely replaced cable television in American homes",
+        B: "Industry analysts correctly predicted the impact of streaming on traditional TV",
+        C: "Streaming services have not merely supplemented traditional TV but have transformed how people expect to consume media",
+        D: "Cable subscriptions have declined by fifty percent while streaming subscriptions have tripled",
+        CorrectAns: "C",
         Type: "R/W: Identifying Main Idea",
         Difficulty: "Medium",
         Source: "Original",
-        Explanation: "The article's focus is on the broader transformation of media consumption patterns."
+        Explanation: "The passage argues that initial predictions were wrong ('dramatically incorrect') and that the real change is in viewer expectations ('fundamentally shifted'). Choice C captures both the contradiction of predictions and the deeper behavioral transformation."
     },
     // R/W: Identifying Main Idea - Hard
     {
-        Question: "A passage discusses AI's benefits in medicine, concerns about job displacement, ethical questions, and regulatory challenges. What overarching idea unifies these points?",
-        A: "AI presents both opportunities and complex challenges across sectors",
-        B: "AI is purely beneficial",
-        C: "AI should be banned",
-        D: "AI only affects medicine",
-        CorrectAns: "A",
+        Question: "Artificial intelligence has enabled remarkable advances in medical diagnosis, with some algorithms detecting certain cancers more accurately than experienced radiologists. Yet these same technologies raise profound questions. Will AI displace healthcare workers whose expertise took decades to develop? Who bears responsibility when an algorithm makes an error that harms a patient? And how should regulators balance the imperative to deploy life-saving technology quickly against the need for thorough safety testing? These questions lack simple answers, but they demand attention as AI becomes increasingly integrated into healthcare systems worldwide.\n\nWhich choice best states the main idea of the text?",
+        A: "AI algorithms can detect cancer more accurately than human doctors",
+        B: "Regulators must quickly approve AI technologies to save lives",
+        C: "While AI offers significant medical benefits, its integration into healthcare raises complex ethical, professional, and regulatory challenges that require careful consideration",
+        D: "Healthcare workers face displacement due to increasingly capable AI systems",
+        CorrectAns: "C",
         Type: "R/W: Identifying Main Idea",
         Difficulty: "Hard",
         Source: "Original",
-        Explanation: "The passage examines AI's multifaceted impact, balancing promise with problems."
+        Explanation: "The passage presents AI's medical benefits alongside multiple challenges (job displacement, liability, regulation) and emphasizes that 'these questions...demand attention.' Only choice C encompasses both the benefits and the complexity of challenges."
     },
 
-    // R/W: Rhetorical Synthesis - Easy
+    // R/W: Rhetorical Synthesis - Easy (Updated to Digital SAT format)
     {
-        Question: "A student is writing about recycling benefits. Which sentence best combines: 'Recycling saves energy. Recycling reduces waste.'?",
-        A: "Recycling saves energy and reduces waste",
-        B: "Recycling saves energy, but it reduces waste",
-        C: "Although recycling saves energy, waste",
-        D: "Recycling energy waste",
-        CorrectAns: "A",
+        Question: "While researching a topic, a student has taken the following notes:\n• Municipal recycling programs divert millions of tons of waste from landfills annually.\n• Manufacturing products from recycled materials typically requires 30-70% less energy than using virgin materials.\n• Recycling aluminum cans saves 95% of the energy needed to produce new aluminum from raw ore.\n\nThe student wants to emphasize the energy benefits of recycling. Which choice most effectively uses relevant information from the notes to accomplish this goal?",
+        A: "Municipal recycling programs prevent millions of tons of waste from reaching landfills each year",
+        B: "Because manufacturing with recycled materials uses significantly less energy—up to 95% less for aluminum—recycling programs provide substantial energy savings",
+        C: "Aluminum cans are among the most commonly recycled items in municipal programs",
+        D: "Recycling programs help communities manage waste while also providing environmental benefits",
+        CorrectAns: "B",
         Type: "R/W: Rhetorical Synthesis",
         Difficulty: "Easy",
         Source: "Original",
-        Explanation: "Using 'and' appropriately combines two parallel benefits."
+        Explanation: "The task specifies emphasizing 'energy benefits.' Choice B directly addresses energy savings and includes specific data (30-70% less energy, 95% for aluminum). Choice A focuses on waste diversion, not energy."
     },
     // R/W: Rhetorical Synthesis - Medium
     {
-        Question: "Which sentence best synthesizes these points: renewable energy reduces emissions, costs are decreasing, technology is improving?",
-        A: "Renewable energy is becoming more viable as costs fall and technology advances, while reducing emissions",
-        B: "Renewable energy exists",
-        C: "Costs and technology",
-        D: "Emissions happen",
-        CorrectAns: "A",
+        Question: "While researching a topic, a student has taken the following notes:\n• Solar panel costs have decreased by approximately 89% since 2010.\n• Wind energy is now the cheapest source of new electricity generation in many regions.\n• Renewable energy sources produced 29% of global electricity in 2023, up from 19% in 2010.\n• Carbon emissions from energy production decreased in countries with high renewable adoption.\n\nThe student wants to argue that renewable energy is becoming increasingly economically competitive. Which choice most effectively uses relevant information from the notes to accomplish this goal?",
+        A: "Renewable energy sources now account for 29% of global electricity production, demonstrating significant growth since 2010",
+        B: "With solar panel costs falling 89% since 2010 and wind energy becoming the cheapest option for new electricity generation in many areas, renewables have achieved unprecedented economic competitiveness",
+        C: "Countries that have adopted renewable energy have seen decreases in their carbon emissions from energy production",
+        D: "The transition to renewable energy has accelerated significantly over the past decade",
+        CorrectAns: "B",
         Type: "R/W: Rhetorical Synthesis",
         Difficulty: "Medium",
         Source: "Original",
-        Explanation: "This sentence logically connects all three supporting points into a coherent claim."
+        Explanation: "The task requires focusing on 'economic competitiveness.' Choice B specifically addresses cost decreases (89% for solar) and relative cost advantage (wind being cheapest), directly supporting an economic argument."
     },
     // R/W: Rhetorical Synthesis - Hard
     {
-        Question: "A writer needs to synthesize: early education improves outcomes, funding is limited, programs show strong ROI. Which is most effective?",
-        A: "Despite funding constraints, early education programs' strong ROI and proven outcomes make them worthwhile investments",
-        B: "Early education costs money",
-        C: "Programs exist",
-        D: "Outcomes vary",
-        CorrectAns: "A",
+        Question: "While researching a topic, a student has taken the following notes:\n• Universal pre-kindergarten programs have shown positive effects on kindergarten readiness.\n• Studies indicate that children who attend quality early education programs have higher graduation rates.\n• Early education programs cost approximately $10,000 per child annually.\n• Economic analyses estimate that each dollar invested in early education yields $7-12 in long-term societal benefits.\n• Many states face budget constraints that limit expansion of early education programs.\n\nThe student wants to make a persuasive case for increased investment in early education despite budget limitations. Which choice most effectively uses relevant information from the notes to accomplish this goal?",
+        A: "Despite their costs, early education programs improve kindergarten readiness and boost graduation rates for participating children",
+        B: "State budget constraints have prevented many communities from expanding access to early education programs",
+        C: "Although early education programs require significant investment at approximately $10,000 per child, their strong return of $7-12 for every dollar spent makes them economically sound investments that states cannot afford to neglect",
+        D: "Quality early education programs have been shown to improve long-term outcomes for children, including higher graduation rates",
+        CorrectAns: "C",
         Type: "R/W: Rhetorical Synthesis",
         Difficulty: "Hard",
         Source: "Original",
-        Explanation: "This synthesis acknowledges the challenge while emphasizing the evidence-based argument for investment."
+        Explanation: "The task requires addressing both the persuasive case AND budget limitations. Choice C acknowledges the cost ('significant investment at $10,000'), counters with ROI data ($7-12 return), and makes the argument ('cannot afford to neglect'). Other choices don't address the budget concern directly."
     },
 
     // R/W: Determining Sentence Purpose - Easy
