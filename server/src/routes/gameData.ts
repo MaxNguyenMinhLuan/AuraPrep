@@ -45,6 +45,11 @@ router.post('/sync', async (req: Request, res: Response) => {
         userId,
         email: user.email,
         timezone: user.timezone || 'America/New_York',
+        dailyMissions: {
+          date: new Date(),
+          completed: false,
+          nudgesSent: 0
+        },
         activeCreature: activeCreature ? {
           creatureId: activeCreature.id,
           name: activeCreature.name,
@@ -63,6 +68,16 @@ router.post('/sync', async (req: Request, res: Response) => {
           morning: true,
           afternoon: true,
           evening: true
+        },
+        metrics: {
+          emailsSent: 0,
+          emailsOpened: 0,
+          emailsClicked: 0,
+          conversions: {
+            morning: 0,
+            afternoon: 0,
+            evening: 0
+          }
         }
       });
     } else {
