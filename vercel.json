@@ -1,12 +1,5 @@
 {
   "buildCommand": "cd server && npm install && npm run build",
   "outputDirectory": "server/dist",
-  "regions": ["iad1"],
-  "env": {
-    "NODE_ENV": "production",
-    "PORT": "3000"
-  },
-  "git": {
-    "silent": false
-  }
+  "regions": ["iad1"]
 }

@@ -13,7 +13,7 @@ import { EmailService } from './services/emailService';
 import { userService } from './services/userService';
 import { getTimezonesForLocalHour, getCurrentUTCHour } from './utils/timezoneUtils';
 import { generateDeepLink } from './utils/deepLinkGenerator';
-import { generateGuardianCopy } from '../../../shared/generateGuardianCopy';
+import { generateGuardianCopy } from '../../shared/generateGuardianCopy';
 
 // Initialize Firebase Admin
 if (!admin.apps.length) {

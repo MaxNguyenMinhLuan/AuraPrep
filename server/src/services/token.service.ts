@@ -203,7 +203,7 @@ export class TokenService {
     static getAccessTokenExpirySeconds(): number {
         // Parse the expiry string (e.g., '15m' -> 900)
         const expiry = config.jwt.accessTokenExpiry;
-        const value = parseInt(expiry);
+        const value = parseInt(expiry, 10);
         const unit = expiry.slice(-1);
 
         switch (unit) {

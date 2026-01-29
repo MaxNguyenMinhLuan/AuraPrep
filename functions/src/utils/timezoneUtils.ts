@@ -5,11 +5,6 @@
  * Finds users whose local time matches the target hour.
  */
 
-interface TimezoneOffset {
-  timezone: string;
-  offset: number; // Hours from UTC
-}
-
 /**
  * Map of common timezone names to UTC offsets
  * Note: This is simplified and doesn't account for daylight saving time.

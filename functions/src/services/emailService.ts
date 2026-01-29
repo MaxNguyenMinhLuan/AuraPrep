@@ -19,11 +19,9 @@ interface EmailOptions {
 }
 
 export class EmailService {
-  private apiKey: string;
   private fromEmail: string;
 
   constructor(apiKey: string, fromEmail: string = 'guardians@auraprep.com') {
-    this.apiKey = apiKey;
     this.fromEmail = fromEmail;
     sgMail.setApiKey(apiKey);
   }
@@ -123,7 +121,7 @@ export class EmailService {
    */
   static processWebhookEvent(event: any): void {
     // This will be implemented when we set up the webhook endpoint
-    const { event: eventType, userId, nudgeLevel } = event.customArgs || {};
+    const { event: eventType, userId } = event.customArgs || {};
 
     switch (eventType) {
       case 'open':
