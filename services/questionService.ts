@@ -86,3 +86,19 @@ export const generateSatQuestion = async (subtopic: string, difficulty: Difficul
     // Fallback to placeholder if nothing exists in bank
     return FALLBACK_QUESTION(subtopic, difficulty);
 };
+
+export const fetchQuestionCounts = async (): Promise<Record<string, number>> => {
+    try {
+        const API_URL = import.meta.env.VITE_API_URL || 'http://localhost:5001/api';
+        const response = await fetch(`${API_URL}/questions/counts`);
+        if (response.ok) {
+            const result = await response.json();
+            if (result.success && result.data) {
+                return result.data;
+            }
+        }
+    } catch (error) {
+        console.error('Error fetching question counts from API:', error);
+    }
+    return {};
+};

@@ -1,10 +1,11 @@
 
 import React, { useState, useCallback, useEffect } from 'react';
 import { Question, UserProfile, Difficulty, SkillLevel, PowerUpType } from '../types';
-import { generateSatQuestion } from '../services/questionService';
+import { generateSatQuestion, fetchQuestionCounts } from '../services/questionService';
 import { AURA_POINTS_PER_PRACTICE_STREAK, SUBTOPICS, POWER_UPS } from '../constants';
 import { getSkillProgress, getDifficultyForLevel, getNextLevel, getBossFightRequirement } from '../utils/mastery';
-import { QUESTION_BANK } from '../data/questionBank';
+import { INDEXED_QUESTIONS } from '../data/questionBankIndexed';
+import { getStrategyTip } from '../utils/strategyTips';
 import LoadingSpinner from './icons/LoadingSpinner';
 import QuestionGraph from './QuestionGraph';
 
@@ -36,6 +37,7 @@ const PracticeSession: React.FC<{
     const [showStreakToast, setShowStreakToast] = useState(false);
 
     const difficulty = getDifficultyForLevel(profile.stats[subtopic].level);
+    const strategyTip = currentQuestion ? getStrategyTip(currentQuestion.subtopic || subtopic, currentQuestion.question) : null;
 
     const fetchQuestion = useCallback(async () => {
         const q = await generateSatQuestion(subtopic, difficulty);
@@ -124,7 +126,9 @@ const PracticeSession: React.FC<{
                     <p className="text-text-dim mt-2 text-[10px]">Loading {difficulty} question...</p>
                 </div>
             ) : (
-                <div className="bg-background/50 p-4 md:p-6 border-2 border-text-dark flex-grow flex flex-col justify-between rounded-lg shadow-sm">
+                <div className={`p-4 md:p-6 border-2 flex-grow flex flex-col justify-between rounded-lg shadow-sm transition-all duration-300 ${
+                    isCorrect === false ? 'bg-accent/5 border-accent shadow-[0_0_20px_rgba(220,38,38,0.25)] shake-once red-flash' : 'bg-background/50 border-text-dark'
+                }`}>
                     <div>
                         <div className="flex justify-between items-start mb-3 md:mb-4">
                             <p className="text-[9px] md:text-[10px] text-text-dim uppercase font-bold tracking-wider">{subtopic}</p>
@@ -133,7 +137,7 @@ const PracticeSession: React.FC<{
 
                         {currentQuestion.graphData && <QuestionGraph data={currentQuestion.graphData} />}
 
-                        <p className="text-[9px] md:text-[10px] mb-6 md:mb-8 whitespace-pre-wrap leading-relaxed">{currentQuestion.question}</p>
+                        <p className="text-sm md:text-base mb-6 md:mb-8 whitespace-pre-wrap leading-relaxed">{currentQuestion.question}</p>
                         <div className="space-y-3 md:space-y-4">
                             {currentQuestion.options.map((option, index) => (
                                 <button
@@ -150,7 +154,18 @@ const PracticeSession: React.FC<{
                     {selectedAnswer !== null && (
                         <div className="mt-6 md:mt-8 p-4 md:p-6 bg-background animate-fadeIn border-2 border-secondary rounded-lg shadow-md">
                             <h3 className={`text-lg md:text-xl font-bold ${isCorrect ? 'text-success' : 'text-accent'}`}>{isCorrect ? 'Correct!' : 'Incorrect'}</h3>
-                            <p className="text-text-main mt-2 text-[9px] md:text-[10px] leading-relaxed">{currentQuestion.explanation}</p>
+                            <p className="text-text-main mt-2 text-xs md:text-sm leading-relaxed">{currentQuestion.explanation}</p>
+                            
+                            {/* Strategy Tip Box */}
+                            {strategyTip && (
+                                <div className="mt-4 p-3 bg-yellow-500/10 border-l-4 border-yellow-500 rounded-r-xl text-left animate-fadeIn">
+                                    <p className="text-[10px] font-bold text-yellow-600 dark:text-yellow-400 flex items-center gap-1.5 uppercase tracking-wider">
+                                        <span>{strategyTip.icon}</span> {strategyTip.title}
+                                    </p>
+                                    <p className="text-[11px] text-text-main mt-1 leading-normal font-sans">{strategyTip.tip}</p>
+                                </div>
+                            )}
+
                             <button onClick={handleNextQuestion} className="mt-4 md:mt-6 w-full bg-primary text-light font-bold py-3 md:py-4 border-b-4 border-primary/70 rounded-md hover:bg-primary/90 active:bg-primary/90 transition-colors touch-target">Next Question</button>
                         </div>
                     )}
@@ -380,6 +395,7 @@ const BossFightSession: React.FC<{
     
     const currentQuestion = questions[currentIndex];
     if (!currentQuestion) return null;
+    const strategyTip = getStrategyTip(currentQuestion.subtopic || subtopic, currentQuestion.question);
 
     return (
         <div className="flex flex-col h-full animate-fadeIn max-w-4xl mx-auto overflow-y-auto pr-1">
@@ -393,13 +409,15 @@ const BossFightSession: React.FC<{
                     <div className="bg-accent h-full transition-all duration-300" style={{ width: `${((currentIndex + 1) / BOSS_FIGHT_LENGTH) * 100}%` }}></div>
                 </div>
             </div>
-            <div className={`bg-surface p-6 border-2 ${secondChanceActive ? 'border-highlight shadow-[0_0_15px_rgba(202,138,4,0.5)]' : 'border-accent/50'} flex-grow flex flex-col justify-between relative rounded-lg shadow-lg`}>
+            <div className={`p-6 ${selectedAnswer === null && availablePowerUps.length > 0 ? 'pb-20 lg:pb-6' : ''} border-2 ${
+                isCorrect === false ? 'bg-accent/5 border-accent shadow-[0_0_20px_rgba(220,38,38,0.25)] shake-once red-flash' : secondChanceActive ? 'bg-surface border-highlight shadow-[0_0_15px_rgba(202,138,4,0.5)]' : 'bg-surface border-accent/50'
+            } flex-grow flex flex-col justify-between relative rounded-lg shadow-lg`}>
                 {secondChanceActive && <div className="absolute top-0 left-0 w-full bg-highlight text-white text-[8px] font-bold text-center py-1 rounded-t-sm">SECOND WIND ACTIVE</div>}
                 
                 <div>
                   {currentQuestion.graphData && <QuestionGraph data={currentQuestion.graphData} />}
                   
-                  <p className="text-[10px] mb-8 whitespace-pre-wrap leading-relaxed pt-4">{currentQuestion.question}</p>
+                  <p className="text-sm md:text-base mb-8 whitespace-pre-wrap leading-relaxed pt-4">{currentQuestion.question}</p>
                   
                   {hintVisible && (
                       <div className="mb-6 p-4 bg-highlight/10 border-l-4 border-highlight text-[8px] text-text-main italic rounded-r-md">
@@ -441,7 +459,7 @@ const BossFightSession: React.FC<{
 
                 {/* Power Ups Bar */}
                 {selectedAnswer === null && availablePowerUps.length > 0 && (
-                    <div className="absolute -bottom-16 right-0 lg:bottom-4 lg:right-4 flex gap-3">
+                    <div className="absolute bottom-4 right-4 flex gap-2 md:gap-3">
                         {availablePowerUps.map((type, i) => {
                             const def = POWER_UPS.find(p => p.id === type);
                             if(!def) return null;
@@ -463,7 +481,18 @@ const BossFightSession: React.FC<{
 
                 {selectedAnswer !== null && (
                     <div className="mt-8 p-6 bg-background animate-fadeIn rounded-lg border border-secondary">
-                        <p className="text-text-main text-[10px] leading-relaxed">{currentQuestion.explanation}</p>
+                        <p className="text-text-main text-xs md:text-sm leading-relaxed">{currentQuestion.explanation}</p>
+                        
+                        {/* Strategy Tip Box */}
+                        {strategyTip && (
+                            <div className="mt-4 p-3 bg-yellow-500/10 border-l-4 border-yellow-500 rounded-r-xl text-left animate-fadeIn">
+                                <p className="text-[10px] font-bold text-yellow-600 dark:text-yellow-400 flex items-center gap-1.5 uppercase tracking-wider">
+                                    <span>{strategyTip.icon}</span> {strategyTip.title}
+                                </p>
+                                <p className="text-[11px] text-text-main mt-1 leading-normal font-sans">{strategyTip.tip}</p>
+                            </div>
+                        )}
+
                         <button onClick={handleNext} className="mt-6 w-full bg-primary text-light font-bold py-4 border-b-4 border-primary/70 rounded-md hover:bg-primary/90 transition-colors">{currentIndex < questions.length - 1 ? 'Next' : 'Finish'}</button>
                     </div>
                 )}
@@ -509,6 +538,15 @@ const ProgressView: React.FC<ProgressViewProps & { addToReviewQueue: (q: Questio
     const [selectedSubtopic, setSelectedSubtopic] = useState<string | null>(null);
     const [lastLevelUpInfo, setLastLevelUpInfo] = useState<{ from: SkillLevel, to: SkillLevel } | null>(null);
     const [equippedPowerUps, setEquippedPowerUps] = useState<PowerUpType[]>([]);
+    const [questionCounts, setQuestionCounts] = useState<Record<string, number>>({});
+
+    useEffect(() => {
+        const loadCounts = async () => {
+            const counts = await fetchQuestionCounts();
+            setQuestionCounts(counts);
+        };
+        loadCounts();
+    }, []);
 
     const handleStreakComplete = useCallback(() => {
         awardAura(AURA_POINTS_PER_PRACTICE_STREAK);
@@ -631,7 +669,9 @@ const ProgressView: React.FC<ProgressViewProps & { addToReviewQueue: (q: Questio
                     const stat = profile.stats[subtopic] || { correct: 0, incorrect: 0, level: 'Easy' };
                     const { level } = stat;
                     const progress = getSkillProgress(level);
-                    const qCount = QUESTION_BANK.filter(q => q.Type === subtopic).length;
+                    const idx = INDEXED_QUESTIONS[subtopic];
+                    const localCount = idx ? (idx.Easy.length + idx.Medium.length + idx.Hard.length + idx['Extra Hard'].length) : 0;
+                    const qCount = questionCounts[subtopic] !== undefined ? questionCounts[subtopic] : localCount;
 
                     return (
                         <button

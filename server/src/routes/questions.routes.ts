@@ -57,6 +57,24 @@ const SUBTOPIC_TO_DOMAIN_MAP: Record<string, string> = {
     'Rhetoric: Transitions': 'Expression of Ideas',
     'Rhetoric: Rhetorical Synthesis': 'Expression of Ideas'
 };
+router.get('/counts', async (_req: Request, res: Response) => {
+    try {
+        const counts: Record<string, number> = {};
+        for (const [subtopic, domain] of Object.entries(SUBTOPIC_TO_DOMAIN_MAP)) {
+            const officialCount = await OfficialQuestion.countDocuments({ domain });
+            if (officialCount > 0) {
+                counts[subtopic] = officialCount;
+            } else {
+                const backupCount = await BackupQuestion.countDocuments({ Type: subtopic });
+                counts[subtopic] = backupCount;
+            }
+        }
+        return res.json({ success: true, data: counts });
+    } catch (error) {
+        console.error('Error fetching question counts:', error);
+        return res.status(500).json({ success: false, message: 'Internal server error.' });
+    }
+});
 
 router.get('/', async (req: Request, res: Response) => {
     const { category, difficulty } = req.query;
