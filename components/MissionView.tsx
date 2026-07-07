@@ -2,6 +2,8 @@
 import React, { useState, useCallback, useEffect } from 'react';
 import { MissionInstance, PowerUpType } from '../types';
 import QuestionGraph from './QuestionGraph';
+import { getStrategyTip } from '../utils/strategyTips';
+import FormattedText from './FormattedText';
 
 interface MissionViewProps {
     mission: MissionInstance;
@@ -19,6 +21,9 @@ const MissionView: React.FC<MissionViewProps> = ({ mission, onAnswer, onExit, in
 
     const currentQuestionIndex = mission.progress;
     const hasDoubleJeopardy = (inventory['DOUBLE_JEOPARDY'] || 0) > 0;
+    
+    const currentQuestion = mission.questions ? mission.questions[currentQuestionIndex] : null;
+    const strategyTip = currentQuestion ? getStrategyTip(currentQuestion.subtopic || mission.subtopic, currentQuestion.question) : null;
     
     // Reset local state when the question changes (or mission progress resets to 0)
     useEffect(() => {
@@ -100,7 +105,7 @@ const MissionView: React.FC<MissionViewProps> = ({ mission, onAnswer, onExit, in
         )
     }
 
-    const currentQuestion = mission.questions![currentQuestionIndex];
+    if (!currentQuestion) return null;
 
     return (
         <div className="flex flex-col h-full animate-fadeIn relative">
@@ -142,7 +147,9 @@ const MissionView: React.FC<MissionViewProps> = ({ mission, onAnswer, onExit, in
                 </div>
             </div>
 
-            <div className="bg-surface p-3 md:p-4 border-2 border-secondary/30 flex-grow flex flex-col justify-between overflow-y-auto rounded-xl shadow-card scroll-smooth">
+            <div className={`p-3 md:p-4 border-2 flex-grow flex flex-col justify-between overflow-y-auto rounded-xl shadow-card scroll-smooth transition-all duration-300 ${
+                isCorrect === false ? 'bg-accent/5 border-accent shadow-[0_0_20px_rgba(220,38,38,0.25)] shake-once red-flash' : 'bg-surface border-secondary/30'
+            }`}>
                 <div className="pb-4">
                   <div className="flex justify-between items-center mb-2 flex-wrap gap-2">
                     <p className="text-[10px] md:text-xs text-text-dim uppercase font-bold tracking-tighter">{currentQuestion.subtopic}</p>
@@ -156,7 +163,7 @@ const MissionView: React.FC<MissionViewProps> = ({ mission, onAnswer, onExit, in
                   {/* Graphical Content */}
                   {currentQuestion.graphData && <QuestionGraph data={currentQuestion.graphData} />}
 
-                  <p className="text-xs md:text-sm mb-4 md:mb-6 whitespace-pre-wrap leading-relaxed">{currentQuestion.question}</p>
+                  <FormattedText className="text-sm md:text-base mb-4 md:mb-6 leading-relaxed" text={currentQuestion.question} />
 
                   <div className="space-y-2 md:space-y-3">
                       {currentQuestion.options.map((option, index) => {
@@ -185,8 +192,8 @@ const MissionView: React.FC<MissionViewProps> = ({ mission, onAnswer, onExit, in
                                 className={buttonClass}
                                 style={{ animationDelay: `${index * 0.05}s` }}
                             >
-                                <span className="text-[10px] md:text-xs"><span className="font-bold mr-2 text-primary">{String.fromCharCode(65 + index)}.</span>{option}</span>
-                                {icon && <span className="text-base md:text-lg">{icon}</span>}
+                                <span className="text-xs md:text-sm flex items-start text-left"><span className="font-bold mr-2 text-primary">{String.fromCharCode(65 + index)}.</span><FormattedText className="inline" text={option} /></span>
+                                {icon && <span className="text-base md:text-lg ml-2">{icon}</span>}
                             </button>
                           );
                       })}
@@ -200,7 +207,18 @@ const MissionView: React.FC<MissionViewProps> = ({ mission, onAnswer, onExit, in
                         {!isCorrect && (
                             <p className="text-[9px] md:text-[10px] font-bold text-accent uppercase tracking-widest mb-2 animate-subtlePulse">Progress Resetting to 0...</p>
                         )}
-                        <p className="text-text-main mt-2 text-[9px] md:text-[10px] leading-relaxed italic">{currentQuestion.explanation}</p>
+                        <FormattedText className="text-xs md:text-sm text-text-main mt-2 leading-relaxed italic" text={currentQuestion.explanation} />
+                        
+                        {/* Strategy Tip Box */}
+                        {strategyTip && (
+                            <div className="mt-4 p-3 bg-yellow-500/10 border-l-4 border-yellow-500 rounded-r-xl text-left animate-fadeIn">
+                                <p className="text-[10px] font-bold text-yellow-600 dark:text-yellow-400 flex items-center gap-1.5 uppercase tracking-wider">
+                                    <span>{strategyTip.icon}</span> {strategyTip.title}
+                                </p>
+                                <p className="text-[11px] text-text-main mt-1 leading-normal font-sans">{strategyTip.tip}</p>
+                            </div>
+                        )}
+
                         <button
                             onClick={handleNext}
                             className={`mt-3 md:mt-4 w-full text-white font-bold py-3 md:py-4 border-b-4 transition-premium rounded-xl shadow-card hover:shadow-card-hover touch-target press-effect ${isCorrect ? 'bg-primary border-primary/70 hover:bg-primary/90 active:bg-primary/90' : 'bg-accent border-accent-dark hover:bg-accent/90 active:bg-accent/90'}`}

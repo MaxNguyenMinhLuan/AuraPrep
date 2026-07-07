@@ -14,28 +14,28 @@ export const TUTORIAL_SUBTOPIC = 'Tutorial: Basics';
 // Easy tutorial questions - users should get these right
 export const TUTORIAL_QUESTIONS_EASY: DBQuestion[] = [
     {
-        Question: 'What is 2 + 2?',
-        A: '3',
-        B: '4',
-        C: '5',
-        D: '6',
-        CorrectAns: 'B',
+        Question: 'Solve the quadratic equation for $x$:\n\n$$x^2 - 5x + 6 = 0$$',
+        A: '$x = 2$ or $x = 3$',
+        B: '$x = -2$ or $x = -3$',
+        C: '$x = 1$ or $x = 6$',
+        D: '$x = -1$ or $x = -6$',
+        CorrectAns: 'A',
         Type: TUTORIAL_SUBTOPIC,
         Difficulty: 'Easy',
         Source: 'Tutorial',
-        Explanation: 'Adding 2 and 2 gives you 4. Great job!'
+        Explanation: 'To solve the quadratic equation $x^2 - 5x + 6 = 0$, we factor it as:\n\n$$(x - 2)(x - 3) = 0$$\n\nTherefore, the roots are $x = 2$ or $x = 3$.'
     },
     {
-        Question: 'Which word is spelled correctly?',
-        A: 'Definately',
-        B: 'Defanitely',
-        C: 'Definitely',
-        D: 'Definetely',
+        Question: 'Based on the values in the table below, what is the value of $f(3)$?\n\n| $x$ | $f(x)$ |\n|---|---|\n| 1 | 5 |\n| 2 | 8 |\n| 3 | 11 |\n| 4 | 14 |',
+        A: '5',
+        B: '8',
+        C: '11',
+        D: '14',
         CorrectAns: 'C',
         Type: TUTORIAL_SUBTOPIC,
         Difficulty: 'Easy',
         Source: 'Tutorial',
-        Explanation: '"Definitely" is the correct spelling. A helpful trick: think "finite" in the middle!'
+        Explanation: 'Looking at the row where $x = 3$, the corresponding output value for the function $f(x)$ is $11$. Therefore, $f(3) = 11$.'
     },
     {
         Question: 'What is 10 - 3?',

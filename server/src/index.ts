@@ -2,18 +2,35 @@ import mongoose from 'mongoose';
 import app from './app';
 import { config, validateConfig } from './config';
 import { AnalyticsScheduler } from './jobs/scheduler';
+import { MongoMemoryServer } from 'mongodb-memory-server';
+import { QuestionIngestionService } from './services/questionIngestion.service';
+
+let mongoServerInstance: MongoMemoryServer | null = null;
 
 async function startServer(): Promise<void> {
     try {
         // Validate configuration
         validateConfig();
 
+        let mongoUri = config.mongodb.uri;
+
+        if (process.env.USE_IN_MEMORY_DB === 'true' || mongoUri.includes('auraprep.gkuuvix.mongodb.net')) {
+            console.log('Detected paused Atlas cluster or USE_IN_MEMORY_DB flag. Spinning up in-memory MongoDB...');
+            mongoServerInstance = await MongoMemoryServer.create();
+            mongoUri = mongoServerInstance.getUri();
+            console.log(`In-memory MongoDB started at: ${mongoUri}`);
+        }
+
         // Connect to MongoDB with connection pooling
         console.log('Connecting to MongoDB...');
-        console.log(`MongoDB URI: ${config.mongodb.uri.replace(/\/\/[^:]+:[^@]+@/, '//***:***@')}`); // Hide credentials in logs
+        console.log(`MongoDB URI: ${mongoUri.replace(/\/\/[^:]+:[^@]+@/, '//***:***@')}`); // Hide credentials in logs
 
-        await mongoose.connect(config.mongodb.uri, config.mongodb.options);
+        await mongoose.connect(mongoUri, config.mongodb.options);
         console.log(`Connected to MongoDB (pool size: ${config.mongodb.options.maxPoolSize})`);
+
+        // Seed backup questions & fetch official questions
+        QuestionIngestionService.seedBackupQuestions();
+        QuestionIngestionService.ingestOfficialQuestions();
 
         // Initialize analytics cron jobs
         AnalyticsScheduler.initializeJobs();
@@ -58,6 +75,10 @@ process.on('SIGINT', async () => {
     console.log('Shutting down gracefully...');
     AnalyticsScheduler.stopAllJobs();
     await mongoose.connection.close();
+    if (mongoServerInstance) {
+        await mongoServerInstance.stop();
+        console.log('In-memory MongoDB stopped.');
+    }
     process.exit(0);
 });
 
@@ -65,6 +86,10 @@ process.on('SIGTERM', async () => {
     console.log('Shutting down gracefully...');
     AnalyticsScheduler.stopAllJobs();
     await mongoose.connection.close();
+    if (mongoServerInstance) {
+        await mongoServerInstance.stop();
+        console.log('In-memory MongoDB stopped.');
+    }
     process.exit(0);
 });
 

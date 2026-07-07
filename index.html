@@ -14,6 +14,7 @@
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=Playfair+Display:wght@700&family=Press+Start+2P&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/katex@0.16.8/dist/katex.min.css">
     <script>
         tailwind.config = {
             theme: {
@@ -291,6 +292,21 @@
         animation: drift var(--duration) linear infinite;
         animation-delay: var(--delay);
     }
+    @keyframes shakeOnce {
+        0%, 100% { transform: translate3d(0, 0, 0); }
+        10%, 30%, 50%, 70%, 90% { transform: translate3d(-5px, 0, 0); }
+        20%, 40%, 60%, 80% { transform: translate3d(5px, 0, 0); }
+    }
+    .shake-once {
+        animation: shakeOnce 0.6s cubic-bezier(.36,.07,.19,.97) both;
+    }
+    @keyframes redFlash {
+        0% { background-color: rgba(220, 38, 38, 0.15); border-color: rgba(220, 38, 38, 0.8); }
+        100% { background-color: transparent; }
+    }
+    .red-flash {
+        animation: redFlash 0.6s ease-out;
+    }
 
     /* Safe area padding for notched devices (iPhone X+) */
     .pb-safe {
@@ -406,6 +422,49 @@
         -webkit-font-smoothing: antialiased;
         -moz-osx-font-smoothing: grayscale;
         text-rendering: optimizeLegibility;
+    }
+
+    /* Tables styling inside formatted text */
+    .formatted-text table {
+        width: 100%;
+        border-collapse: collapse;
+        margin: 1rem 0;
+        font-size: 11px;
+        text-align: left;
+        background: rgba(255, 255, 255, 0.7);
+        border: 2px solid #ddd6fe;
+        border-radius: 8px;
+        overflow: hidden;
+        box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.05);
+    }
+    .formatted-text th {
+        background-color: #4338ca;
+        color: #ffffff;
+        font-weight: 600;
+        padding: 8px 12px;
+        font-family: 'Inter', sans-serif;
+    }
+    .formatted-text td {
+        padding: 6px 12px;
+        border-bottom: 1px solid #ddd6fe;
+        font-family: 'Inter', sans-serif;
+        color: #111827;
+    }
+    .formatted-text tr:last-child td {
+        border-bottom: none;
+    }
+    .formatted-text tr:nth-child(even) {
+        background-color: rgba(221, 214, 254, 0.15);
+    }
+    .formatted-text tr:hover {
+        background-color: rgba(221, 214, 254, 0.3);
+    }
+    
+    /* Math block overflow wrapping */
+    .katex-display {
+        overflow-x: auto;
+        overflow-y: hidden;
+        padding: 8px 0;
     }
 </style>
 </head>

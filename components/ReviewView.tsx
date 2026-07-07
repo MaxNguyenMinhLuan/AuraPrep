@@ -1,8 +1,10 @@
 
 import React, { useState, useCallback, useEffect } from 'react';
 import { Question } from '../types';
+import { getStrategyTip } from '../utils/strategyTips';
 import LoadingSpinner from './icons/LoadingSpinner';
 import QuestionGraph from './QuestionGraph';
+import FormattedText from './FormattedText';
 
 interface ReviewViewProps {
     questions: Question[];
@@ -28,6 +30,7 @@ const ReviewView: React.FC<ReviewViewProps> = ({ questions, onAnswer, onExit }) 
     }
 
     const currentQuestion = questions[currentQIndex];
+    const strategyTip = currentQuestion ? getStrategyTip(currentQuestion.subtopic, currentQuestion.question) : null;
 
     const handleAnswerSelect = (index: number) => {
         if (selectedAnswer !== null) return;
@@ -90,14 +93,16 @@ const ReviewView: React.FC<ReviewViewProps> = ({ questions, onAnswer, onExit }) 
                 </div>
             </div>
 
-            <div className="bg-surface p-4 border-2 border-accent/50 flex-grow flex flex-col justify-between relative overflow-hidden rounded-lg shadow-md">
+            <div className={`p-4 border-2 flex-grow flex flex-col justify-between relative overflow-hidden rounded-lg shadow-md transition-all duration-300 ${
+                isCorrect === false ? 'bg-accent/5 border-accent shadow-[0_0_20px_rgba(220,38,38,0.25)] shake-once red-flash' : 'bg-surface border-accent/50'
+            }`}>
                 <div className="absolute top-0 right-0 bg-accent text-white text-[8px] px-2 py-1 font-bold rounded-bl-md">REVIEW</div>
                 <div>
                   <p className="text-[10px] text-text-dim mb-2 uppercase font-bold">{currentQuestion.subtopic}</p>
                   
                   {currentQuestion.graphData && <QuestionGraph data={currentQuestion.graphData} />}
 
-                  <p className="text-[10px] mb-6 whitespace-pre-wrap leading-relaxed">{currentQuestion.question}</p>
+                  <FormattedText className="text-sm md:text-base mb-6 leading-relaxed" text={currentQuestion.question} />
                   <div className="space-y-3">
                       {currentQuestion.options.map((option, index) => {
                           let buttonClass = 'w-full text-left p-3 transition-all duration-200 border-2 flex justify-between items-center rounded-md ';
@@ -123,9 +128,9 @@ const ReviewView: React.FC<ReviewViewProps> = ({ questions, onAnswer, onExit }) 
                                 onClick={() => handleAnswerSelect(index)}
                                 disabled={selectedAnswer !== null}
                                 className={buttonClass}
-                            >
-                                <span className="text-[10px]"><span className="font-bold mr-2">{String.fromCharCode(65 + index)}.</span>{option}</span>
-                                {icon && <span className="text-lg">{icon}</span>}
+                              >
+                                <span className="text-xs md:text-sm flex items-start text-left"><span className="font-bold mr-2">{String.fromCharCode(65 + index)}.</span><FormattedText className="inline" text={option} /></span>
+                                {icon && <span className="text-lg ml-2">{icon}</span>}
                             </button>
                           );
                       })}
@@ -136,7 +141,18 @@ const ReviewView: React.FC<ReviewViewProps> = ({ questions, onAnswer, onExit }) 
                         <h3 className={`text-lg font-bold ${isCorrect ? 'text-success' : 'text-accent'}`}>
                             {isCorrect ? 'Recovered!' : 'Still Needs Practice'}
                         </h3>
-                        <p className="text-text-main mt-2 text-[10px] leading-relaxed">{currentQuestion.explanation}</p>
+                        <FormattedText className="text-text-main mt-2 text-xs md:text-sm leading-relaxed" text={currentQuestion.explanation} />
+                        
+                        {/* Strategy Tip Box */}
+                        {strategyTip && (
+                            <div className="mt-4 p-3 bg-yellow-500/10 border-l-4 border-yellow-500 rounded-r-xl text-left animate-fadeIn">
+                                <p className="text-[10px] font-bold text-yellow-600 dark:text-yellow-400 flex items-center gap-1.5 uppercase tracking-wider">
+                                    <span>{strategyTip.icon}</span> {strategyTip.title}
+                                </p>
+                                <p className="text-[11px] text-text-main mt-1 leading-normal font-sans">{strategyTip.tip}</p>
+                            </div>
+                        )}
+
                         <button 
                             onClick={handleNext} 
                             className="mt-4 w-full bg-primary text-light font-bold py-3 border-b-4 border-primary/70 hover:bg-primary/90 transition-all rounded-md"

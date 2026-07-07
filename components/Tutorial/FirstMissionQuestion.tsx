@@ -6,6 +6,7 @@
  */
 
 import React, { useState } from 'react';
+import FormattedText from '../FormattedText';
 
 interface FirstMissionQuestionProps {
     onComplete: (isCorrect: boolean) => void;
@@ -49,9 +50,7 @@ const FirstMissionQuestion: React.FC<FirstMissionQuestionProps> = ({ onComplete 
 
                 {/* Question Card */}
                 <div className="bg-surface border-2 border-secondary/30 rounded-xl p-6 shadow-card animate-scaleIn">
-                    <p className="text-lg font-medium text-text-main mb-6 text-center">
-                        {question.text}
-                    </p>
+                    <FormattedText className="text-lg font-medium text-text-main mb-6 text-center" text={question.text} />
 
                     {/* Answer Options */}
                     <div className="space-y-3">
@@ -80,13 +79,13 @@ const FirstMissionQuestion: React.FC<FirstMissionQuestionProps> = ({ onComplete 
                                     disabled={selectedAnswer !== null}
                                     className={buttonClass}
                                 >
-                                    <span className="text-base">
+                                    <span className="text-base flex items-start text-left">
                                         <span className="font-bold mr-3 text-primary">
                                             {String.fromCharCode(65 + index)}.
                                         </span>
-                                        {option}
+                                        <FormattedText className="inline" text={option} />
                                     </span>
-                                    {icon && <span className="text-xl">{icon}</span>}
+                                    {icon && <span className="text-xl ml-2">{icon}</span>}
                                 </button>
                             );
                         })}
@@ -103,7 +102,7 @@ const FirstMissionQuestion: React.FC<FirstMissionQuestionProps> = ({ onComplete 
                                 <p className={`font-bold mb-1 ${isCorrect ? 'text-success' : 'text-accent'}`}>
                                     {isCorrect ? '✓ Correct!' : '✗ Not quite!'}
                                 </p>
-                                <p className="text-text-dim text-sm">{question.explanation}</p>
+                                <FormattedText className="text-text-dim text-sm" text={question.explanation} />
                             </div>
 
                             <button

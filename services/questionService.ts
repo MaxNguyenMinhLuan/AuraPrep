@@ -3,10 +3,10 @@ import { Question, Difficulty, Point, GraphData } from '../types';
 import { getQuestionsByCategory } from '../data/questionBankIndexed';
 
 const FALLBACK_QUESTION = (subtopic: string, difficulty: string): Omit<Question, 'subtopic'> => ({
-    question: `Content Development: The database is currently being populated with high-quality SAT questions for "${subtopic}" at ${difficulty} level.\n\nCheck back soon, or try "Grammar: Punctuation" for a full experience!`,
-    options: ["Understood", "Coming Soon", "Content Pending", "Return Later"],
-    answerIndex: 0,
-    explanation: "This category is currently in the 'Content Acquisition' phase of development.",
+    question: `This category ("${subtopic}" at ${difficulty} level) is still being populated with SAT-style questions.\n\nSelect "Skip this question" to continue without penalty.`,
+    options: ["I'll come back later", "Try a different category", "Skip this question", "Notify the team"],
+    answerIndex: 2,
+    explanation: "No questions are available for this category and difficulty yet. Your answer was not scored. Try categories like 'Grammar: Punctuation' or 'Algebra: Quadratic Equations' for a full experience!",
     hasGraphic: false
 });
 
@@ -36,10 +36,35 @@ const parseLegacyGraphData = (text: string): GraphData | undefined => {
 };
 
 export const generateSatQuestion = async (subtopic: string, difficulty: Difficulty): Promise<Omit<Question, 'subtopic'>> => {
-    // Removed artificial delay for instant loading
-    // Use pre-indexed questions for O(1) lookup instead of O(n) filtering
     // Map 'Extra Hard' to 'Hard' for the indexed lookup
     const mappedDifficulty: 'Easy' | 'Medium' | 'Hard' = difficulty === 'Extra Hard' ? 'Hard' : difficulty;
+
+    try {
+        const API_URL = import.meta.env.VITE_API_URL || 'http://localhost:5001/api';
+        const response = await fetch(`${API_URL}/questions?category=${encodeURIComponent(subtopic)}&difficulty=${encodeURIComponent(mappedDifficulty)}`);
+        
+        if (response.ok) {
+            const result = await response.json();
+            if (result.success && result.data) {
+                const q = result.data;
+                const cleanedQuestion = q.question.replace(/\(Graph shows.*?\)/g, '').trim();
+                const legacyGraph = parseLegacyGraphData(q.question);
+                
+                return {
+                    question: cleanedQuestion,
+                    options: q.options,
+                    answerIndex: q.answerIndex,
+                    explanation: q.explanation || "Correct answer explanation not provided.",
+                    hasGraphic: q.hasGraphic || !!legacyGraph,
+                    graphData: legacyGraph
+                };
+            }
+        }
+    } catch (error) {
+        console.error('Error fetching question from API, falling back to local data:', error);
+    }
+
+    // Fallback: use pre-indexed questions for O(1) lookup
     const candidates = getQuestionsByCategory(subtopic, mappedDifficulty);
 
     if (candidates.length > 0) {

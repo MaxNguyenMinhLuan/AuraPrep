@@ -16,6 +16,7 @@ import ShopView from './components/ShopView';
 import StreakPopup from './components/StreakPopup';
 import LeaderboardView from './components/LeaderboardView';
 import LoginView from './components/LoginView';
+import ProfileModal from './components/ProfileModal';
 import { generateSatQuestion } from './services/questionService';
 import { getDifficultyForLevel } from './utils/mastery';
 import { AuthService } from './services/authService';
@@ -37,17 +38,59 @@ import { INITIAL_TUTORIAL_STATE, TUTORIAL_DIALOGUE, STARTER_IDS, PROGRESS_UNLOCK
 // import BaselineTest from './components/Tutorial/BaselineTest';
 // import BaselineResults from './components/Tutorial/BaselineResults';
 // import { processBaselineResults, baselineResultsToStats } from './utils/baselineScoring';
-import { hasCompletedStealthPlacement } from './services/stealthMissionService';
+import { hasCompletedStealthPlacement, processStealthMissionAnswer } from './services/stealthMissionService';
 import { migrateLocalStorageToBackend, syncGameDataToBackend } from './services/gameDataService';
+import { DifficultyTier } from './types/stealthDiagnostic';
 
 const App: React.FC = () => {
     const [user, setUser] = useLocalStorage<User | null>('user', null);
     const [currentView, setCurrentView] = useState<View>(View.DASHBOARD);
     const [isCheckingSession, setIsCheckingSession] = useState(true);
     const [baselineResults, setBaselineResults] = useState<any>(null);
+    const [isProfileOpen, setIsProfileOpen] = useState(false);
 
     // Get user ID for user-specific storage
     const userId = user?.uid || null;
+
+    // Initial profile factory
+    const createInitialProfile = (): UserProfile => {
+        const initialProfile: UserProfile = {
+            stats: {},
+            inventory: {
+                'ELIMINATE': 0,
+                'SKIP': 0,
+                'HINT': 0,
+                'SECOND_CHANCE': 0,
+                'DOUBLE_JEOPARDY': 0
+            },
+            dailyStreak: 0,
+            lastStreakDate: '',
+            weeklyAuraGain: 0,
+            lastWeekResetDate: '',
+            league: LeagueType.BRONZE
+        };
+        SUBTOPICS.forEach(subtopic => {
+            initialProfile.stats[subtopic] = { correct: 0, incorrect: 0, level: 'Easy' };
+        });
+        return initialProfile;
+    };
+
+    // User-specific storage - each user has their own data
+    const [tutorialState, setTutorialState] = useUserStorage<TutorialState>(userId, 'tutorialState', INITIAL_TUTORIAL_STATE);
+    const [profile, setProfile] = useUserStorage<UserProfile>(userId, 'userProfile', createInitialProfile);
+    const [auraPoints, setAuraPoints] = useUserStorage<number>(userId, 'auraPoints', 500);
+    const [creatures, setCreatures] = useUserStorage<CreatureInstance[]>(userId, 'userCreatures', []);
+    const [activeCreatureId, setActiveCreatureId] = useUserStorage<number | null>(userId, 'activeCreatureId', null);
+    const [reviewQueue, setReviewQueue] = useUserStorage<Question[]>(userId, 'reviewQueue', []);
+    const [dailyActivity, setDailyActivity] = useUserStorage<DailyActivity>(userId, 'dailyActivity', {
+        date: '',
+        missions: [],
+    });
+    const [mockCompetitors, setMockCompetitors] = useUserStorage<any[]>(userId, 'mockCompetitors', []);
+
+    const [activeMissionId, setActiveMissionId] = useState<string | null>(null);
+    const [preparingMissionId, setPreparingMissionId] = useState<string | null>(null);
+    const [streakToShow, setStreakToShow] = useState<number | null>(null);
 
     // Check for valid session on app load
     useEffect(() => {
@@ -81,7 +124,7 @@ const App: React.FC = () => {
 
             try {
                 // Verify token with backend
-                const API_URL = import.meta.env.VITE_API_URL || 'http://localhost:5000/api';
+                const API_URL = import.meta.env.VITE_API_URL || 'http://localhost:5001/api';
                 const response = await fetch(`${API_URL}/auth/verify-email-token`, {
                     method: 'POST',
                     headers: { 'Content-Type': 'application/json' },
@@ -128,6 +171,29 @@ const App: React.FC = () => {
     useEffect(() => {
         if (!user || isCheckingSession) return;
 
+        // Dev/Test account override: Unlock all features and award 10,000 Aura
+        if (user.email === 'maxidea2008@gmail.com') {
+            const isFullyUnlocked = tutorialState.isComplete &&
+                                    tutorialState.progressUnlocked &&
+                                    tutorialState.trainingUnlocked &&
+                                    tutorialState.shopUnlocked &&
+                                    tutorialState.leaderboardUnlocked;
+            if (auraPoints < 10000 || !isFullyUnlocked) {
+                console.log('Test account detected: Unlocking all features and granting 10,000 Aura!');
+                setAuraPoints(10000);
+                setTutorialState(prev => ({
+                    ...prev,
+                    isComplete: true,
+                    currentPhase: 'complete',
+                    progressUnlocked: true,
+                    trainingUnlocked: true,
+                    shopUnlocked: true,
+                    leaderboardUnlocked: true,
+                }));
+                return;
+            }
+        }
+
         const syncData = async () => {
             try {
                 const token = await AuthService.getAuthToken();
@@ -155,9 +221,15 @@ const App: React.FC = () => {
         };
 
         syncData();
-    }, [user, isCheckingSession]);
+    }, [user, isCheckingSession, auraPoints, tutorialState]);
 
     // Periodic sync every 5 minutes to keep backend up-to-date
+    // Uses a ref to avoid restarting the interval on every state change
+    const syncDataRef = React.useRef({ profile, creatures, activeCreatureId, auraPoints, dailyActivity, reviewQueue });
+    useEffect(() => {
+        syncDataRef.current = { profile, creatures, activeCreatureId, auraPoints, dailyActivity, reviewQueue };
+    }, [profile, creatures, activeCreatureId, auraPoints, dailyActivity, reviewQueue]);
+
     useEffect(() => {
         if (!user) return;
 
@@ -165,14 +237,15 @@ const App: React.FC = () => {
             try {
                 const token = await AuthService.getAuthToken();
                 if (!token) return;
+                const data = syncDataRef.current;
 
                 await syncGameDataToBackend(
-                    profile,
-                    creatures,
-                    activeCreatureId,
-                    auraPoints,
-                    dailyActivity,
-                    reviewQueue,
+                    data.profile,
+                    data.creatures,
+                    data.activeCreatureId,
+                    data.auraPoints,
+                    data.dailyActivity,
+                    data.reviewQueue,
                     token
                 );
             } catch (error) {
@@ -181,47 +254,7 @@ const App: React.FC = () => {
         }, 5 * 60 * 1000); // 5 minutes
 
         return () => clearInterval(interval);
-    }, [user, profile, creatures, activeCreatureId, auraPoints, dailyActivity, reviewQueue]);
-
-    const [activeMissionId, setActiveMissionId] = useState<string | null>(null);
-    const [preparingMissionId, setPreparingMissionId] = useState<string | null>(null);
-    const [streakToShow, setStreakToShow] = useState<number | null>(null);
-
-    // Initial profile factory
-    const createInitialProfile = (): UserProfile => {
-        const initialProfile: UserProfile = {
-            stats: {},
-            inventory: {
-                'ELIMINATE': 0,
-                'SKIP': 0,
-                'HINT': 0,
-                'SECOND_CHANCE': 0,
-                'DOUBLE_JEOPARDY': 0
-            },
-            dailyStreak: 0,
-            lastStreakDate: '',
-            weeklyAuraGain: 0,
-            lastWeekResetDate: '',
-            league: LeagueType.BRONZE
-        };
-        SUBTOPICS.forEach(subtopic => {
-            initialProfile.stats[subtopic] = { correct: 0, incorrect: 0, level: 'Easy' };
-        });
-        return initialProfile;
-    };
-
-    // User-specific storage - each user has their own data
-    const [tutorialState, setTutorialState] = useUserStorage<TutorialState>(userId, 'tutorialState', INITIAL_TUTORIAL_STATE);
-    const [profile, setProfile] = useUserStorage<UserProfile>(userId, 'userProfile', createInitialProfile);
-    const [auraPoints, setAuraPoints] = useUserStorage<number>(userId, 'auraPoints', 500);
-    const [creatures, setCreatures] = useUserStorage<CreatureInstance[]>(userId, 'userCreatures', []);
-    const [activeCreatureId, setActiveCreatureId] = useUserStorage<number | null>(userId, 'activeCreatureId', null);
-    const [reviewQueue, setReviewQueue] = useUserStorage<Question[]>(userId, 'reviewQueue', []);
-    const [dailyActivity, setDailyActivity] = useUserStorage<DailyActivity>(userId, 'dailyActivity', {
-        date: '',
-        missions: [],
-    });
-    const [mockCompetitors, setMockCompetitors] = useUserStorage<any[]>(userId, 'mockCompetitors', []);
+    }, [user]);
 
     // Helper to get ISO week number
     const getWeekNumber = (date: Date) => {
@@ -340,7 +373,7 @@ const App: React.FC = () => {
         } else if (mockCompetitors.length === 0) {
             setMockCompetitors(generateCompetitors(profile.league));
         }
-    }, [dailyActivity.date, profile.lastStreakDate, user, mockCompetitors, profile.league, profile.weeklyAuraGain]);
+    }, [dailyActivity.date, profile.lastStreakDate, user, tutorialState.currentPhase]);
 
     // Side effect to sync view state when mission data is missing
     useEffect(() => {
@@ -425,12 +458,61 @@ const App: React.FC = () => {
                 addToReviewQueue(incorrectQuestion);
             }
 
+            // Wire stealth diagnostic: secretly log this answer!
+            const subtopicLevel = profile.stats[mission.subtopic]?.level || 'Easy';
+            const difficulty = getDifficultyForLevel(subtopicLevel);
+            const difficultyTier = (difficulty === 'Extra Hard' ? 'Hard' : difficulty) as DifficultyTier;
+            
+            // Log to stealth diagnostic system locally
+            if (user) {
+                processStealthMissionAnswer(
+                    user.uid,
+                    mission.subtopic,
+                    isCorrect,
+                    30, // Default duration if not measured
+                    difficultyTier
+                );
+
+                // Log to MongoDB backend asynchronously
+                (async () => {
+                    try {
+                        const token = await AuthService.getAuthToken();
+                        if (token) {
+                            const API_URL = import.meta.env.VITE_API_URL || 'http://localhost:5001/api';
+                            const questionText = mission.questions?.[mission.progress]?.question || '';
+                            const questionId = questionText ? questionText.slice(0, 24) : 'mixed_question';
+                            
+                            await fetch(`${API_URL}/analytics/performance`, {
+                                method: 'POST',
+                                headers: {
+                                    'Content-Type': 'application/json',
+                                    'Authorization': `Bearer ${token}`
+                                },
+                                body: JSON.stringify({
+                                    subtopicId: mission.subtopic,
+                                    topicId: mission.subtopic.split(':')[0] || 'Mixed',
+                                    questionId: questionId,
+                                    isCorrect: isCorrect,
+                                    difficultyLevel: difficultyTier,
+                                    timeSpentSeconds: 30,
+                                    userAnswered: '',
+                                    correctAnswer: ''
+                                })
+                            });
+                        }
+                    } catch (error) {
+                        console.error('Failed to log performance to backend:', error);
+                    }
+                })();
+            }
+
             // Track question for milestone unlocks (Progress at 60, Leaderboard at 120)
             incrementQuestionsAnswered();
         }
 
         // Streak implementation: progress resets to 0 on incorrect answer unless Double Jeopardy saves it (handled by forceEarlyEnd/loseAllRewards flag)
         let newProgress = mission.progress;
+        let shouldRegenerateQuestions = false;
         if (forceEarlyEnd) {
             // Early end typically means we've finished or bailed with Double Jeopardy
             // Keep current progress as it is.
@@ -439,7 +521,29 @@ const App: React.FC = () => {
                 newProgress = mission.progress + 1;
             } else {
                 newProgress = 0; // STREAK BROKEN: Reset to beginning
+                shouldRegenerateQuestions = true;
             }
+        }
+
+        if (shouldRegenerateQuestions) {
+            const subtopicLevel = profile.stats[mission.subtopic]?.level || 'Easy';
+            const difficulty = getDifficultyForLevel(subtopicLevel);
+            (async () => {
+                try {
+                    const generatedQuestions = await Promise.all(
+                        Array(mission.questionCount).fill(0).map(() => generateSatQuestion(mission.subtopic, difficulty))
+                    );
+                    const newQuestions = generatedQuestions.map(q => ({ ...q, subtopic: mission.subtopic }));
+                    setDailyActivity(prev => ({
+                        ...prev,
+                        missions: prev.missions.map(m =>
+                            m.id === missionId ? { ...m, questions: newQuestions } : m
+                        )
+                    }));
+                } catch (error) {
+                    console.error("Failed to regenerate questions on streak break:", error);
+                }
+            })();
         }
 
         const newCorrectAnswers = (!forceEarlyEnd && isCorrect) ? mission.correctAnswers + 1 : mission.correctAnswers;
@@ -586,6 +690,7 @@ const App: React.FC = () => {
                                 // The WelcomeMission component will be shown via renderTutorial
                                 // This is called from the dashboard mission card
                             }}
+                            onOpenProfile={() => setIsProfileOpen(true)}
                         />;
             case View.MISSION:
                 if (!activeMission || !activeMission.questions) { return null; }
@@ -632,6 +737,7 @@ const App: React.FC = () => {
                         />;
             case View.LEADERBOARD:
                 return <LeaderboardView 
+                            username={user?.name || "Seeker"}
                             weeklyGain={profile.weeklyAuraGain} 
                             league={profile.league} 
                             competitors={mockCompetitors}
@@ -642,14 +748,18 @@ const App: React.FC = () => {
                             setAuraPoints={setAuraPoints}
                             userCreatures={creatures}
                             addCreature={(id, customData) => {
-                                setCreatures(p => [...p, {
-                                    id: Date.now() + Math.random(),
-                                    creatureId: id,
-                                    xp: 50,  // Start with 50 XP (level 5)
-                                    level: 5,  // Starting level
-                                    evolutionStage: 1,
-                                    ...customData
-                                }]);
+                                setCreatures(p => {
+                                    const maxId = p.reduce((max, c) => Math.max(max, c.id), 0);
+                                    const nextId = Math.max(1, Math.floor(maxId) + 1);
+                                    return [...p, {
+                                        id: nextId,
+                                        creatureId: id,
+                                        xp: 50,  // Start with 50 XP (level 5)
+                                        level: 5,  // Starting level
+                                        evolutionStage: 1,
+                                        ...customData
+                                    }];
+                                });
                             }}
                             onSummonComplete={() => {
                                 // During tutorial forced-summon phase, advance to next phase
@@ -716,9 +826,9 @@ const App: React.FC = () => {
     // Handle starter selection
     const handleStarterSelect = (starterId: number) => {
         // Add the starter creature
-        const newCreatureId = Date.now();
+        const nextId = creatures.length > 0 ? Math.max(...creatures.map(c => c.id)) + 1 : 1;
         setCreatures(prev => [...prev, {
-            id: newCreatureId,
+            id: nextId,
             creatureId: starterId,
             xp: 50,
             level: 5,
@@ -726,7 +836,7 @@ const App: React.FC = () => {
         }]);
 
         // Set as active creature
-        setActiveCreatureId(newCreatureId);
+        setActiveCreatureId(nextId);
 
         // Update tutorial state - move to first easy mission
         setTutorialState(prev => ({
@@ -1197,7 +1307,21 @@ const App: React.FC = () => {
                 setCurrentView={setCurrentView}
                 user={user}
                 tutorialState={tutorialState}
+                onOpenProfile={() => setIsProfileOpen(true)}
             />
+            {/* Mobile floating settings/avatar button */}
+            {user && (
+                <button
+                    onClick={() => setIsProfileOpen(true)}
+                    className="lg:hidden fixed top-3 right-3 z-30 w-10 h-10 rounded-full border-2 border-highlight bg-white overflow-hidden shadow-card hover:scale-105 active:scale-95 transition-all flex items-center justify-center press-effect"
+                >
+                    {user.photoUrl ? (
+                        <img src={user.photoUrl} alt="Settings" className="w-full h-full object-cover" />
+                    ) : (
+                        <span className="text-lg">👤</span>
+                    )}
+                </button>
+            )}
             <main className="flex-grow p-3 md:p-4 pb-20 md:pb-24 lg:pb-8 lg:p-8 lg:ml-64 w-full max-w-7xl mx-auto transition-all duration-300">
                 {renderView()}
             </main>
@@ -1205,6 +1329,14 @@ const App: React.FC = () => {
                 <StreakPopup
                     streak={streakToShow}
                     onClose={() => setStreakToShow(null)}
+                />
+            )}
+            {isProfileOpen && (
+                <ProfileModal
+                    user={user}
+                    onClose={() => setIsProfileOpen(false)}
+                    onUpdateUser={handleUpdateUser}
+                    onLogout={handleLogout}
                 />
             )}
             {/* Tutorial overlay */}

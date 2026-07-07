@@ -8,6 +8,7 @@ import authRoutes from './routes/auth.routes';
 import gameDataRoutes from './routes/gameData';
 import analyticsRoutes from './routes/analytics';
 import analyticsApiRoutes from './routes/analytics-api.routes';
+import questionsRoutes from './routes/questions.routes';
 import { ApiResponse } from './types';
 
 const app: Express = express();
@@ -87,6 +88,9 @@ app.use('/api/auth', authLimiter, authRoutes);
 
 // Game data routes
 app.use('/api/game-data', gameDataRoutes);
+
+// Questions routes
+app.use('/api/questions', questionsRoutes);
 
 // Analytics API routes (dashboard, export, etc) - mounted first to handle public endpoints
 app.use('/api/analytics', analyticsApiRoutes);

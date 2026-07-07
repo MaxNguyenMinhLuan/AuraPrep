@@ -8,6 +8,8 @@
 import cron from 'node-cron';
 import { AggregationService } from '../services/aggregation.service';
 import { AnalyticsService } from '../services/analytics.service';
+import { NudgeService } from '../services/nudge.service';
+import { QuestionIngestionService } from '../services/questionIngestion.service';
 
 export class AnalyticsScheduler {
   /**
@@ -23,11 +25,17 @@ export class AnalyticsScheduler {
     // Hourly nudge efficacy recalculation - runs every hour
     this.scheduleHourlyNudgeMetrics();
 
+    // Hourly email nudge job - runs every hour
+    this.scheduleHourlyNudgeJob();
+
     // Weekly retention cohort analysis - runs Sunday at 2 AM UTC
     this.scheduleWeeklyRetentionAnalysis();
 
     // Monthly investor report generation - runs 1st of month at 3 AM UTC
     this.scheduleMonthlyInvestorReport();
+
+    // Official College Board questions ingestion - runs daily at 4:00 AM and 6:30 PM (Server Local Time)
+    this.scheduleOfficialQuestionIngestion();
 
     console.log('✅ All analytics cron jobs initialized');
   }
@@ -98,6 +106,23 @@ export class AnalyticsScheduler {
     });
 
     console.log('✓ Scheduled hourly nudge efficacy calculation');
+  }
+
+  /**
+   * Schedule hourly email nudge job
+   * Checks local timezones and sends morning/afternoon/evening nudges
+   */
+  private static scheduleHourlyNudgeJob(): void {
+    cron.schedule('0 * * * *', async () => {
+      console.log(`[${new Date().toISOString()}] Starting scheduled hourly email nudge job...`);
+      try {
+        await NudgeService.processHourlyNudges();
+      } catch (error) {
+        console.error('❌ Scheduled hourly email nudge job failed:', error);
+      }
+    });
+
+    console.log('✓ Scheduled hourly email nudge job');
   }
 
   /**
@@ -193,7 +218,7 @@ export class AnalyticsScheduler {
   } {
     const tasks = cron.getTasks();
     return {
-      totalJobs: tasks.length,
+      totalJobs: tasks instanceof Map ? tasks.size : (tasks as any).length || 0,
       nextRuns: {
         dailyAggregation: 'Every day at 00:00 UTC',
         hourlyNudgeMetrics: 'Every hour at :00',
@@ -229,6 +254,25 @@ export class AnalyticsScheduler {
     //   await notifyPagerDuty(alert);
     // }
   }
+
+  /**
+   * Schedule official question ingestion at 4:00 AM and 6:30 PM daily
+   */
+  private static scheduleOfficialQuestionIngestion(): void {
+    // 4 AM daily
+    cron.schedule('0 4 * * *', async () => {
+      console.log(`[${new Date().toISOString()}] Cron trigger: 4 AM ingestion starting...`);
+      await QuestionIngestionService.ingestOfficialQuestions();
+    });
+
+    // 6:30 PM daily
+    cron.schedule('30 18 * * *', async () => {
+      console.log(`[${new Date().toISOString()}] Cron trigger: 6:30 PM ingestion starting...`);
+      await QuestionIngestionService.ingestOfficialQuestions();
+    });
+
+    console.log('✓ Scheduled official question ingestion daily at 04:00 and 18:30');
+  }
 }
 
 /**
@@ -261,3 +305,18 @@ export async function generateInvestorReportNow(): Promise<void> {
     throw error;
   }
 }
+
+/**
+ * Manual hourly nudge check for testing
+ */
+export async function runHourlyNudgesNow(): Promise<void> {
+  console.log('Running hourly email nudges manually...');
+  try {
+    await NudgeService.processHourlyNudges();
+    console.log('✅ Manual hourly nudges check completed');
+  } catch (error) {
+    console.error('❌ Manual hourly nudges failed:', error);
+    throw error;
+  }
+}
+

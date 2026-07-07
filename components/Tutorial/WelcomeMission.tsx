@@ -18,6 +18,7 @@ import {
 } from '../../services/stealthMissionService';
 import { getRecommendedDifficulty, getUserSkillProfile } from '../../services/stealthDiagnosticService';
 import QuestionGraph from '../QuestionGraph';
+import FormattedText from '../FormattedText';
 
 interface WelcomeMissionProps {
     uid: string;
@@ -208,7 +209,7 @@ const WelcomeMission: React.FC<WelcomeMissionProps> = ({ uid, onComplete, onExit
                     {/* Graph if present */}
                     {currentQuestion.graphData && <QuestionGraph data={currentQuestion.graphData} />}
 
-                    <p className="text-sm whitespace-pre-wrap leading-relaxed mb-6">{currentQuestion.question}</p>
+                    <FormattedText className="text-sm leading-relaxed mb-6" text={currentQuestion.question} />
 
                     {/* Answer Options */}
                     <div className="space-y-3">
@@ -237,11 +238,11 @@ const WelcomeMission: React.FC<WelcomeMissionProps> = ({ uid, onComplete, onExit
                                     disabled={selectedAnswer !== null}
                                     className={buttonClass}
                                 >
-                                    <span className="text-xs">
+                                    <span className="text-xs flex items-start text-left">
                                         <span className="font-bold mr-2 text-primary">{String.fromCharCode(65 + index)}.</span>
-                                        {option}
+                                        <FormattedText className="inline" text={option} />
                                     </span>
-                                    {icon && <span className="text-lg">{icon}</span>}
+                                    {icon && <span className="text-lg ml-2">{icon}</span>}
                                 </button>
                             );
                         })}
@@ -253,7 +254,7 @@ const WelcomeMission: React.FC<WelcomeMissionProps> = ({ uid, onComplete, onExit
                             <h3 className={`text-base font-bold mb-2 ${isCorrect ? 'text-success' : 'text-accent'}`}>
                                 {isCorrect ? '✓ Correct!' : '✗ Not quite'}
                             </h3>
-                            <p className="text-text-dim text-xs leading-relaxed italic mb-4">{currentQuestion.explanation}</p>
+                            <FormattedText className="text-text-dim text-xs leading-relaxed italic mb-4" text={currentQuestion.explanation} />
                             <button
                                 onClick={handleNext}
                                 className={`w-full font-bold py-3 rounded-xl border-b-4 transition-all shadow-card ${

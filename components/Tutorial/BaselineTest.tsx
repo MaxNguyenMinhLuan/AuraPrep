@@ -3,6 +3,7 @@ import { Question, Difficulty } from '../../types';
 import { SUBTOPICS } from '../../constants';
 import { generateSatQuestion } from '../../services/questionService';
 import QuestionGraph from '../QuestionGraph';
+import FormattedText from '../FormattedText';
 import { TUTORIAL_DIALOGUE } from '../../utils/tutorialSteps';
 
 interface BaselineTestProps {
@@ -193,7 +194,7 @@ const BaselineTest: React.FC<BaselineTestProps> = ({ onComplete, onSaveAndExit, 
                         {/* Graph if present */}
                         {currentQuestion.graphData && <QuestionGraph data={currentQuestion.graphData} />}
 
-                        <p className="text-sm whitespace-pre-wrap leading-relaxed mb-6">{currentQuestion.question}</p>
+                        <FormattedText className="text-sm leading-relaxed mb-6" text={currentQuestion.question} />
 
                         {/* Answer Options */}
                         <div className="space-y-3">
@@ -222,11 +223,11 @@ const BaselineTest: React.FC<BaselineTestProps> = ({ onComplete, onSaveAndExit, 
                                         disabled={selectedAnswer !== null}
                                         className={buttonClass}
                                     >
-                                        <span className="text-xs">
+                                        <span className="text-xs flex items-start text-left">
                                             <span className="font-bold mr-2">{String.fromCharCode(65 + index)}.</span>
-                                            {option}
+                                            <FormattedText className="inline" text={option} />
                                         </span>
-                                        {icon && <span className="text-lg">{icon}</span>}
+                                        {icon && <span className="text-lg ml-2">{icon}</span>}
                                     </button>
                                 );
                             })}
@@ -236,7 +237,7 @@ const BaselineTest: React.FC<BaselineTestProps> = ({ onComplete, onSaveAndExit, 
                     {/* Explanation + Next Button */}
                     {selectedAnswer !== null && (
                         <div className="mt-6 p-4 bg-background animate-fadeIn border-2 rounded-lg border-secondary">
-                            <p className="text-text-dim text-xs leading-relaxed italic mb-4">{currentQuestion.explanation}</p>
+                            <FormattedText className="text-text-dim text-xs leading-relaxed italic mb-4" text={currentQuestion.explanation} />
                             <button
                                 onClick={handleNext}
                                 className="w-full bg-primary hover:bg-primary/90 text-white font-bold py-3 rounded-lg border-b-4 border-primary/70 active:border-b-2 active:translate-y-0.5 transition-all shadow-md"
