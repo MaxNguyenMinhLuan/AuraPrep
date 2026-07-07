@@ -12,11 +12,14 @@ const SUBTOPIC_TO_DOMAIN_MAP: Record<string, string> = {
     'Algebra: Systems of Linear Equations': 'Heart of Algebra',
     'Algebra: Inequalities': 'Heart of Algebra',
     'Algebra: Absolute Value': 'Heart of Algebra',
+    'Formulas and Expressions': 'Heart of Algebra',
 
     // Advanced Math
     'Algebra: Quadratic Equations': 'Advanced Math',
     'Algebra: Exponential Functions': 'Advanced Math',
     'Algebra: Polynomial Manipulation': 'Advanced Math',
+    'Algebra: Dividing Polynomials': 'Advanced Math',
+    'Algebra: Systems of Nonlinear Equations': 'Advanced Math',
     'Function Notation': 'Advanced Math',
 
     // Problem Solving and Data Analysis
@@ -25,33 +28,40 @@ const SUBTOPIC_TO_DOMAIN_MAP: Record<string, string> = {
     'Data: Categories and Probabilities': 'Problem Solving and Data Analysis',
     'Data: Central Tendency and Standard Deviation': 'Problem Solving and Data Analysis',
     'Data: Experimental Interpretation': 'Problem Solving and Data Analysis',
+    'Numbers: Sequences': 'Problem Solving and Data Analysis',
 
     // Geometry and Trigonometry
     'Geometry: Lines and Angles': 'Geometry and Trigonometry',
     'Geometry: Triangles and Polygons': 'Geometry and Trigonometry',
     'Geometry: Solid Geometry': 'Geometry and Trigonometry',
+    'Geometry: Circles': 'Geometry and Trigonometry',
+    'Geometry: Trigonometry': 'Geometry and Trigonometry',
+    'Coordinate Geometry: Lines and Slopes': 'Geometry and Trigonometry',
     'Coordinate Geometry: Nonlinear Functions': 'Geometry and Trigonometry',
-    'Trigonometry': 'Geometry and Trigonometry',
 
     // Craft and Structure
     'R/W: Identifying Main Idea': 'Craft and Structure',
-    'R/W: Analyzing Text Structure': 'Craft and Structure',
-    'R/W: Comparing Texts': 'Craft and Structure',
-    'Rhetoric: Word Choice': 'Craft and Structure',
+    'R/W: Text Structure and Purpose': 'Craft and Structure',
+    'R/W: Multiple Text Analysis': 'Craft and Structure',
+    'R/W: Determining Sentence Purpose': 'Craft and Structure',
+    'R/W: Vocabulary in Context': 'Craft and Structure',
+    'Rhetoric: Precision': 'Craft and Structure',
 
     // Information and Ideas
     'R/W: Finding Key Details': 'Information and Ideas',
     'R/W: Drawing Inferences': 'Information and Ideas',
-    'R/W: Analyzing Arguments': 'Information and Ideas',
-    'Data: Tables and Graphs': 'Information and Ideas',
+    'R/W: Command of Evidence': 'Information and Ideas',
+    'R/W: Quantitative Analysis': 'Information and Ideas',
 
     // Standard English Conventions
     'Grammar: Sentence Structure': 'Standard English Conventions',
     'Grammar: Subject-Verb Agreement': 'Standard English Conventions',
-    'Grammar: Verb Tense and Form': 'Standard English Conventions',
+    'Grammar: Verb Tense': 'Standard English Conventions',
     'Grammar: Pronouns': 'Standard English Conventions',
     'Grammar: Modifiers': 'Standard English Conventions',
     'Grammar: Punctuation': 'Standard English Conventions',
+    'Grammar: Conventional Expression': 'Standard English Conventions',
+    'Grammar: Possessives': 'Standard English Conventions',
 
     // Expression of Ideas
     'Rhetoric: Transitions': 'Expression of Ideas',
