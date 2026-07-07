@@ -1,6 +1,6 @@
 import { BackupQuestion } from '../models/BackupQuestion';
 import { OfficialQuestion } from '../models/OfficialQuestion';
-import { QUESTION_BANK } from '../../../data/questionBank';
+import { QUESTION_BANK } from '../config/backupQuestionBank';
 
 export class QuestionIngestionService {
     /**

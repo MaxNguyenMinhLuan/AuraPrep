@@ -4,7 +4,6 @@ import { CreatureInstance, MissionInstance, User, TutorialState } from '../types
 import { INITIAL_CREATURES } from '../constants';
 import CreatureCard from './CreatureCard';
 import LoadingSpinner from './icons/LoadingSpinner';
-import ProfileModal from './ProfileModal';
 import { getQuestionsUntilNextUnlock, PROGRESS_UNLOCK_QUESTIONS, LEADERBOARD_UNLOCK_QUESTIONS } from '../utils/tutorialSteps';
 
 interface DashboardProps {
@@ -25,6 +24,7 @@ interface DashboardProps {
     tutorialState?: TutorialState;
     onResumeBaseline?: () => void;
     onStartWelcomeMission?: () => void;
+    onOpenProfile: () => void;
 }
 
 const Dashboard: React.FC<DashboardProps> = ({
@@ -44,9 +44,9 @@ const Dashboard: React.FC<DashboardProps> = ({
     onLogout,
     tutorialState,
     onResumeBaseline,
-    onStartWelcomeMission
+    onStartWelcomeMission,
+    onOpenProfile
 }) => {
-    const [isProfileOpen, setIsProfileOpen] = useState(false);
     const isBaselineComplete = tutorialState?.baselineCompleted ?? true;
 
     // Calculate unlock progress
@@ -87,7 +87,7 @@ const Dashboard: React.FC<DashboardProps> = ({
                     </div>
 
                     <button
-                        onClick={() => setIsProfileOpen(true)}
+                        onClick={onOpenProfile}
                         className="w-11 h-11 md:w-12 md:h-12 rounded-full border-2 border-highlight bg-white overflow-hidden shadow-card hover:shadow-card-hover hover:scale-105 transition-premium active:scale-95 flex items-center justify-center touch-target press-effect"
                     >
                         {user.photoUrl ? (
@@ -161,7 +161,11 @@ const Dashboard: React.FC<DashboardProps> = ({
                     <div className="h-px w-full bg-gradient-to-r from-transparent via-primary/30 to-transparent mb-4"></div>
 
                     <div className="grid grid-cols-1 gap-3 md:gap-4">
-                        {dailyMissions.map(mission => {
+                        {[...dailyMissions].sort((a, b) => {
+                            if (a.completed && !b.completed) return 1;
+                            if (!a.completed && b.completed) return -1;
+                            return 0;
+                        }).map(mission => {
                             // Special handling for welcome mission (stealth diagnostic)
                             const isWelcomeMission = mission.id === 'welcome-mission';
                             // Legacy: baseline assessment mission
@@ -321,15 +325,7 @@ const Dashboard: React.FC<DashboardProps> = ({
                 </div>
             </div>
 
-            {/* Profile Modal */}
-            {isProfileOpen && (
-                <ProfileModal 
-                    user={user} 
-                    onClose={() => setIsProfileOpen(false)} 
-                    onUpdateUser={onUpdateUser}
-                    onLogout={onLogout}
-                />
-            )}
+
         </div>
     );
 };
