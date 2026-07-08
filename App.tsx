@@ -1350,7 +1350,7 @@ const App: React.FC = () => {
     }
 
     return (
-        <div className="min-h-screen w-full bg-gradient-to-tr from-[#f5d0fe] via-[#fef9c3] to-[#a5f3fc] dark:from-[#311042] dark:via-[#0f172a] dark:to-[#083344] bg-[length:400%_400%] animate-gradient-slow text-text-main font-sans text-sm flex flex-col lg:flex-row pt-safe">
+        <div className="min-h-screen w-full bg-gradient-to-tr from-[#f5d0fe] via-[#fef9c3] to-[#a5f3fc] dark:from-[#311042] dark:via-[#0f172a] dark:to-[#083344] text-text-main font-sans text-sm flex flex-col lg:flex-row pt-safe">
             <BottomNavBar
                 currentView={currentView}
                 setCurrentView={setCurrentView}

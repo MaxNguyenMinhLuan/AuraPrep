@@ -94,7 +94,7 @@ const LoginView: React.FC<LoginViewProps> = ({ onLogin }) => {
     };
 
     return (
-        <div className="min-h-screen w-full flex flex-col items-center justify-center bg-gradient-to-tr from-[#f5d0fe] via-[#fef9c3] to-[#a5f3fc] dark:from-[#311042] dark:via-[#0f172a] dark:to-[#083344] bg-[length:400%_400%] animate-gradient-slow text-text-main font-sans text-sm p-6 relative overflow-hidden">
+        <div className="min-h-screen w-full flex flex-col items-center justify-center bg-gradient-to-tr from-[#f5d0fe] via-[#fef9c3] to-[#a5f3fc] dark:from-[#311042] dark:via-[#0f172a] dark:to-[#083344] text-text-main font-sans text-sm p-6 relative overflow-hidden">
             {/* Ambient Background Elements */}
             <div className="absolute top-[-10%] left-[-10%] w-96 h-96 bg-primary/10 rounded-full blur-3xl animate-pulse"></div>
             <div className="absolute bottom-[-10%] right-[-10%] w-96 h-96 bg-highlight/10 rounded-full blur-3xl animate-pulse delay-700"></div>
