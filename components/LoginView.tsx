@@ -110,7 +110,7 @@ const LoginView: React.FC<LoginViewProps> = ({ onLogin }) => {
 
                 <div className="space-y-6">
                     <div className="bg-background/50 p-6 rounded-xl border border-secondary/50 text-left">
-                        <h3 className="text-[10px] font-bold text-primary uppercase mb-3 tracking-widest">Features</h3>
+                        <h3 className="text-[10px] font-bold text-primary uppercase mb-3 tracking-widest">Core Features</h3>
                         <ul className="space-y-3">
                             <li className="flex items-center gap-3 text-xs text-text-main">
                                 <span className="bg-success/20 text-success p-1 rounded-full text-[8px]">✓</span>
