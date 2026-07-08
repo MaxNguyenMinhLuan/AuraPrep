@@ -52,6 +52,11 @@ const Dashboard: React.FC<DashboardProps> = ({
     onStartWelcomeMission,
     onOpenProfile
 }) => {
+    const [imageError, setImageError] = React.useState(false);
+    React.useEffect(() => {
+        setImageError(false);
+    }, [user?.photoUrl]);
+
     const isBaselineComplete = tutorialState?.baselineCompleted ?? true;
 
     // Calculate unlock progress
@@ -95,10 +100,17 @@ const Dashboard: React.FC<DashboardProps> = ({
                         onClick={onOpenProfile}
                         className="w-11 h-11 md:w-12 md:h-12 rounded-full border-2 border-highlight bg-white overflow-hidden shadow-card hover:shadow-card-hover hover:scale-105 transition-premium active:scale-95 flex items-center justify-center touch-target press-effect"
                     >
-                        {user.photoUrl ? (
-                            <img src={user.photoUrl} alt="Me" className="w-full h-full object-cover" />
+                        {user.photoUrl && !imageError ? (
+                            <img 
+                                src={user.photoUrl} 
+                                alt="Me" 
+                                className="w-full h-full object-cover" 
+                                onError={() => setImageError(true)}
+                            />
                         ) : (
-                            <span className="text-xl md:text-2xl">👤</span>
+                            <div className="w-full h-full bg-gradient-to-br from-primary/30 to-highlight/30 flex items-center justify-center font-bold text-primary text-xs md:text-sm uppercase select-none">
+                                {user.name ? user.name.split(' ').map(n => n[0]).join('').slice(0, 2) : 'S'}
+                            </div>
                         )}
                     </button>
                 </div>

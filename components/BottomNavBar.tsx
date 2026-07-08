@@ -56,6 +56,11 @@ const NavItem: React.FC<{
 };
 
 const BottomNavBar: React.FC<BottomNavBarProps> = ({ currentView, setCurrentView, user, tutorialState, onOpenProfile, theme, onToggleTheme }) => {
+    const [imageError, setImageError] = React.useState(false);
+    React.useEffect(() => {
+        setImageError(false);
+    }, [user?.photoUrl]);
+
     // Determine what features are unlocked based on new tutorial state
     const progressUnlocked = tutorialState?.progressUnlocked ?? true;
     const trainingUnlocked = tutorialState?.trainingUnlocked ?? true;
@@ -150,7 +155,18 @@ const BottomNavBar: React.FC<BottomNavBarProps> = ({ currentView, setCurrentView
                 >
                     {user && (
                         <div className="flex items-center gap-3 px-2">
-                            {user.photoUrl && <img src={user.photoUrl} alt={user.name} className="w-8 h-8 rounded-full border border-secondary" />}
+                            {user.photoUrl && !imageError ? (
+                                <img 
+                                    src={user.photoUrl} 
+                                    alt={user.name} 
+                                    className="w-8 h-8 rounded-full border border-secondary object-cover" 
+                                    onError={() => setImageError(true)}
+                                />
+                            ) : (
+                                <div className="w-8 h-8 rounded-full bg-gradient-to-br from-primary/30 to-highlight/30 flex items-center justify-center font-bold text-primary border border-secondary text-xs uppercase select-none">
+                                    {user.name ? user.name.split(' ').map(n => n[0]).join('').slice(0, 2) : 'S'}
+                                </div>
+                            )}
                             <div className="flex-1 overflow-hidden text-left">
                                 <p className="text-xs font-bold truncate">{user.name}</p>
                                 <p className="text-[10px] text-text-dim truncate">{user.email}</p>

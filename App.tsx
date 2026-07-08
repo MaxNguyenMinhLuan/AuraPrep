@@ -52,6 +52,10 @@ const App: React.FC = () => {
     const [isCheckingSession, setIsCheckingSession] = useState(true);
     const [baselineResults, setBaselineResults] = useState<any>(null);
     const [isProfileOpen, setIsProfileOpen] = useState(false);
+    const [headerImageError, setHeaderImageError] = useState(false);
+    useEffect(() => {
+        setHeaderImageError(false);
+    }, [user?.photoUrl]);
 
     // Get user ID for user-specific storage
     const userId = user?.uid || null;
@@ -1384,10 +1388,17 @@ const App: React.FC = () => {
                             onClick={() => setIsProfileOpen(true)}
                             className="w-10 h-10 rounded-full border-2 border-highlight bg-white overflow-hidden shadow-card hover:scale-105 active:scale-95 transition-all flex items-center justify-center press-effect"
                         >
-                            {user.photoUrl ? (
-                                <img src={user.photoUrl} alt="Settings" className="w-full h-full object-cover" />
+                            {user.photoUrl && !headerImageError ? (
+                                <img 
+                                    src={user.photoUrl} 
+                                    alt="Settings" 
+                                    className="w-full h-full object-cover" 
+                                    onError={() => setHeaderImageError(true)}
+                                />
                             ) : (
-                                <span className="text-lg">👤</span>
+                                <div className="w-full h-full bg-gradient-to-br from-primary/30 to-highlight/30 flex items-center justify-center font-bold text-primary text-xs uppercase select-none">
+                                    {user.name ? user.name.split(' ').map(n => n[0]).join('').slice(0, 2) : 'S'}
+                                </div>
                             )}
                         </button>
                     </div>

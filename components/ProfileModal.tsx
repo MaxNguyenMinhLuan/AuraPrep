@@ -1,5 +1,4 @@
-
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { User } from '../types';
 
 interface ProfileModalProps {
@@ -22,6 +21,11 @@ const ProfileModal: React.FC<ProfileModalProps> = ({ user, onClose, onUpdateUser
     const [name, setName] = useState(user.name);
     const [photoUrl, setPhotoUrl] = useState(user.photoUrl || PREMADE_AVATARS[0].url);
     const [isCopied, setIsCopied] = useState(false);
+    const [modalImageError, setModalImageError] = useState(false);
+
+    useEffect(() => {
+        setModalImageError(false);
+    }, [photoUrl]);
 
     const handleCopyId = () => {
         navigator.clipboard.writeText(user.uid);
@@ -45,10 +49,17 @@ const ProfileModal: React.FC<ProfileModalProps> = ({ user, onClose, onUpdateUser
                         ✕
                     </button>
                     <div className="w-24 h-24 bg-white rounded-full mx-auto border-4 border-highlight shadow-lg flex items-center justify-center overflow-hidden mb-2">
-                        {photoUrl ? (
-                            <img src={photoUrl} alt="Profile" className="w-full h-full object-cover" />
+                        {photoUrl && !modalImageError ? (
+                            <img 
+                                src={photoUrl} 
+                                alt="Profile" 
+                                className="w-full h-full object-cover" 
+                                onError={() => setModalImageError(true)}
+                            />
                         ) : (
-                            <span className="text-4xl">👤</span>
+                            <div className="w-full h-full bg-gradient-to-br from-primary/30 to-highlight/30 flex items-center justify-center font-bold text-primary text-xl uppercase select-none">
+                                {name ? name.split(' ').map(n => n[0]).join('').slice(0, 2) : 'S'}
+                            </div>
                         )}
                     </div>
                     <h2 className="text-white font-serif text-xl font-bold">Seeker Profile</h2>
