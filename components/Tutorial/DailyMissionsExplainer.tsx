@@ -7,6 +7,10 @@
 
 import React, { useState } from 'react';
 import { TUTORIAL_DIALOGUE } from '../../utils/tutorialSteps';
+import { PixelCreature } from '../CreatureCard';
+import { INITIAL_CREATURES } from '../../constants';
+
+const pikachu = INITIAL_CREATURES.find(c => c.id === 'pikachu');
 
 interface DailyMissionsExplainerProps {
     onComplete: () => void;
@@ -77,7 +81,9 @@ const DailyMissionsExplainer: React.FC<DailyMissionsExplainerProps> = ({ onCompl
                 <div className="bg-surface border-4 border-highlight rounded-xl p-6 shadow-2xl animate-scaleIn pointer-events-auto" key={step}>
                     {/* Pikachu */}
                     <div className="flex justify-center mb-4">
-                        <div className="text-5xl animate-gentleBounce">⚡</div>
+                        <div className="animate-gentleBounce mb-2">
+                            {pikachu && <PixelCreature creature={pikachu} evolutionStage={1} pixelSize={6} />}
+                        </div>
                     </div>
 
                     {/* Icon */}

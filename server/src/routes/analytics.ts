@@ -1,6 +1,8 @@
 import express, { Router, Request, Response } from 'express';
+import { AuthenticatedRequest } from '../types';
 import { authMiddleware } from '../middleware/auth.middleware';
 import UserGameData from '../models/UserGameData';
+import mongoose from 'mongoose';
 
 const router = Router();
 
@@ -97,7 +99,7 @@ router.get('/email-metrics', async (req: Request, res: Response) => {
  * GET /api/analytics/user-metrics/:userId
  * Get individual user's email engagement metrics
  */
-router.get('/user-metrics/:userId', async (req: Request, res: Response) => {
+router.get('/user-metrics/:userId', async (req: AuthenticatedRequest, res: Response) => {
   try {
     const { userId } = req.params;
 
@@ -220,7 +222,7 @@ router.get('/streak-insights', async (req: Request, res: Response) => {
  */
 router.get('/guardians', async (req: Request, res: Response) => {
   try {
-    const pipeline = [
+    const pipeline: mongoose.PipelineStage[] = [
       {
         $group: {
           _id: '$activeCreature.type',

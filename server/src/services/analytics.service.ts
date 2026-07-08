@@ -16,7 +16,7 @@ import {
   DailyCohortMetrics,
   SentimentLog
 } from '../models/Analytics';
-import { UserGameData } from '../models/UserGameData';
+import UserGameData from '../models/UserGameData';
 import mongoose, { Types } from 'mongoose';
 
 export interface PerformanceLogInput {
@@ -130,7 +130,7 @@ export class AnalyticsService {
   /**
    * Update user-level metrics
    */
-  static async updateUserMetrics(userId: string): Promise<void> {
+  static async updateUserMetrics(userId: string): Promise<any> {
     try {
       const objectId = new Types.ObjectId(userId);
 
@@ -154,7 +154,7 @@ export class AnalyticsService {
       // Get aura data from game data
       const gameData = await UserGameData.findOne({ userId: objectId });
       const totalAuraEarned = gameData?.auraBalance || 0;
-      const uniqueCreatures = gameData?.creatures?.length || 0;
+      const uniqueCreatures = (gameData as any)?.creatures?.length || (gameData?.activeCreature ? 1 : 0);
 
       // Calculate session statistics
       const avgSessionDuration = sessions.length > 0

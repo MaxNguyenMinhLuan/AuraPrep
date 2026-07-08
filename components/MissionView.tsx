@@ -4,6 +4,7 @@ import { MissionInstance, PowerUpType } from '../types';
 import QuestionGraph from './QuestionGraph';
 import { getStrategyTip } from '../utils/strategyTips';
 import FormattedText from './FormattedText';
+import AuraIcon from './icons/AuraIcon';
 
 interface MissionViewProps {
     mission: MissionInstance;
@@ -91,7 +92,9 @@ const MissionView: React.FC<MissionViewProps> = ({ mission, onAnswer, onExit, in
                 <p className="text-lg mb-2 animate-fadeIn" style={{ animationDelay: '0.2s' }}>You maintained a streak of <span className="font-bold text-text-main">{mission.questionCount}</span> correct answers!</p>
                 <div className="my-6 p-6 border-2 border-secondary bg-surface rounded-xl shadow-card animate-popIn" style={{ animationDelay: '0.3s' }}>
                     <p className="text-md text-text-dim mb-2">Rewards Summoned:</p>
-                    <p className="text-xl font-bold text-highlight animate-gentleBounce">+{mission.reward} Aura 💎</p>
+                    <p className="text-xl font-bold text-primary flex items-center justify-center gap-1.5 animate-gentleBounce">
+                        +{mission.reward} <AuraIcon className="w-5 h-5" />
+                    </p>
                     <p className="text-xl font-bold text-success">+{mission.xp} Guardian XP</p>
                 </div>
                 <button

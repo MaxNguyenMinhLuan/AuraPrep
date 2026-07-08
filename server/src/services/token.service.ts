@@ -18,7 +18,7 @@ export class TokenService {
         };
 
         const options: SignOptions = {
-            expiresIn: config.jwt.accessTokenExpiry,
+            expiresIn: config.jwt.accessTokenExpiry as any,
             issuer: config.jwt.issuer,
             audience: config.jwt.audience
         };

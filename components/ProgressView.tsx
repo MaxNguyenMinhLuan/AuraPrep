@@ -2,12 +2,43 @@
 import React, { useState, useCallback, useEffect } from 'react';
 import { Question, UserProfile, Difficulty, SkillLevel, PowerUpType } from '../types';
 import { generateSatQuestion, fetchQuestionCounts } from '../services/questionService';
-import { AURA_POINTS_PER_PRACTICE_STREAK, SUBTOPICS, POWER_UPS } from '../constants';
+import { AURA_POINTS_PER_PRACTICE_STREAK, SUBTOPICS, POWER_UPS, getBossForSubtopic } from '../constants';
 import { getSkillProgress, getDifficultyForLevel, getNextLevel, getBossFightRequirement } from '../utils/mastery';
 import { INDEXED_QUESTIONS } from '../data/questionBankIndexed';
 import { getStrategyTip } from '../utils/strategyTips';
 import LoadingSpinner from './icons/LoadingSpinner';
 import QuestionGraph from './QuestionGraph';
+import ScissorsIcon from './icons/ScissorsIcon';
+import EyeIcon from './icons/EyeIcon';
+import { LockIcon } from './icons/LockIcon';
+import AuraIcon from './icons/AuraIcon';
+import ShuffleIcon from './icons/ShuffleIcon';
+import ShieldIcon from './icons/ShieldIcon';
+import TargetIcon from './icons/TargetIcon';
+
+const getPowerUpColorClass = (id: PowerUpType) => {
+    switch (id) {
+        case 'ELIMINATE': return 'text-orange-500 dark:text-orange-400';
+        case 'HINT': return 'text-indigo-500 dark:text-indigo-400';
+        case 'SKIP': return 'text-cyan-500 dark:text-cyan-400';
+        case 'SECOND_CHANCE': return 'text-emerald-500 dark:text-emerald-400';
+        case 'DOUBLE_JEOPARDY': return 'text-rose-500 dark:text-rose-400';
+        default: return 'text-primary dark:text-indigo-400';
+    }
+};
+
+const renderPowerUpIcon = (id: PowerUpType, className = "w-6 h-6") => {
+    const colorClass = getPowerUpColorClass(id);
+    const fullClass = `${className} ${colorClass}`;
+    switch (id) {
+        case 'ELIMINATE': return <ScissorsIcon className={fullClass} />;
+        case 'HINT': return <EyeIcon className={fullClass} />;
+        case 'SKIP': return <ShuffleIcon className={fullClass} />;
+        case 'SECOND_CHANCE': return <ShieldIcon className={fullClass} />;
+        case 'DOUBLE_JEOPARDY': return <TargetIcon className={fullClass} />;
+        default: return null;
+    }
+};
 
 interface ProgressViewProps {
     profile: UserProfile;
@@ -219,7 +250,7 @@ const BossFightPrep: React.FC<{
                             }`}
                         >
                             <div className="flex items-center gap-4 text-left">
-                                <span className="text-3xl bg-background/50 w-12 h-12 flex items-center justify-center rounded-full border">{powerUp.icon}</span>
+                                <span className="text-3xl bg-background/50 w-12 h-12 flex items-center justify-center rounded-full border">{renderPowerUpIcon(powerUp.id, "w-8 h-8")}</span>
                                 <div>
                                     <p className="font-bold text-sm">{powerUp.name}</p>
                                     <p className="text-[8px] text-text-dim">{powerUp.description}</p>
@@ -244,6 +275,18 @@ const BossFightPrep: React.FC<{
     )
 }
 
+const getBossThemeClass = (id: string) => {
+    switch (id) {
+        case 'articuno': return { glow: 'rgba(56, 189, 248, 0.4)', text: 'from-sky-300 to-blue-600' };
+        case 'zapdos': return { glow: 'rgba(250, 204, 21, 0.4)', text: 'from-yellow-200 to-amber-500' };
+        case 'moltres': return { glow: 'rgba(239, 68, 68, 0.4)', text: 'from-orange-300 to-red-600' };
+        case 'articuno-galar': return { glow: 'rgba(168, 85, 247, 0.4)', text: 'from-purple-300 to-fuchsia-600' };
+        case 'zapdos-galar': return { glow: 'rgba(249, 115, 22, 0.4)', text: 'from-orange-400 to-red-600' };
+        case 'moltres-galar': return { glow: 'rgba(225, 29, 72, 0.4)', text: 'from-rose-500 to-red-900' };
+        default: return { glow: 'rgba(255, 255, 255, 0.4)', text: 'from-gray-300 to-gray-600' };
+    }
+};
+
 const BossFightSession: React.FC<{
     subtopic: string;
     level: SkillLevel;
@@ -261,7 +304,16 @@ const BossFightSession: React.FC<{
     const [selectedAnswer, setSelectedAnswer] = useState<number | null>(null);
     const [isCorrect, setIsCorrect] = useState<boolean | null>(null);
     const [fightComplete, setFightComplete] = useState(false);
-    const [correctAnswers, setCorrectAnswers] = useState(0);
+    
+    // Boss State
+    const BOSS_FIGHT_LENGTH = 10;
+    const initialBossHealth = (level === 'Hard' || level === 'Master') ? 9 : 8;
+    const [bossHealth, setBossHealth] = useState(initialBossHealth);
+    const [bossTakesDamage, setBossTakesDamage] = useState(false);
+    const [isBlasted, setIsBlasted] = useState(false);
+    const [timeRemaining, setTimeRemaining] = useState(1200); // 20 minutes in seconds
+
+    const boss = getBossForSubtopic(subtopic);
     
     // Power-up States
     const [availablePowerUps, setAvailablePowerUps] = useState<PowerUpType[]>(equippedPowerUps);
@@ -270,7 +322,6 @@ const BossFightSession: React.FC<{
     const [hintVisible, setHintVisible] = useState(false);
     const [secondChanceActive, setSecondChanceActive] = useState(false);
 
-    const BOSS_FIGHT_LENGTH = 10;
     const requirement = getBossFightRequirement(level);
     const difficulty = getDifficultyForLevel(level);
 
@@ -285,6 +336,22 @@ const BossFightSession: React.FC<{
         generateBossQuestions();
     }, [subtopic, difficulty]);
 
+    // Timer logic
+    useEffect(() => {
+        if (isLoading || fightComplete || isBlasted) return;
+        const interval = setInterval(() => {
+            setTimeRemaining(prev => {
+                if (prev <= 1) {
+                    clearInterval(interval);
+                    setFightComplete(true); // defeat by timeout
+                    return 0;
+                }
+                return prev - 1;
+            });
+        }, 1000);
+        return () => clearInterval(interval);
+    }, [isLoading, fightComplete, isBlasted]);
+
     // Reset power up effects when question changes
     useEffect(() => {
         setHiddenOptions([]);
@@ -298,7 +365,6 @@ const BossFightSession: React.FC<{
 
         const correct = index === questions[currentIndex].answerIndex;
 
-        // Second Wind Mechanic
         if (!correct && secondChanceActive) {
             setSecondChanceActive(false);
             setDisabledOptions(prev => [...prev, index]);
@@ -308,16 +374,18 @@ const BossFightSession: React.FC<{
         setSelectedAnswer(index);
         setIsCorrect(correct);
         updateProfile(subtopic, correct);
-        if (correct) setCorrectAnswers(prev => prev + 1);
         
-        if (!correct) {
+        if (correct) {
+            setBossHealth(prev => Math.max(0, prev - 1));
+            setBossTakesDamage(true);
+            setTimeout(() => setBossTakesDamage(false), 500);
+        } else {
             addToReviewQueue(questions[currentIndex]);
         }
     };
     
     const handleUsePowerUp = async (type: PowerUpType) => {
         if (!availablePowerUps.includes(type) || selectedAnswer !== null) return;
-
         if (type === 'ELIMINATE') {
             const correctIdx = questions[currentIndex].answerIndex;
             const wrongs = [0, 1, 2, 3].filter(i => i !== correctIdx);
@@ -329,29 +397,20 @@ const BossFightSession: React.FC<{
             setSecondChanceActive(true);
         } else if (type === 'SKIP') {
             setIsSkipping(true);
-            // Generate new question
             const newQuestionData = await generateSatQuestion(subtopic, difficulty);
             const newQuestion: Question = { ...newQuestionData, subtopic } as Question;
-            
-            // Save current question to review queue before discarding
             addToReviewQueue(questions[currentIndex]);
-
-            // Replace current question in array
             setQuestions(prev => {
                 const newQs = [...prev];
                 newQs[currentIndex] = newQuestion;
                 return newQs;
             });
-            
             setHiddenOptions([]);
             setDisabledOptions([]);
             setHintVisible(false);
             setSecondChanceActive(false);
-            
             setIsSkipping(false);
         }
-
-        // Remove from available list and inventory
         setAvailablePowerUps(prev => prev.filter(p => p !== type));
         consumePowerUp(type);
     };
@@ -362,9 +421,14 @@ const BossFightSession: React.FC<{
             setSelectedAnswer(null);
             setIsCorrect(null);
         } else {
-            setFightComplete(true);
+            if (bossHealth > 0) {
+                setIsBlasted(true);
+                setTimeout(() => setFightComplete(true), 2500);
+            } else {
+                setFightComplete(true);
+            }
         }
-    }, [currentIndex, questions.length]);
+    }, [currentIndex, questions.length, bossHealth]);
 
     useEffect(() => {
         const handleKeyDown = (e: KeyboardEvent) => {
@@ -376,18 +440,29 @@ const BossFightSession: React.FC<{
         return () => window.removeEventListener('keydown', handleKeyDown);
     }, [selectedAnswer, handleNext]);
 
-    if (isLoading) return <div className="flex flex-col items-center justify-center h-full"><LoadingSpinner /><p className="mt-4 text-primary animate-pulse">Summoning Boss...</p></div>;
+    if (isLoading) return <div className="flex flex-col items-center justify-center h-full"><LoadingSpinner /><p className="mt-4 text-primary animate-pulse">Summoning {boss.name}...</p></div>;
     if (isSkipping) return <div className="flex flex-col items-center justify-center h-full"><LoadingSpinner /><p className="mt-4 text-highlight animate-pulse">Shifting Phase...</p></div>;
 
     if (fightComplete) {
-        const success = correctAnswers >= requirement;
+        const success = bossHealth === 0;
         return (
             <div className="flex flex-col items-center justify-center h-full text-center animate-fadeIn max-w-md mx-auto">
-                <h2 className={`text-4xl font-serif mb-6 ${success ? 'text-highlight' : 'text-accent'}`}>{success ? 'Victory!' : 'Defeated'}</h2>
-                <div className="bg-surface p-6 rounded-lg border-2 border-secondary mb-6 w-full shadow-md">
-                    <p className="text-xl mb-2 font-bold">Score: {correctAnswers}/{BOSS_FIGHT_LENGTH}</p>
-                    <p className="text-sm text-text-dim">(Required: {requirement} correct)</p>
-                </div>
+                <h2 className={`text-4xl font-serif mb-6 ${success ? 'text-highlight' : 'text-accent'}`}>{success ? 'Victory!' : 'Defeated by ' + boss.name}</h2>
+                {success ? (
+                    <div className="bg-surface p-6 rounded-lg border-2 border-secondary mb-6 w-full shadow-md">
+                        <p className="text-xl mb-2 font-bold">You defeated {boss.name}!</p>
+                        <p className="text-sm text-text-dim">Your Auramon grew stronger.</p>
+                    </div>
+                ) : (
+                    <div className="bg-surface p-6 rounded-lg border-2 border-accent mb-6 w-full shadow-md">
+                        <p className="text-xl mb-2 font-bold">Your Auramon fainted...</p>
+                        {timeRemaining === 0 ? (
+                            <p className="text-sm text-text-dim">Time ran out!</p>
+                        ) : (
+                            <p className="text-sm text-text-dim">You didn't do enough damage.</p>
+                        )}
+                    </div>
+                )}
                 <button onClick={() => onBossFightComplete(success)} className="bg-primary text-light font-bold py-4 px-10 text-lg border-b-4 border-primary/70 rounded-md hover:bg-primary/90 transition-all shadow-lg">{success ? 'Claim Reward' : 'Return'}</button>
             </div>
         );
@@ -397,105 +472,157 @@ const BossFightSession: React.FC<{
     if (!currentQuestion) return null;
     const strategyTip = getStrategyTip(currentQuestion.subtopic || subtopic, currentQuestion.question);
 
+    const minutes = Math.floor(timeRemaining / 60);
+    const seconds = timeRemaining % 60;
+
     return (
-        <div className="flex flex-col h-full animate-fadeIn max-w-4xl mx-auto overflow-y-auto pr-1">
-            <div className="text-center mb-4"><h1 className="font-serif text-3xl text-accent">BOSS FIGHT</h1></div>
-            <div className="mb-6 max-w-2xl mx-auto w-full">
-                <div className="flex justify-between text-[8px] text-primary mb-1 font-bold">
-                    <span>Progress</span>
-                    <span>{currentIndex + 1} / {BOSS_FIGHT_LENGTH}</span>
+        <div className={`flex flex-col lg:flex-row h-full animate-fadeIn w-full overflow-y-auto overflow-x-hidden pr-1 ${isBlasted ? 'animate-pulse bg-accent/20' : ''}`}>
+            {/* Left Panel: Questions */}
+            <div className="w-full lg:w-3/4 lg:pr-6 flex flex-col relative z-10">
+                {isBlasted && <div className="absolute inset-0 bg-white/50 z-20 pointer-events-none animate-ping"></div>}
+                <div className="text-center mb-2"><h1 className="font-serif text-3xl text-accent">BOSS FIGHT</h1></div>
+                <div className="flex justify-between items-center mb-4 max-w-2xl mx-auto w-full">
+                    <div className="text-sm font-bold text-text-main">
+                        Time: <span className={timeRemaining < 300 ? 'text-accent animate-pulse' : 'text-primary'}>
+                            {minutes.toString().padStart(2, '0')}:{seconds.toString().padStart(2, '0')}
+                        </span>
+                    </div>
+                    <div className="text-sm text-primary font-bold">
+                        Q: {currentIndex + 1} / {BOSS_FIGHT_LENGTH}
+                    </div>
                 </div>
-                <div className="w-full bg-surface h-4 border-2 border-text-dark rounded-full overflow-hidden">
-                    <div className="bg-accent h-full transition-all duration-300" style={{ width: `${((currentIndex + 1) / BOSS_FIGHT_LENGTH) * 100}%` }}></div>
+                
+                <div className={`p-6 ${selectedAnswer === null && availablePowerUps.length > 0 ? 'pb-20 lg:pb-6' : ''} border-2 ${
+                    isCorrect === false ? 'bg-accent/5 border-accent shadow-[0_0_20px_rgba(220,38,38,0.25)] shake-once red-flash' : secondChanceActive ? 'bg-surface border-highlight shadow-[0_0_15px_rgba(202,138,4,0.5)]' : 'bg-surface border-accent/50'
+                } flex-grow flex flex-col justify-between relative rounded-lg shadow-lg`}>
+                    {secondChanceActive && <div className="absolute top-0 left-0 w-full bg-highlight text-white text-[8px] font-bold text-center py-1 rounded-t-sm">SECOND WIND ACTIVE</div>}
+                    
+                    <div>
+                      {currentQuestion.graphData && <QuestionGraph data={currentQuestion.graphData} />}
+                      <p className="text-sm md:text-base mb-8 whitespace-pre-wrap leading-relaxed pt-4">{currentQuestion.question}</p>
+                      {hintVisible && (
+                          <div className="mb-6 p-4 bg-highlight/10 border-l-4 border-highlight text-[8px] text-text-main italic rounded-r-md">
+                              <span className="font-bold block mb-1">Oracle's Insight:</span> {currentQuestion.explanation.split('.')[0]}...
+                          </div>
+                      )}
+
+                      <div className="space-y-4">
+                          {currentQuestion.options.map((option, index) => {
+                              if (hiddenOptions.includes(index)) {
+                                  return <div key={index} className="w-full h-14 border-2 border-dashed border-text-dark/20 flex items-center justify-center text-text-dark/30 text-[8px] rounded-md">Eliminated</div>;
+                              }
+                              let btnClass = 'w-full text-left p-4 border-2 transition-all duration-200 rounded-md ';
+                              if (selectedAnswer === null) {
+                                   if (disabledOptions.includes(index)) {
+                                       btnClass += 'bg-text-dark/10 border-text-dark/30 text-text-dim cursor-not-allowed opacity-60';
+                                   } else {
+                                       btnClass += 'bg-surface hover:bg-secondary border-primary/20 shadow-sm';
+                                   }
+                              }
+                              else if (index === currentQuestion.answerIndex) btnClass += 'bg-success/10 border-success font-bold';
+                              else if (index === selectedAnswer) btnClass += 'bg-accent/10 border-accent font-bold';
+                              else btnClass += 'bg-surface opacity-50 border-text-dark/20';
+                              
+                              return (
+                                <button key={index} onClick={() => handleAnswerSelect(index)} disabled={selectedAnswer !== null || disabledOptions.includes(index)} className={btnClass}>
+                                    <span className="mr-2 text-[8px]">{String.fromCharCode(65 + index)}.</span> {option}
+                                </button>
+                              );
+                          })}
+                      </div>
+                    </div>
+
+                    {/* Power Ups Bar */}
+                    {selectedAnswer === null && availablePowerUps.length > 0 && (
+                        <div className="absolute bottom-4 right-4 flex gap-2 md:gap-3">
+                            {availablePowerUps.map((type, i) => {
+                                const def = POWER_UPS.find(p => p.id === type);
+                                if(!def) return null;
+                                const isActive = (type === 'SECOND_CHANCE' && secondChanceActive) || (type === 'HINT' && hintVisible);
+                                return (
+                                    <button 
+                                        key={i}
+                                        onClick={() => handleUsePowerUp(type)}
+                                        disabled={isActive}
+                                        className={`w-12 h-12 bg-surface border-2 ${isActive ? 'border-gray-400 opacity-50' : 'border-highlight'} rounded-full flex items-center justify-center text-2xl shadow-lg hover:scale-110 transition-transform`}
+                                        title={def.name}
+                                    >
+                                        {renderPowerUpIcon(def.id, "w-8 h-8")}
+                                    </button>
+                                )
+                            })}
+                        </div>
+                    )}
+
+                    {selectedAnswer !== null && (
+                        <div className="mt-8 p-6 bg-background animate-fadeIn rounded-lg border border-secondary">
+                            <p className="text-text-main text-xs md:text-sm leading-relaxed">{currentQuestion.explanation}</p>
+                            {strategyTip && (
+                                <div className="mt-4 p-3 bg-yellow-500/10 border-l-4 border-yellow-500 rounded-r-xl text-left animate-fadeIn">
+                                    <p className="text-[10px] font-bold text-yellow-600 flex items-center gap-1.5 uppercase tracking-wider">
+                                        <span>{strategyTip.icon}</span> {strategyTip.title}
+                                    </p>
+                                    <p className="text-[11px] text-text-main mt-1 leading-normal font-sans">{strategyTip.tip}</p>
+                                </div>
+                            )}
+                            <button onClick={handleNext} className="mt-6 w-full bg-primary text-light font-bold py-4 border-b-4 border-primary/70 rounded-md hover:bg-primary/90 transition-colors">
+                                {currentIndex < questions.length - 1 ? 'Next' : 'Finish'}
+                            </button>
+                        </div>
+                    )}
                 </div>
             </div>
-            <div className={`p-6 ${selectedAnswer === null && availablePowerUps.length > 0 ? 'pb-20 lg:pb-6' : ''} border-2 ${
-                isCorrect === false ? 'bg-accent/5 border-accent shadow-[0_0_20px_rgba(220,38,38,0.25)] shake-once red-flash' : secondChanceActive ? 'bg-surface border-highlight shadow-[0_0_15px_rgba(202,138,4,0.5)]' : 'bg-surface border-accent/50'
-            } flex-grow flex flex-col justify-between relative rounded-lg shadow-lg`}>
-                {secondChanceActive && <div className="absolute top-0 left-0 w-full bg-highlight text-white text-[8px] font-bold text-center py-1 rounded-t-sm">SECOND WIND ACTIVE</div>}
-                
-                <div>
-                  {currentQuestion.graphData && <QuestionGraph data={currentQuestion.graphData} />}
-                  
-                  <p className="text-sm md:text-base mb-8 whitespace-pre-wrap leading-relaxed pt-4">{currentQuestion.question}</p>
-                  
-                  {hintVisible && (
-                      <div className="mb-6 p-4 bg-highlight/10 border-l-4 border-highlight text-[8px] text-text-main italic rounded-r-md">
-                          <span className="font-bold block mb-1">Oracle's Insight:</span> {currentQuestion.explanation.split('.')[0]}...
-                      </div>
-                  )}
-
-                  <div className="space-y-4">
-                      {currentQuestion.options.map((option, index) => {
-                          if (hiddenOptions.includes(index)) {
-                              return <div key={index} className="w-full h-14 border-2 border-dashed border-text-dark/20 flex items-center justify-center text-text-dark/30 text-[8px] rounded-md">Eliminated</div>;
-                          }
-
-                          let btnClass = 'w-full text-left p-4 border-2 transition-all duration-200 rounded-md ';
-                          if (selectedAnswer === null) {
-                               if (disabledOptions.includes(index)) {
-                                   btnClass += 'bg-text-dark/10 border-text-dark/30 text-text-dim cursor-not-allowed opacity-60';
-                               } else {
-                                   btnClass += 'bg-surface hover:bg-secondary border-primary/20 shadow-sm';
-                               }
-                          }
-                          else if (index === currentQuestion.answerIndex) btnClass += 'bg-success/10 border-success font-bold';
-                          else if (index === selectedAnswer) btnClass += 'bg-accent/10 border-accent font-bold';
-                          else btnClass += 'bg-surface opacity-50 border-text-dark/20';
-                          
-                          return (
-                            <button 
-                                key={index} 
-                                onClick={() => handleAnswerSelect(index)} 
-                                disabled={selectedAnswer !== null || disabledOptions.includes(index)} 
-                                className={btnClass}
-                            >
-                                <span className="mr-2 text-[8px]">{String.fromCharCode(65 + index)}.</span> {option}
-                            </button>
-                          );
-                      })}
-                  </div>
-                </div>
-
-                {/* Power Ups Bar */}
-                {selectedAnswer === null && availablePowerUps.length > 0 && (
-                    <div className="absolute bottom-4 right-4 flex gap-2 md:gap-3">
-                        {availablePowerUps.map((type, i) => {
-                            const def = POWER_UPS.find(p => p.id === type);
-                            if(!def) return null;
-                            const isActive = (type === 'SECOND_CHANCE' && secondChanceActive) || (type === 'HINT' && hintVisible);
-                            return (
-                                <button 
-                                    key={i}
-                                    onClick={() => handleUsePowerUp(type)}
-                                    disabled={isActive}
-                                    className={`w-12 h-12 bg-surface border-2 ${isActive ? 'border-gray-400 opacity-50' : 'border-highlight'} rounded-full flex items-center justify-center text-2xl shadow-lg hover:scale-110 transition-transform`}
-                                    title={def.name}
-                                >
-                                    {def.icon}
-                                </button>
-                            )
-                        })}
-                    </div>
-                )}
-
-                {selectedAnswer !== null && (
-                    <div className="mt-8 p-6 bg-background animate-fadeIn rounded-lg border border-secondary">
-                        <p className="text-text-main text-xs md:text-sm leading-relaxed">{currentQuestion.explanation}</p>
-                        
-                        {/* Strategy Tip Box */}
-                        {strategyTip && (
-                            <div className="mt-4 p-3 bg-yellow-500/10 border-l-4 border-yellow-500 rounded-r-xl text-left animate-fadeIn">
-                                <p className="text-[10px] font-bold text-yellow-600 dark:text-yellow-400 flex items-center gap-1.5 uppercase tracking-wider">
-                                    <span>{strategyTip.icon}</span> {strategyTip.title}
-                                </p>
-                                <p className="text-[11px] text-text-main mt-1 leading-normal font-sans">{strategyTip.tip}</p>
+            
+            {/* Right Panel: Boss */}
+            <div className="w-full lg:w-1/4 mt-6 lg:mt-0 lg:border-l-2 lg:border-secondary lg:pl-6 flex flex-col items-center justify-start lg:justify-center relative z-0">
+                <div className="w-full flex flex-col items-center relative">
+                    <h2 
+                        className={`text-2xl md:text-3xl font-serif mb-4 drop-shadow-sm uppercase text-transparent bg-clip-text bg-gradient-to-r ${getBossThemeClass(boss.id).text} text-center leading-normal whitespace-pre-wrap flex flex-col items-center justify-center w-full`}
+                        style={{ WebkitTextStroke: '1.5px var(--color-text-main)' }}
+                    >
+                        <span>{boss.name.split(' ')[0]}</span>
+                        {boss.name.split(' ').length > 1 && <span>{boss.name.split(' ').slice(1).join(' ')}</span>}
+                    </h2>
+                    {/* Segmented Boss Health Bar */}
+                    <div className="w-full max-w-[280px] flex gap-[2px] mb-8 px-2 z-10 relative">
+                        {Array.from({ length: initialBossHealth }).map((_, i) => (
+                            <div key={i} className="flex-1 h-5 rounded-[2px] bg-surface/30 border border-text-dark/40 overflow-hidden relative -skew-x-12 shadow-sm">
+                                <div 
+                                    className={`absolute top-0 h-full bg-gradient-to-r from-red-600 via-orange-500 to-yellow-400 transition-opacity duration-300 ${i >= bossHealth ? 'opacity-0' : 'opacity-100'}`}
+                                    style={{
+                                        width: `calc(${initialBossHealth * 100}% + ${(initialBossHealth - 1) * 2}px)`,
+                                        left: `calc(-${i * 100}% - ${i * 2}px)`
+                                    }}
+                                />
                             </div>
-                        )}
-
-                        <button onClick={handleNext} className="mt-6 w-full bg-primary text-light font-bold py-4 border-b-4 border-primary/70 rounded-md hover:bg-primary/90 transition-colors">{currentIndex < questions.length - 1 ? 'Next' : 'Finish'}</button>
+                        ))}
                     </div>
-                )}
+                    {/* Boss Sprite Area */}
+                    <div className="relative w-full aspect-[4/5] max-w-[300px] flex flex-col items-center justify-end overflow-visible">
+                        {/* Glowing effect behind boss */}
+                        <div className="absolute inset-[-50%] z-0 flex items-center justify-center pointer-events-none">
+                            <div 
+                                className="w-full h-full animate-pulse" 
+                                style={{ background: `radial-gradient(circle at center, ${getBossThemeClass(boss.id).glow} 0%, transparent 60%)` }}
+                            ></div>
+                        </div>
+                        
+                        <div className={`relative w-[110%] flex-1 mb-6 transition-transform duration-300 ${bossTakesDamage ? 'animate-shake brightness-150 scale-95' : 'animate-float'} ${isBlasted ? 'animate-spin scale-150 brightness-200' : ''}`}>
+                            <img 
+                                src={boss.spriteUrl} 
+                                alt={boss.name}
+                                className="w-full h-full object-contain filter drop-shadow-[0_10px_10px_rgba(0,0,0,0.5)] z-10 relative"
+                                style={{ imageRendering: 'pixelated' }}
+                            />
+                            {isBlasted && <div className="absolute inset-0 bg-accent rounded-full animate-ping opacity-50 z-20"></div>}
+                            {bossTakesDamage && (
+                                <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 text-5xl font-bold text-accent drop-shadow-lg animate-bounce z-30">
+                                    -1
+                                </div>
+                            )}
+                        </div>
+                    </div>
+                </div>
             </div>
         </div>
     );
@@ -525,7 +652,7 @@ const LevelUpAnimation: React.FC<{
                     <span className="text-success">{toLevel}</span>
                 </p>
             </div>
-             <p className="mt-8 text-sm md:text-lg animate-pulse">You earned: <span className="font-bold text-highlight block mt-2 md:inline md:mt-0">{rewardAmount} Aura</span></p>
+             <p className="mt-8 text-sm md:text-lg animate-pulse flex items-center justify-center gap-1.5 flex-col md:flex-row">You earned: <span className="font-bold text-primary flex items-center gap-1">{rewardAmount} <AuraIcon className="w-5 h-5" /></span></p>
         </div>
     );
 };
@@ -539,6 +666,7 @@ const ProgressView: React.FC<ProgressViewProps & { addToReviewQueue: (q: Questio
     const [lastLevelUpInfo, setLastLevelUpInfo] = useState<{ from: SkillLevel, to: SkillLevel } | null>(null);
     const [equippedPowerUps, setEquippedPowerUps] = useState<PowerUpType[]>([]);
     const [questionCounts, setQuestionCounts] = useState<Record<string, number>>({});
+    const [searchQuery, setSearchQuery] = useState('');
 
     useEffect(() => {
         const loadCounts = async () => {
@@ -658,14 +786,31 @@ const ProgressView: React.FC<ProgressViewProps & { addToReviewQueue: (q: Questio
         return 'bg-accent';
     }
 
+    const filteredSubtopics = SUBTOPICS.filter(subtopic =>
+        subtopic.toLowerCase().includes(searchQuery.toLowerCase())
+    );
+
     return (
         <div className="animate-fadeIn">
             <div className="text-center mb-4 md:mb-6">
                 <h1 className="text-lg md:text-xl lg:text-2xl bg-highlight text-text-light px-3 md:px-4 py-2 inline-block rounded-lg shadow-card animate-slideDown">Progress</h1>
                 <p className="text-text-dim mt-2 text-xs md:text-sm">Practice skills or defeat bosses to level up.</p>
             </div>
+
+            {/* Search Bar */}
+            <div className="max-w-md mx-auto mb-6 relative">
+                <input
+                    type="text"
+                    placeholder="Search skills..."
+                    value={searchQuery}
+                    onChange={(e) => setSearchQuery(e.target.value)}
+                    className="w-full px-4 py-2 pl-10 bg-surface text-text-main border-2 border-secondary/30 rounded-xl focus:outline-none focus:border-primary/50 text-xs md:text-sm font-bold shadow-card transition-all font-sans placeholder-text-dim/50"
+                />
+                <span className="absolute left-3.5 top-1/2 -translate-y-1/2 text-text-dim text-sm">🔍</span>
+            </div>
+
             <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-3 md:gap-4 pb-20">
-                {SUBTOPICS.map((subtopic, index) => {
+                {filteredSubtopics.map((subtopic, index) => {
                     const stat = profile.stats[subtopic] || { correct: 0, incorrect: 0, level: 'Easy' };
                     const { level } = stat;
                     const progress = getSkillProgress(level);

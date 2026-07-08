@@ -3,10 +3,12 @@ import React, { useState, useMemo } from 'react';
 import { Creature, Rarity, CreatureInstance } from '../types';
 import { INITIAL_CREATURES, SUMMON_COST } from '../constants';
 import { PixelCreature } from './CreatureCard';
+import AuraIcon from './icons/AuraIcon';
 
 interface SummonResult extends Creature {
     isNew: boolean;
     multiplier: number;
+    isShiny?: boolean;
 }
 
 interface SummonViewProps {
@@ -18,7 +20,7 @@ interface SummonViewProps {
 }
 
 // Shooting stars that fly across screen (Genshin meteor effect)
-const ShootingStars: React.FC<{ color: string; count?: number }> = ({ color, count = 5 }) => {
+const ShootingStars: React.FC<{ color: string; secondaryColor: string; count?: number }> = ({ color, secondaryColor, count = 5 }) => {
     const stars = useMemo(() => Array.from({ length: count }).map((_, i) => ({
         id: i,
         delay: i * 0.15,
@@ -45,7 +47,7 @@ const ShootingStars: React.FC<{ color: string; count?: number }> = ({ color, cou
                             width: star.size * 2,
                             height: star.size * 2,
                             backgroundColor: color,
-                            boxShadow: `0 0 ${star.size * 4}px ${star.size * 2}px ${color}, 0 0 ${star.size * 8}px ${star.size * 4}px ${color}`,
+                            boxShadow: `0 0 ${star.size * 4}px ${star.size * 2}px ${color}, 0 0 ${star.size * 8}px ${star.size * 4}px ${secondaryColor}`,
                         }}
                     />
                     {/* Star trail */}
@@ -55,7 +57,7 @@ const ShootingStars: React.FC<{ color: string; count?: number }> = ({ color, cou
                             right: star.size * 2,
                             width: star.size * 30,
                             height: star.size,
-                            background: `linear-gradient(90deg, transparent, ${color})`,
+                            background: `linear-gradient(90deg, transparent, ${color}, ${secondaryColor})`,
                             filter: `blur(${star.size / 2}px)`,
                         }}
                     />
@@ -88,19 +90,19 @@ const WishRings: React.FC<{ color: string }> = ({ color }) => {
 };
 
 // Vertical light beam
-const LightBeam: React.FC<{ color: string }> = ({ color }) => (
+const LightBeam: React.FC<{ color: string; secondaryColor: string }> = ({ color, secondaryColor }) => (
     <div className="absolute inset-0 flex items-center justify-center pointer-events-none overflow-hidden">
         <div
             className="absolute w-32 h-[200%] animate-lightBeam"
             style={{
-                background: `linear-gradient(180deg, transparent, ${color}40, ${color}, ${color}40, transparent)`,
+                background: `linear-gradient(180deg, transparent, ${color}20, ${color}, ${secondaryColor}, ${secondaryColor}20, transparent)`,
                 filter: 'blur(20px)',
             }}
         />
         <div
             className="absolute w-16 h-[200%] animate-lightBeam"
             style={{
-                background: `linear-gradient(180deg, transparent, ${color}80, ${color}, ${color}80, transparent)`,
+                background: `linear-gradient(180deg, transparent, ${color}50, ${color}, ${secondaryColor}, ${secondaryColor}50, transparent)`,
                 filter: 'blur(8px)',
                 animationDelay: '0.1s',
             }}
@@ -144,38 +146,42 @@ const GatheringParticles: React.FC<{ color: string }> = ({ color }) => {
 };
 
 // Glitter/sparkle particles falling
-const GlitterParticles: React.FC<{ color: string }> = ({ color }) => {
+const GlitterParticles: React.FC<{ color: string; secondaryColor: string }> = ({ color, secondaryColor }) => {
     const particles = useMemo(() => Array.from({ length: 40 }).map((_, i) => ({
         id: i,
         left: `${Math.random() * 100}%`,
         delay: Math.random() * 1.5,
         size: 2 + Math.random() * 4,
         duration: 1.5 + Math.random() * 1,
+        useSecondary: Math.random() > 0.5,
     })), []);
 
     return (
         <div className="absolute inset-0 pointer-events-none overflow-hidden">
-            {particles.map((p) => (
-                <div
-                    key={p.id}
-                    className="absolute top-0"
-                    style={{
-                        left: p.left,
-                        width: p.size,
-                        height: p.size,
-                        backgroundColor: color,
-                        boxShadow: `0 0 ${p.size * 2}px ${color}`,
-                        borderRadius: '50%',
-                        animation: `glitterFall ${p.duration}s linear ${p.delay}s forwards`,
-                    }}
-                />
-            ))}
+            {particles.map((p) => {
+                const activeColor = p.useSecondary ? secondaryColor : color;
+                return (
+                    <div
+                        key={p.id}
+                        className="absolute top-0"
+                        style={{
+                            left: p.left,
+                            width: p.size,
+                            height: p.size,
+                            backgroundColor: activeColor,
+                            boxShadow: `0 0 ${p.size * 2}px ${activeColor}`,
+                            borderRadius: '50%',
+                            animation: `glitterFall ${p.duration}s linear ${p.delay}s forwards`,
+                        }}
+                    />
+                );
+            })}
         </div>
     );
 };
 
 // Star burst effect at reveal
-const StarBurst: React.FC<{ color: string }> = ({ color }) => {
+const StarBurst: React.FC<{ color: string; secondaryColor: string }> = ({ color, secondaryColor }) => {
     const rays = 12;
     return (
         <div className="absolute inset-0 flex items-center justify-center pointer-events-none">
@@ -184,7 +190,7 @@ const StarBurst: React.FC<{ color: string }> = ({ color }) => {
                     key={i}
                     className="absolute w-1 h-32 origin-bottom animate-starBurst"
                     style={{
-                        background: `linear-gradient(to top, ${color}, transparent)`,
+                        background: `linear-gradient(to top, ${color}, ${secondaryColor}, transparent)`,
                         transform: `rotate(${(360 / rays) * i}deg)`,
                         animationDelay: `${i * 0.02}s`,
                     }}
@@ -233,7 +239,9 @@ const SummonView: React.FC<SummonViewProps> = ({ auraPoints, setAuraPoints, user
     const getRarityColor = (rarity: Rarity) => {
         switch (rarity) {
             case Rarity.Common: return '#6b7280';
-            case Rarity.Rare: return '#4338ca';
+            case Rarity.Uncommon: return '#10b981';
+            case Rarity.Rare: return '#4f46e5';
+            case Rarity.UltraRare: return '#a855f7';
             case Rarity.Legendary: return '#ca8a04';
             default: return '#6b7280';
         }
@@ -241,9 +249,11 @@ const SummonView: React.FC<SummonViewProps> = ({ auraPoints, setAuraPoints, user
 
     const getRarityTextClass = (rarity: Rarity) => {
         switch (rarity) {
-            case Rarity.Common: return 'text-common';
-            case Rarity.Rare: return 'text-rare';
-            case Rarity.Legendary: return 'text-legendary';
+            case Rarity.Common: return 'text-slate-500 font-bold';
+            case Rarity.Uncommon: return 'text-emerald-600 font-bold';
+            case Rarity.Rare: return 'text-indigo-600 font-bold';
+            case Rarity.UltraRare: return 'text-purple-600 font-bold';
+            case Rarity.Legendary: return 'text-amber-500 font-bold';
             default: return 'text-text-main';
         }
     };
@@ -265,33 +275,81 @@ const SummonView: React.FC<SummonViewProps> = ({ auraPoints, setAuraPoints, user
             currentOwnedMap.set(c.creatureId, (currentOwnedMap.get(c.creatureId) || 0) + 1);
         });
 
-        for (let i = 0; i < count; i++) {
-            const rand = Math.random() * 100;
-            let chosenRarity: Rarity;
-            if (rand < 5) chosenRarity = Rarity.Legendary;
-            else if (rand < 30) chosenRarity = Rarity.Rare;
-            else chosenRarity = Rarity.Common;
+        // Track unique creature IDs currently owned
+        const ownedUniqueIds = new Set<number>();
+        userCreatures.forEach(c => ownedUniqueIds.add(c.creatureId));
 
-            const possibleCreatures = INITIAL_CREATURES.filter(c => c.rarity === chosenRarity);
-            const creature = possibleCreatures[Math.floor(Math.random() * possibleCreatures.length)];
+        for (let i = 0; i < count; i++) {
+            const currentOwnedAndBatchIds = new Set<number>([
+                ...ownedUniqueIds,
+                ...results.map(r => r.id)
+            ]);
+
+            let chosenRarity: Rarity;
+            let creature: Creature;
+
+            // First 5 summons (guaranteed unique)
+            const isNoDuplicateSummon = currentOwnedAndBatchIds.size < 6;
+
+            if (isNoDuplicateSummon) {
+                const rand = Math.random() * 100;
+                if (rand < 60) chosenRarity = Rarity.Common;
+                else if (rand < 85) chosenRarity = Rarity.Uncommon;
+                else if (rand < 98) chosenRarity = Rarity.Rare;
+                else chosenRarity = Rarity.UltraRare;
+
+                let possibleCreatures = INITIAL_CREATURES.filter(c => 
+                    c.rarity === chosenRarity && !currentOwnedAndBatchIds.has(c.id)
+                );
+
+                if (possibleCreatures.length === 0) {
+                    possibleCreatures = INITIAL_CREATURES.filter(c => 
+                        !currentOwnedAndBatchIds.has(c.id)
+                    );
+                }
+
+                if (possibleCreatures.length === 0) {
+                    possibleCreatures = INITIAL_CREATURES.filter(c => c.rarity === chosenRarity);
+                }
+
+                creature = possibleCreatures[Math.floor(Math.random() * possibleCreatures.length)];
+            } else {
+                const rand = Math.random() * 100;
+                if (rand < 60) chosenRarity = Rarity.Common;
+                else if (rand < 85) chosenRarity = Rarity.Uncommon;
+                else if (rand < 98) chosenRarity = Rarity.Rare;
+                else chosenRarity = Rarity.UltraRare;
+
+                const possibleCreatures = INITIAL_CREATURES.filter(c => c.rarity === chosenRarity);
+                creature = possibleCreatures[Math.floor(Math.random() * possibleCreatures.length)];
+            }
 
             const ownedBeforeThisBatch = currentOwnedMap.get(creature.id) || 0;
             const isNew = ownedBeforeThisBatch === 0;
             const newCount = ownedBeforeThisBatch + 1;
             currentOwnedMap.set(creature.id, newCount);
 
+            const isShiny = Math.random() < 1 / 500;
+
             results.push({
                 ...creature,
                 isNew,
-                multiplier: newCount
+                multiplier: newCount,
+                isShiny
             });
 
-            addCreature(creature.id);
+            addCreature(creature.id, { isShiny });
         }
 
-        // Sort results by rarity for dramatic effect (commons first, legendary last)
+        // Sort results by rarity (commons first, UltraRare last)
         const sorted = [...results].sort((a, b) => {
-            const rarityOrder = { [Rarity.Common]: 0, [Rarity.Rare]: 1, [Rarity.Legendary]: 2 };
+            const rarityOrder = { 
+                [Rarity.Common]: 0, 
+                [Rarity.Uncommon]: 1, 
+                [Rarity.Rare]: 2, 
+                [Rarity.UltraRare]: 3,
+                [Rarity.Legendary]: 4 
+            };
             return rarityOrder[a.rarity] - rarityOrder[b.rarity];
         });
         setSummonedResults(sorted);
@@ -299,18 +357,18 @@ const SummonView: React.FC<SummonViewProps> = ({ auraPoints, setAuraPoints, user
         // Phase 1: Charging (particles gather)
         setPhase('charging');
 
-        // Phase 2: Shooting stars (after 1s)
-        setTimeout(() => setPhase('shooting'), 1000);
+        // Phase 2: Shooting stars (after 1.2s)
+        setTimeout(() => setPhase('shooting'), 1200);
 
-        // Phase 3: Reveal (after 2s)
-        setTimeout(() => setPhase('reveal'), 2000);
+        // Phase 3: Reveal (after 3.2s)
+        setTimeout(() => setPhase('reveal'), 3200);
 
-        // Phase 4: Display (after 3.5s)
+        // Phase 4: Display (after 5.2s)
         setTimeout(() => {
             setPhase('display');
             // Notify parent that summon is complete
             onSummonComplete?.();
-        }, 3500);
+        }, 5200);
     };
 
     const handleSkip = () => {
@@ -326,24 +384,57 @@ const SummonView: React.FC<SummonViewProps> = ({ auraPoints, setAuraPoints, user
     const highestRarity = useMemo(() => {
         if (summonedResults.length === 0) return Rarity.Common;
         const hasLegendary = summonedResults.some(r => r.rarity === Rarity.Legendary);
+        const hasUltraRare = summonedResults.some(r => r.rarity === Rarity.UltraRare);
         const hasRare = summonedResults.some(r => r.rarity === Rarity.Rare);
+        const hasUncommon = summonedResults.some(r => r.rarity === Rarity.Uncommon);
         if (hasLegendary) return Rarity.Legendary;
+        if (hasUltraRare) return Rarity.UltraRare;
         if (hasRare) return Rarity.Rare;
+        if (hasUncommon) return Rarity.Uncommon;
         return Rarity.Common;
     }, [summonedResults]);
 
+    const getSecondaryColor = (rarity: Rarity) => {
+        switch (rarity) {
+            case Rarity.Common: return '#9ca3af';
+            case Rarity.Uncommon: return '#06b6d4';
+            case Rarity.Rare: return '#d946ef';
+            case Rarity.UltraRare: return '#ec4899';
+            case Rarity.Legendary: return '#f97316';
+            default: return '#9ca3af';
+        }
+    };
+
     const themeColor = getRarityColor(highestRarity);
+    const secondaryColor = getSecondaryColor(highestRarity);
+    const isAnimating = phase === 'charging' || phase === 'shooting' || phase === 'reveal';
 
     return (
-        <div className="flex flex-col items-center h-full text-center p-2 md:p-4 max-w-4xl mx-auto">
-            <h1 className="font-sans text-base md:text-lg bg-highlight text-text-light px-4 md:px-6 py-2 inline-block mb-2 mt-2 md:mt-4 shadow-lg rounded-sm transform -rotate-1">Divine Portal</h1>
-            <p className="text-text-dim mb-4 md:mb-8 text-[9px] md:text-[10px] uppercase tracking-widest font-bold">Bridge the gap between worlds</p>
+        <div className={`flex flex-col items-center h-full text-center p-2 md:p-4 max-w-4xl mx-auto ${
+            isAnimating ? 'fixed inset-0 z-50 w-screen h-screen bg-slate-900 p-0 max-w-none overflow-y-auto lg:relative lg:w-full lg:h-full lg:bg-transparent lg:p-4 lg:max-w-4xl lg:overflow-visible' : ''
+        }`}>
+            {!isAnimating && (
+                <>
+                    <h1 className="font-sans text-base md:text-lg bg-highlight text-text-light px-4 md:px-6 py-2 inline-block mb-2 mt-2 md:mt-4 shadow-lg rounded-sm transform -rotate-1">Divine Portal</h1>
+                    <p className="text-text-dim mb-4 md:mb-8 text-[9px] md:text-[10px] uppercase tracking-widest font-bold">Bridge the gap between worlds</p>
+                </>
+            )}
 
-            <div className="flex-grow w-full flex items-center justify-center">
+            <div className="flex-grow w-full flex items-center justify-center h-full">
                 <div
-                    className={`w-full min-h-[300px] md:min-h-[400px] lg:min-h-[500px] bg-slate-900 border-4 border-slate-800 flex items-center justify-center relative overflow-hidden transition-all duration-700 rounded-2xl md:rounded-3xl shadow-[0_20px_50px_rgba(0,0,0,0.3)] ${phase === 'charging' ? 'animate-shake' : ''}`}
+                    className={`w-full bg-slate-900 flex items-center justify-center relative overflow-hidden transition-all duration-700 shadow-[0_20px_50px_rgba(0,0,0,0.3)] ${
+                        phase === 'charging' ? 'animate-shake' : ''
+                    } ${
+                        isAnimating 
+                            ? 'w-full h-full min-h-screen rounded-none border-none lg:min-h-[500px] lg:rounded-3xl lg:border-4 lg:border-slate-800 animate-bgFlicker' 
+                            : 'min-h-[300px] md:min-h-[400px] lg:min-h-[500px] border-4 border-slate-800 rounded-2xl md:rounded-3xl'
+                    }`}
                     onClick={phase !== 'idle' ? handleSkip : undefined}
-                    style={{ cursor: phase !== 'idle' ? 'pointer' : 'default' }}
+                    style={{ 
+                        cursor: phase !== 'idle' ? 'pointer' : 'default',
+                        '--flicker-color-1': `${themeColor}20`,
+                        '--flicker-color-2': `${secondaryColor}15`
+                    } as React.CSSProperties}
                 >
                     <AtmosphericParticles />
 
@@ -371,7 +462,7 @@ const SummonView: React.FC<SummonViewProps> = ({ auraPoints, setAuraPoints, user
                     {/* Phase: Shooting stars */}
                     {phase === 'shooting' && (
                         <>
-                            <ShootingStars color={themeColor} count={7} />
+                            <ShootingStars color={themeColor} secondaryColor={secondaryColor} count={7} />
                             <WishRings color={themeColor} />
                             <div
                                 className="absolute w-40 h-40 rounded-full filter blur-3xl animate-pulse"
@@ -383,9 +474,9 @@ const SummonView: React.FC<SummonViewProps> = ({ auraPoints, setAuraPoints, user
                     {/* Phase: Reveal - Light beam and burst */}
                     {phase === 'reveal' && (
                         <>
-                            <LightBeam color={themeColor} />
-                            <StarBurst color={themeColor} />
-                            <GlitterParticles color={themeColor} />
+                            <LightBeam color={themeColor} secondaryColor={secondaryColor} />
+                            <StarBurst color={themeColor} secondaryColor={secondaryColor} />
+                            <GlitterParticles color={themeColor} secondaryColor={secondaryColor} />
                             {/* White flash */}
                             <div className="absolute inset-0 bg-white animate-flash pointer-events-none" />
                         </>
@@ -394,7 +485,7 @@ const SummonView: React.FC<SummonViewProps> = ({ auraPoints, setAuraPoints, user
                     {/* Phase: Display results */}
                     {phase === 'display' && summonedResults.length > 0 && (
                         <div className="w-full h-full p-2 md:p-4 overflow-y-auto max-h-[50vh] md:max-h-[60vh] lg:max-h-full flex items-center justify-center scroll-smooth">
-                            <GlitterParticles color={themeColor} />
+                            <GlitterParticles color={themeColor} secondaryColor={secondaryColor} />
 
                             {summonedResults.length === 1 ? (
                                 // Single summon - big reveal
@@ -417,7 +508,7 @@ const SummonView: React.FC<SummonViewProps> = ({ auraPoints, setAuraPoints, user
                                     />
 
                                     <div className="relative z-10 drop-shadow-[0_0_30px_rgba(255,255,255,0.4)]">
-                                        <PixelCreature creature={summonedResults[0]} evolutionStage={1} pixelSize={14} />
+                                        <PixelCreature creature={summonedResults[0]} evolutionStage={1} pixelSize={14} isShiny={summonedResults[0].isShiny} />
                                         {summonedResults[0].isNew ? (
                                             <div className="absolute -top-4 -right-4 bg-accent text-white font-black text-xs px-3 py-1.5 rounded-sm border-2 border-white shadow-lg animate-bounce uppercase tracking-tighter">NEW</div>
                                         ) : (
@@ -425,7 +516,9 @@ const SummonView: React.FC<SummonViewProps> = ({ auraPoints, setAuraPoints, user
                                         )}
                                     </div>
 
-                                    <h2 className="text-3xl font-bold mt-8 text-white tracking-tighter drop-shadow-md">{summonedResults[0].name}</h2>
+                                    <h2 className="text-3xl font-bold mt-8 text-white tracking-tighter drop-shadow-md">
+                                        {summonedResults[0].isShiny ? `✨ Shiny ${summonedResults[0].name} ✨` : summonedResults[0].name}
+                                    </h2>
                                     <p className={`text-xl font-black uppercase tracking-[0.3em] mt-2 ${getRarityTextClass(summonedResults[0].rarity)} animate-textGlow`}>
                                         {summonedResults[0].rarity}
                                     </p>
@@ -437,24 +530,30 @@ const SummonView: React.FC<SummonViewProps> = ({ auraPoints, setAuraPoints, user
                                         <div
                                             key={idx}
                                             className={`bg-slate-800/50 border-2 p-4 rounded-xl relative flex flex-col items-center justify-center transition-all shadow-xl animate-creatureReveal hover:scale-105 ${
+                                                result.isShiny ? 'border-amber-400' :
                                                 result.rarity === Rarity.Legendary ? 'border-legendary' :
                                                 result.rarity === Rarity.Rare ? 'border-rare' : 'border-slate-700'
                                             }`}
                                             style={{
                                                 animationDelay: `${idx * 100}ms`,
-                                                boxShadow: result.rarity === Rarity.Legendary
-                                                    ? '0 0 20px rgba(202, 138, 4, 0.5)'
-                                                    : result.rarity === Rarity.Rare
-                                                        ? '0 0 15px rgba(67, 56, 202, 0.4)'
-                                                        : undefined
+                                                boxShadow: result.isShiny
+                                                    ? '0 0 20px rgba(251, 191, 36, 0.7)'
+                                                    : result.rarity === Rarity.Legendary
+                                                        ? '0 0 20px rgba(202, 138, 4, 0.5)'
+                                                        : result.rarity === Rarity.Rare
+                                                            ? '0 0 15px rgba(67, 56, 202, 0.4)'
+                                                            : undefined
                                             }}
                                         >
                                             <div className="drop-shadow-lg relative">
-                                                <PixelCreature creature={result} evolutionStage={1} pixelSize={4} />
+                                                <PixelCreature creature={result} evolutionStage={1} pixelSize={4} isShiny={result.isShiny} />
                                                 {result.isNew ? (
                                                     <div className="absolute -top-4 -right-4 bg-accent text-white font-black text-[8px] px-1.5 py-0.5 rounded-sm border border-white shadow-md animate-pulse uppercase">NEW</div>
                                                 ) : (
                                                     <div className="absolute -bottom-2 -right-2 bg-primary text-white font-black text-[10px] px-1 rounded-sm border border-white shadow-md">x{result.multiplier}</div>
+                                                )}
+                                                {result.isShiny && (
+                                                    <div className="absolute -top-4 -left-4 bg-amber-400 text-white font-black text-[7px] px-1 py-0.5 rounded-sm border border-white shadow-sm animate-pulse">✨</div>
                                                 )}
                                             </div>
                                             <p className="text-[9px] mt-4 font-bold truncate w-full text-slate-300 uppercase">{result.name}</p>
@@ -470,7 +569,7 @@ const SummonView: React.FC<SummonViewProps> = ({ auraPoints, setAuraPoints, user
                     {/* Idle state */}
                     {phase === 'idle' && summonedResults.length === 0 && (
                         <div className="text-center text-slate-500 animate-fadeIn">
-                            <div className="text-7xl mb-6 filter drop-shadow-[0_0_20px_rgba(100,100,255,0.2)] animate-float">🔮</div>
+                            <img src="https://play.pokemonshowdown.com/sprites/itemicons/lustrous-orb.png" alt="Crystal Ball" className="w-20 h-20 mx-auto mb-6 filter drop-shadow-[0_0_20px_rgba(100,100,255,0.3)] animate-float" style={{ imageRendering: 'pixelated' }} />
                             <p className="text-sm font-sans uppercase tracking-[0.2em] opacity-60">The portal is silent...</p>
                         </div>
                     )}
@@ -491,7 +590,7 @@ const SummonView: React.FC<SummonViewProps> = ({ auraPoints, setAuraPoints, user
                         className="flex-1 bg-surface hover:bg-secondary/20 active:bg-secondary/20 text-text-main font-bold py-3 md:py-4 px-4 md:px-6 shadow-card hover:shadow-card-hover transition-premium border-2 border-secondary/50 disabled:opacity-40 disabled:cursor-not-allowed border-b-4 active:border-b-0 active:translate-y-0.5 rounded-xl flex items-center justify-center gap-2 md:gap-3 uppercase tracking-tighter text-[9px] md:text-[10px] touch-target press-effect"
                     >
                         <span>Summon x1</span>
-                        <span className="bg-primary/10 text-primary px-2.5 py-1 rounded-full font-mono">{SUMMON_COST} 💎</span>
+                        <span className="bg-primary/10 text-primary px-2.5 py-1 rounded-full font-mono flex items-center gap-1">{SUMMON_COST} <AuraIcon className="w-3.5 h-3.5 text-primary" /></span>
                     </button>
                     <button
                         onClick={() => performSummon(10)}
@@ -499,14 +598,14 @@ const SummonView: React.FC<SummonViewProps> = ({ auraPoints, setAuraPoints, user
                         className="flex-1 bg-highlight hover:brightness-110 active:brightness-110 text-white font-bold py-3 md:py-4 px-4 md:px-6 shadow-card hover:shadow-glow-highlight transition-premium border-2 border-yellow-800 disabled:opacity-40 disabled:cursor-not-allowed border-b-4 border-yellow-900 active:border-b-0 active:translate-y-0.5 rounded-xl flex items-center justify-center gap-2 md:gap-3 uppercase tracking-tighter text-[9px] md:text-[10px] touch-target press-effect"
                     >
                         <span>Summon x10</span>
-                        <span className="bg-white/20 px-2.5 py-1 rounded-full font-mono">{SUMMON_COST * 10} 💎</span>
+                        <span className="bg-white/20 px-2.5 py-1 rounded-full font-mono flex items-center gap-1">{SUMMON_COST * 10} <AuraIcon className="w-3.5 h-3.5 text-white" /></span>
                     </button>
                 </div>
             </div>
 
             <div className="mt-4 md:mt-8 glass px-4 md:px-8 py-2 md:py-3 rounded-xl border-2 border-secondary/30 shadow-card animate-fadeIn flex items-center gap-2 md:gap-3 hover-lift">
-                <span className="text-base md:text-lg animate-gentleBounce">💎</span>
-                <p className="text-[10px] md:text-xs tracking-widest uppercase font-bold text-primary">Your Aura: <span className="text-highlight font-black ml-1">{auraPoints.toLocaleString()}</span></p>
+                <AuraIcon className="w-4 h-4 md:w-5 md:h-5 text-primary animate-gentleBounce" />
+                <p className="text-[10px] md:text-xs tracking-widest uppercase font-bold text-primary flex items-center gap-1">Your Aura: <span className="text-highlight font-black ml-1 flex items-center gap-1">{auraPoints.toLocaleString()} <AuraIcon className="w-3.5 h-3.5 text-highlight" /></span></p>
             </div>
         </div>
     );

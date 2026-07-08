@@ -2,7 +2,7 @@
 import { UserProfile, DailyMission } from '../types';
 import { SUBTOPICS } from '../constants';
 import { SKILL_LEVELS } from './mastery';
-import { QUESTION_BANK } from '../data/questionBank';
+import { INDEXED_QUESTIONS } from '../data/questionBankIndexed';
 
 // Helper to shuffle an array
 const shuffleArray = <T>(array: T[]): T[] => {
@@ -15,8 +15,8 @@ const shuffleArray = <T>(array: T[]): T[] => {
 };
 
 export const generateDailyMissions = (profile: UserProfile): DailyMission[] => {
-    // Audit available topics in the database
-    const availableSubtopics = Array.from(new Set(QUESTION_BANK.map(q => q.Type)));
+    // Audit available topics using the indexed bank (which includes alias-mapped categories)
+    const availableSubtopics = Object.keys(INDEXED_QUESTIONS);
 
     const subtopicsWithLevels = SUBTOPICS
         .filter(s => availableSubtopics.includes(s)) // ONLY pick topics we have data for

@@ -1,4 +1,8 @@
 import React from 'react';
+import { PixelCreature } from '../CreatureCard';
+import { INITIAL_CREATURES } from '../../constants';
+
+const pikachu = INITIAL_CREATURES.find(c => c.id === 'pikachu');
 
 interface PikachuGuideProps {
     message: string;
@@ -27,7 +31,9 @@ const PikachuGuide: React.FC<PikachuGuideProps> = ({
                 {showPikachu && (
                     <div className="flex justify-center mb-4">
                         {/* Pikachu sprite placeholder - using emoji for now */}
-                        <div className="text-6xl animate-bounce">⚡</div>
+                        <div className="animate-bounce">
+                            {pikachu && <PixelCreature creature={pikachu} evolutionStage={1} pixelSize={8} />}
+                        </div>
                     </div>
                 )}
 

@@ -8,6 +8,7 @@
  */
 
 import express, { Router, Request, Response } from 'express';
+import { AuthenticatedRequest } from '../types';
 import { authMiddleware } from '../middleware/auth.middleware';
 import {
   UserMetrics,
@@ -30,7 +31,7 @@ const router = Router();
  * GET /api/analytics/user/learning
  * Get user's learning progress
  */
-router.get('/user/learning', authMiddleware, async (req: Request, res: Response) => {
+router.get('/user/learning', authMiddleware, async (req: AuthenticatedRequest, res: Response) => {
   try {
     const userId = req.user?.id;
     if (!userId) {
@@ -49,7 +50,7 @@ router.get('/user/learning', authMiddleware, async (req: Request, res: Response)
  * GET /api/analytics/user/engagement
  * Get user's engagement metrics
  */
-router.get('/user/engagement', authMiddleware, async (req: Request, res: Response) => {
+router.get('/user/engagement', authMiddleware, async (req: AuthenticatedRequest, res: Response) => {
   try {
     const userId = req.user?.id;
     if (!userId) {
@@ -68,7 +69,7 @@ router.get('/user/engagement', authMiddleware, async (req: Request, res: Respons
  * GET /api/analytics/user/gacha
  * Get user's gacha economics
  */
-router.get('/user/gacha', authMiddleware, async (req: Request, res: Response) => {
+router.get('/user/gacha', authMiddleware, async (req: AuthenticatedRequest, res: Response) => {
   try {
     const userId = req.user?.id;
     if (!userId) {
@@ -87,7 +88,7 @@ router.get('/user/gacha', authMiddleware, async (req: Request, res: Response) =>
  * GET /api/analytics/user/performance
  * Get user's recent performance logs
  */
-router.get('/user/performance', authMiddleware, async (req: Request, res: Response) => {
+router.get('/user/performance', authMiddleware, async (req: AuthenticatedRequest, res: Response) => {
   try {
     const userId = req.user?.id;
     if (!userId) {
@@ -103,6 +104,47 @@ router.get('/user/performance', authMiddleware, async (req: Request, res: Respon
     return res.status(200).json({ success: true, data: logs });
   } catch (error) {
     console.error('Error fetching performance logs:', error);
+    return res.status(500).json({ error: 'Internal server error' });
+  }
+});
+
+/**
+ * POST /api/analytics/performance
+ * Log a question answer performance
+ */
+router.post('/performance', authMiddleware, async (req: AuthenticatedRequest, res: Response) => {
+  try {
+    const userId = req.user?.id;
+    if (!userId) {
+      return res.status(401).json({ error: 'Unauthorized' });
+    }
+
+    const {
+      subtopicId,
+      topicId,
+      questionId,
+      isCorrect,
+      difficultyLevel,
+      timeSpentSeconds,
+      userAnswered,
+      correctAnswer
+    } = req.body;
+
+    await AnalyticsService.logPerformance({
+      userId,
+      subtopicId,
+      topicId,
+      questionId,
+      isCorrect,
+      difficultyLevel,
+      timeSpentSeconds,
+      userAnswered,
+      correctAnswer
+    });
+
+    return res.status(201).json({ success: true, message: 'Performance logged successfully' });
+  } catch (error) {
+    console.error('Error logging performance:', error);
     return res.status(500).json({ error: 'Internal server error' });
   }
 });

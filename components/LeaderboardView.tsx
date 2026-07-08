@@ -4,6 +4,12 @@ import { INITIAL_CREATURES } from '../constants';
 import { PixelCreature } from './CreatureCard';
 import { Rarity, LeagueType } from '../types';
 import UserPlusIcon from './icons/UserPlusIcon';
+import AuraIcon from './icons/AuraIcon';
+import CrownIcon from './icons/CrownIcon';
+import SecondPlaceIcon from './icons/SecondPlaceIcon';
+import ThirdPlaceIcon from './icons/ThirdPlaceIcon';
+import SwordsIcon from './icons/SwordsIcon';
+import HandshakeIcon from './icons/HandshakeIcon';
 
 interface LeaderboardEntry {
     rank: number;
@@ -14,12 +20,14 @@ interface LeaderboardEntry {
 }
 
 interface LeaderboardViewProps {
+    username: string;
     weeklyGain: number;
     league: LeagueType;
     competitors: any[];
+    activeGuardianId?: number;
 }
 
-const LeaderboardView: React.FC<LeaderboardViewProps> = ({ weeklyGain, league, competitors }) => {
+const LeaderboardView: React.FC<LeaderboardViewProps> = ({ username, weeklyGain, league, competitors, activeGuardianId = 1 }) => {
     const [isMenuOpen, setIsMenuOpen] = useState(false);
     const [lastAction, setLastAction] = useState<string | null>(null);
     const [userVisibility, setUserVisibility] = useState<'visible' | 'above' | 'below'>('visible');
@@ -30,15 +38,15 @@ const LeaderboardView: React.FC<LeaderboardViewProps> = ({ weeklyGain, league, c
     const allEntries = useMemo(() => {
         // Ensure pool of exactly 20 entries
         const sorted = [...competitors, { 
-            username: "Seeker", 
+            username: username, 
             weeklyGain: weeklyGain, 
-            guardianId: 1, 
+            guardianId: activeGuardianId, 
             isUser: true 
         }].sort((a, b) => b.weeklyGain - a.weeklyGain)
           .map((entry, idx) => ({ ...entry, rank: idx + 1 }));
         
         return sorted.slice(0, 20);
-    }, [competitors, weeklyGain]);
+    }, [competitors, weeklyGain, username, activeGuardianId]);
 
     const top3 = allEntries.slice(0, 3);
 
@@ -125,8 +133,6 @@ const LeaderboardView: React.FC<LeaderboardViewProps> = ({ weeklyGain, league, c
                     const order = displayRank === 1 ? 'order-2' : (displayRank === 2 ? 'order-1' : 'order-3');
                     const scale = displayRank === 1 ? 'md:scale-110 lg:scale-110' : 'scale-90';
                     const height = displayRank === 1 ? 'h-32 md:h-40 lg:h-56' : (displayRank === 2 ? 'h-24 md:h-32 lg:h-40' : 'h-20 md:h-24 lg:h-32');
-                    const emoji = displayRank === 1 ? '👑' : (displayRank === 2 ? '🥈' : '🥉');
-
                     return (
                         <div key={entry.username} className={`${order} flex flex-col items-center ${displayRank === 1 ? '-mt-6 md:-mt-8' : ''}`}>
                             <div className={`mb-2 md:mb-4 transform ${scale} ${displayRank === 1 ? 'animate-bounce' : ''}`}>
@@ -137,11 +143,15 @@ const LeaderboardView: React.FC<LeaderboardViewProps> = ({ weeklyGain, league, c
                                 />
                             </div>
                             <div className={`w-24 md:w-28 lg:w-40 ${height} border-t-4 ${getPodiumColor(displayRank)} flex flex-col items-center pt-3 md:pt-4 rounded-t-xl shadow-lg relative ${displayRank === 1 ? 'z-10' : ''} ${entry.isUser ? 'ring-2 ring-highlight ring-inset bg-highlight/5' : ''}`}>
-                                <span className="absolute -top-8 md:-top-10 text-xl md:text-2xl lg:text-4xl">{emoji}</span>
-                                <p className="font-bold text-[9px] md:text-[10px] lg:text-xs truncate w-full px-2 text-center tracking-tighter">
+                                <span className="absolute -top-8 md:-top-10 flex items-center justify-center bg-white dark:bg-slate-800 rounded-full p-1.5 shadow-md border-2 border-secondary/20">
+                                    {displayRank === 1 && <CrownIcon className="w-5 h-5 md:w-6 md:h-6 text-yellow-500" />}
+                                    {displayRank === 2 && <SecondPlaceIcon className="w-5 h-5 md:w-6 md:h-6 text-slate-400" />}
+                                    {displayRank === 3 && <ThirdPlaceIcon className="w-5 h-5 md:w-6 md:h-6 text-orange-600" />}
+                                </span>
+                                <p className="font-bold text-[9px] md:text-[10px] lg:text-xs truncate w-full px-2 text-center tracking-tighter mt-1">
                                     {entry.username} {entry.isUser ? '(You)' : ''}
                                 </p>
-                                <p className="text-[8px] md:text-[9px] lg:text-[10px] font-bold opacity-80 mt-1">+{entry.weeklyGain} 💎</p>
+                                <p className="text-[8px] md:text-[9px] lg:text-[10px] font-bold opacity-80 mt-1 flex items-center justify-center gap-0.5">+{entry.weeklyGain} <AuraIcon className="w-2.5 h-2.5" /></p>
                             </div>
                         </div>
                     );
@@ -194,8 +204,8 @@ const LeaderboardView: React.FC<LeaderboardViewProps> = ({ weeklyGain, league, c
                                 </div>
                             </div>
                             <div className="text-right">
-                                <span className={`font-mono text-sm font-bold ${entry.isUser ? 'text-highlight' : 'text-primary'}`}>
-                                    +{entry.weeklyGain.toLocaleString()} 💎
+                                <span className={`font-mono text-sm font-bold flex items-center justify-end gap-1 ${entry.isUser ? 'text-highlight' : 'text-primary'}`}>
+                                    +{entry.weeklyGain.toLocaleString()} <AuraIcon className="w-3.5 h-3.5" />
                                 </span>
                             </div>
                         </div>
@@ -230,7 +240,7 @@ const LeaderboardView: React.FC<LeaderboardViewProps> = ({ weeklyGain, league, c
                         className="bg-accent/50 text-white/80 px-4 py-2 rounded-full flex items-center gap-3 shadow-xl cursor-not-allowed border-2 border-accent-dark/50 relative"
                     >
                         <span className="text-[10px] font-bold uppercase tracking-widest">Random PvP</span>
-                        <span className="text-lg">⚔️</span>
+                        <SwordsIcon className="w-4 h-4 text-white" />
                         <span className="absolute -top-2 -right-2 bg-highlight text-[7px] text-white px-1.5 py-0.5 rounded-full font-bold shadow-md">SOON</span>
                     </button>
                     <button
@@ -238,7 +248,7 @@ const LeaderboardView: React.FC<LeaderboardViewProps> = ({ weeklyGain, league, c
                         className="bg-primary/50 text-white/80 px-4 py-2 rounded-full flex items-center gap-3 shadow-xl cursor-not-allowed border-2 border-primary/50 relative"
                     >
                         <span className="text-[10px] font-bold uppercase tracking-widest">Friend PvP</span>
-                        <span className="text-lg">🤝</span>
+                        <HandshakeIcon className="w-4 h-4 text-white" />
                         <span className="absolute -top-2 -right-2 bg-highlight text-[7px] text-white px-1.5 py-0.5 rounded-full font-bold shadow-md">SOON</span>
                     </button>
                     <button

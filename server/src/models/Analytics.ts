@@ -329,7 +329,10 @@ export {
   SubtopicMetrics,
   EngagementEvent,
   DailyCohortMetrics,
-  SentimentLog,
+  SentimentLog
+};
+
+export type {
   IUserMetrics,
   IPerformanceLog,
   ISubtopicMetrics,

@@ -20,6 +20,10 @@ import ProfileModal from './components/ProfileModal';
 import { generateSatQuestion } from './services/questionService';
 import { getDifficultyForLevel } from './utils/mastery';
 import { AuthService } from './services/authService';
+import SunIcon from './components/icons/SunIcon';
+import MoonIcon from './components/icons/MoonIcon';
+import AuraIcon from './components/icons/AuraIcon';
+import FireIcon from './components/icons/FireIcon';
 
 // Tutorial components
 import PikachuGuide from './components/Tutorial/PikachuGuide';
@@ -81,6 +85,7 @@ const App: React.FC = () => {
     const [auraPoints, setAuraPoints] = useUserStorage<number>(userId, 'auraPoints', 500);
     const [creatures, setCreatures] = useUserStorage<CreatureInstance[]>(userId, 'userCreatures', []);
     const [activeCreatureId, setActiveCreatureId] = useUserStorage<number | null>(userId, 'activeCreatureId', null);
+    const [userTeam, setUserTeam] = useUserStorage<number[]>(userId, 'userTeam', []);
     const [reviewQueue, setReviewQueue] = useUserStorage<Question[]>(userId, 'reviewQueue', []);
     const [dailyActivity, setDailyActivity] = useUserStorage<DailyActivity>(userId, 'dailyActivity', {
         date: '',
@@ -91,6 +96,21 @@ const App: React.FC = () => {
     const [activeMissionId, setActiveMissionId] = useState<string | null>(null);
     const [preparingMissionId, setPreparingMissionId] = useState<string | null>(null);
     const [streakToShow, setStreakToShow] = useState<number | null>(null);
+
+    const [theme, setTheme] = useState<'light' | 'dark'>(() => {
+        const saved = localStorage.getItem('theme');
+        if (saved === 'dark' || saved === 'light') return saved;
+        return 'light';
+    });
+
+    useEffect(() => {
+        if (theme === 'dark') {
+            document.documentElement.classList.add('dark');
+        } else {
+            document.documentElement.classList.remove('dark');
+        }
+        localStorage.setItem('theme', theme);
+    }, [theme]);
 
     // Check for valid session on app load
     useEffect(() => {
@@ -174,6 +194,7 @@ const App: React.FC = () => {
         // Dev/Test account override: Unlock all features and award 10,000 Aura
         if (user.email === 'maxidea2008@gmail.com') {
             const isFullyUnlocked = tutorialState.isComplete &&
+                                    tutorialState.baselineCompleted &&
                                     tutorialState.progressUnlocked &&
                                     tutorialState.trainingUnlocked &&
                                     tutorialState.shopUnlocked &&
@@ -185,6 +206,7 @@ const App: React.FC = () => {
                     ...prev,
                     isComplete: true,
                     currentPhase: 'complete',
+                    baselineCompleted: true,
                     progressUnlocked: true,
                     trainingUnlocked: true,
                     shopUnlocked: true,
@@ -741,6 +763,7 @@ const App: React.FC = () => {
                             weeklyGain={profile.weeklyAuraGain} 
                             league={profile.league} 
                             competitors={mockCompetitors}
+                            activeGuardianId={creatures.find(c => c.id === activeCreatureId)?.creatureId || 1}
                         />;
             case View.SUMMON:
                 return <SummonView
@@ -771,9 +794,25 @@ const App: React.FC = () => {
             case View.BESTIARY:
                 return <BestiaryView
                     userCreatures={creatures}
+                    userTeam={userTeam}
+                    onToggleTeamMember={(instanceId) => {
+                        setUserTeam(prev => {
+                            if (prev.includes(instanceId)) {
+                                return prev.filter(id => id !== instanceId);
+                            } else if (prev.length < 6) {
+                                return [...prev, instanceId];
+                            }
+                            return prev;
+                        });
+                    }}
                     onToggleFavorite={(instanceId) => {
                         setCreatures(prev => prev.map(c =>
                             c.id === instanceId ? { ...c, isFavorite: !c.isFavorite } : c
+                        ));
+                    }}
+                    onRenameCreature={(instanceId, newName) => {
+                        setCreatures(prev => prev.map(c =>
+                            c.id === instanceId ? { ...c, customName: newName.trim() || undefined } : c
                         ));
                     }}
                 />;
@@ -1301,26 +1340,58 @@ const App: React.FC = () => {
     }
 
     return (
-        <div className="min-h-screen w-full bg-background text-text-main font-sans text-sm flex flex-col lg:flex-row pt-safe">
+        <div className="min-h-screen w-full bg-gradient-to-tr from-[#f5d0fe] via-[#fef9c3] to-[#a5f3fc] dark:from-[#311042] dark:via-[#0f172a] dark:to-[#083344] text-text-main font-sans text-sm flex flex-col lg:flex-row pt-safe">
             <BottomNavBar
                 currentView={currentView}
                 setCurrentView={setCurrentView}
                 user={user}
                 tutorialState={tutorialState}
                 onOpenProfile={() => setIsProfileOpen(true)}
+                theme={theme}
+                onToggleTheme={() => setTheme(prev => prev === 'light' ? 'dark' : 'light')}
             />
-            {/* Mobile floating settings/avatar button */}
+            {/* Mobile floating controls (z-30 front layer) */}
             {user && (
-                <button
-                    onClick={() => setIsProfileOpen(true)}
-                    className="lg:hidden fixed top-3 right-3 z-30 w-10 h-10 rounded-full border-2 border-highlight bg-white overflow-hidden shadow-card hover:scale-105 active:scale-95 transition-all flex items-center justify-center press-effect"
-                >
-                    {user.photoUrl ? (
-                        <img src={user.photoUrl} alt="Settings" className="w-full h-full object-cover" />
-                    ) : (
-                        <span className="text-lg">👤</span>
-                    )}
-                </button>
+                <div className="lg:hidden fixed top-3 left-3 right-3 z-30 flex items-center justify-between pointer-events-none">
+                    {/* Left side stats (click events enabled) */}
+                    <div className="flex gap-1.5 items-center pointer-events-auto">
+                        <div className="glass px-3 py-1.5 rounded-lg border border-secondary/50 text-xs font-bold text-primary shadow-card flex items-center gap-1.5">
+                            <AuraIcon className="w-3.5 h-3.5 animate-gentleBounce text-primary" />
+                            <span>{auraPoints.toLocaleString()}</span>
+                        </div>
+                        {profile.dailyStreak > 0 && (
+                            <div className="glass px-3 py-1.5 rounded-lg border border-accent/30 text-xs font-bold text-accent shadow-card flex items-center gap-1 animate-popIn">
+                                <FireIcon className="w-3.5 h-3.5 animate-subtlePulse text-accent" />
+                                <span>{profile.dailyStreak}</span>
+                            </div>
+                        )}
+                    </div>
+
+                    {/* Right side controls (click events enabled) */}
+                    <div className="flex items-center gap-2 pointer-events-auto">
+                        <button
+                            onClick={() => setTheme(prev => prev === 'light' ? 'dark' : 'light')}
+                            className="w-10 h-10 rounded-full border-2 border-highlight bg-white dark:bg-slate-800 shadow-card hover:scale-105 active:scale-95 transition-all flex items-center justify-center press-effect"
+                            title="Toggle Light/Dark Theme"
+                        >
+                            {theme === 'dark' ? (
+                                <MoonIcon className="w-5 h-5 text-highlight" />
+                            ) : (
+                                <SunIcon className="w-5 h-5 text-highlight" />
+                            )}
+                        </button>
+                        <button
+                            onClick={() => setIsProfileOpen(true)}
+                            className="w-10 h-10 rounded-full border-2 border-highlight bg-white overflow-hidden shadow-card hover:scale-105 active:scale-95 transition-all flex items-center justify-center press-effect"
+                        >
+                            {user.photoUrl ? (
+                                <img src={user.photoUrl} alt="Settings" className="w-full h-full object-cover" />
+                            ) : (
+                                <span className="text-lg">👤</span>
+                            )}
+                        </button>
+                    </div>
+                </div>
             )}
             <main className="flex-grow p-3 md:p-4 pb-20 md:pb-24 lg:pb-8 lg:p-8 lg:ml-64 w-full max-w-7xl mx-auto transition-all duration-300">
                 {renderView()}

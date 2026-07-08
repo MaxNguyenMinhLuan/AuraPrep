@@ -62,10 +62,11 @@ export interface UserProfile {
 
 export enum Rarity {
     Common = 'Common',
+    Uncommon = 'Uncommon',
     Rare = 'Rare',
+    UltraRare = 'Ultra Rare',
     Legendary = 'Legendary',
 }
-
 export enum CreatureType {
     Leaf = 'Leaf',
     Fire = 'Fire',
@@ -92,6 +93,12 @@ export interface Creature {
     spriteUrls?: [string, string?, string?]; // Sprite URLs for each evolution stage
 }
 
+export interface BossDef {
+    id: string;
+    name: string;
+    spriteUrl: string;
+}
+
 // XP required for each level (level 5-100)
 // Formula: XP_for_level = level * 10 (so level 10 needs 100 XP, level 50 needs 500 XP, etc.)
 export const XP_PER_LEVEL = 10;
@@ -108,6 +115,7 @@ export interface CreatureInstance {
     customImageUrl?: string;
     customName?: string;
     customRarity?: Rarity;
+    isShiny?: boolean;
 }
 
 export interface DailyMission {

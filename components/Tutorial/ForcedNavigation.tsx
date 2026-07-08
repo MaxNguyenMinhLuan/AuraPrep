@@ -7,6 +7,10 @@
 
 import React, { useEffect, useState } from 'react';
 import { TutorialPhase, View } from '../../types';
+import { PixelCreature } from '../CreatureCard';
+import { INITIAL_CREATURES } from '../../constants';
+
+const pikachu = INITIAL_CREATURES.find(c => c.id === 'pikachu');
 
 interface ForcedNavigationProps {
     phase: TutorialPhase;
@@ -185,7 +189,9 @@ const ForcedNavigation: React.FC<ForcedNavigationProps> = ({
                 <div className="bg-surface border-4 border-highlight rounded-xl shadow-2xl p-5 animate-scaleIn">
                     {/* Pikachu icon */}
                     <div className="flex justify-center mb-3">
-                        <div className="text-4xl">⚡</div>
+                        <div className="animate-bounce mb-2">
+                            {pikachu && <PixelCreature creature={pikachu} evolutionStage={1} pixelSize={6} />}
+                        </div>
                     </div>
 
                     {/* Speech bubble */}

@@ -1,11 +1,84 @@
 import { Response, NextFunction } from 'express';
+import { initializeApp, getApps } from 'firebase-admin/app';
+import { getAuth } from 'firebase-admin/auth';
 import { TokenService } from '../services/token.service';
 import { User } from '../models/User';
+import { config } from '../config';
 import { AuthenticatedRequest, ApiResponse } from '../types';
+
+// Initialize Firebase Admin
+if (getApps().length === 0) {
+    try {
+        initializeApp({
+            projectId: config.firebase.projectId
+        });
+        console.log(`Firebase Admin initialized with project ID: ${config.firebase.projectId}`);
+    } catch (error) {
+        console.error('Failed to initialize Firebase Admin SDK:', error);
+    }
+}
+
+interface DecodedTokenPayload {
+    userId: string;
+    email: string;
+}
+
+/**
+ * Helper to verify either a local JWT or a Firebase ID token
+ * Returns mapped user ID and email, or null if invalid
+ */
+const verifyToken = async (token: string): Promise<DecodedTokenPayload | null> => {
+    // 1. Try verifying as local backend JWT first
+    const localPayload = TokenService.verifyAccessToken(token);
+    if (localPayload) {
+        return {
+            userId: localPayload.userId,
+            email: localPayload.email
+        };
+    }
+
+    // 2. Try verifying as Firebase ID token
+    try {
+        const decodedFirebaseToken = await getAuth().verifyIdToken(token);
+        if (!decodedFirebaseToken.email) {
+            console.error('Firebase token is missing email address');
+            return null;
+        }
+
+        const email = decodedFirebaseToken.email.toLowerCase();
+
+        // Find existing MongoDB user or create a new one
+        let user = await User.findOne({ email });
+        if (!user) {
+            console.log(`Creating new MongoDB user for verified Firebase account: ${email}`);
+            const provider = decodedFirebaseToken.firebase?.sign_in_provider === 'google.com' ? 'google' : 'local';
+            user = await User.create({
+                email,
+                name: decodedFirebaseToken.name || email.split('@')[0],
+                photoUrl: decodedFirebaseToken.picture || null,
+                authProvider: provider,
+                googleId: decodedFirebaseToken.firebase?.sign_in_provider === 'google.com' ? decodedFirebaseToken.uid : undefined,
+                isEmailVerified: decodedFirebaseToken.email_verified || false,
+                isActive: true
+            });
+        }
+
+        return {
+            userId: user._id.toString(),
+            email: user.email
+        };
+    } catch (firebaseError: any) {
+        // Log only if it is not a signature mismatch/expired (to avoid polluting logs)
+        if (firebaseError.code !== 'auth/argument-error') {
+            console.error('Firebase token verification failed:', firebaseError.message);
+        }
+        return null;
+    }
+};
 
 /**
  * Middleware to require authentication
- * Verifies the access token and adds user info to the request
+ * Verifies the token (local JWT or Firebase ID token) and adds user info to the request
  */
 export const authMiddleware = async (
     req: AuthenticatedRequest,
@@ -28,7 +101,7 @@ export const authMiddleware = async (
         }
 
         const token = authHeader.substring(7);
-        const payload = TokenService.verifyAccessToken(token);
+        const payload = await verifyToken(token);
 
         if (!payload) {
             const response: ApiResponse = {
@@ -88,7 +161,7 @@ export const optionalAuthMiddleware = async (
 
     if (authHeader && authHeader.startsWith('Bearer ')) {
         const token = authHeader.substring(7);
-        const payload = TokenService.verifyAccessToken(token);
+        const payload = await verifyToken(token);
 
         if (payload) {
             req.user = {

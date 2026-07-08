@@ -1,8 +1,8 @@
 import { TutorialPhase, TutorialState } from '../types';
 
 // Tutorial milestone constants
-export const PROGRESS_UNLOCK_QUESTIONS = 60;  // Questions needed to unlock Progress tab
-export const LEADERBOARD_UNLOCK_QUESTIONS = 120;  // Questions needed to unlock Leaderboard
+export const PROGRESS_UNLOCK_QUESTIONS = 15;  // Questions needed to unlock Progress tab (was 60)
+export const LEADERBOARD_UNLOCK_QUESTIONS = 30;  // Questions needed to unlock Leaderboard (was 120)
 
 export const INITIAL_TUTORIAL_STATE: TutorialState = {
     isComplete: false,

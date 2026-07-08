@@ -7,21 +7,25 @@ interface PixelCreatureProps {
     creature: Creature;
     evolutionStage: 1 | 2 | 3;
     pixelSize?: number;
+    isShiny?: boolean;
 }
 
-export const PixelCreature: React.FC<PixelCreatureProps> = ({ creature, evolutionStage, pixelSize = 8 }) => {
+export const PixelCreature: React.FC<PixelCreatureProps> = ({ creature, evolutionStage, pixelSize = 8, isShiny = false }) => {
     // Priority 1: Evolution-based sprite URLs (animated GIFs for each stage)
     if (creature.spriteUrls) {
         // Clamp evolution stage to maxEvolutionStage (for Pokemon without evolutions)
         const effectiveStage = Math.min(evolutionStage, creature.maxEvolutionStage);
-        const spriteUrl = creature.spriteUrls[effectiveStage - 1];
+        let spriteUrl = creature.spriteUrls[effectiveStage - 1];
+        if (isShiny && spriteUrl) {
+            spriteUrl = spriteUrl.replace('/normal/', '/shiny/');
+        }
         const stageName = creature.names[effectiveStage - 1] || creature.name;
         const baseSize = pixelSize * 12; // Larger multiplier for animated sprites
         return (
             <img
                 src={spriteUrl}
                 alt={stageName}
-                className="object-contain drop-shadow-lg"
+                className={`object-contain drop-shadow-lg ${isShiny ? 'filter brightness-110 drop-shadow-[0_0_8px_rgba(251,191,36,0.6)]' : ''}`}
                 style={{
                     width: baseSize,
                     height: baseSize,
@@ -69,10 +73,12 @@ interface CreatureCardProps {
 
 const getRarityClasses = (rarity: Rarity) => {
     switch (rarity) {
-        case Rarity.Common: return { bg: 'bg-common/20', text: 'text-common', border: 'border-common/50' };
-        case Rarity.Rare: return { bg: 'bg-rare/20', text: 'text-rare', border: 'border-rare/50' };
-        case Rarity.Legendary: return { bg: 'bg-legendary/20', text: 'text-legendary', border: 'border-legendary/50' };
-        default: return { bg: 'bg-background', text: 'text-text-main', border: 'border-text-dim' };
+        case Rarity.Common: return { bg: 'bg-slate-100/50 dark:bg-slate-800/40', text: 'text-slate-500 dark:text-slate-400 font-bold', border: 'border-slate-300 dark:border-slate-700' };
+        case Rarity.Uncommon: return { bg: 'bg-emerald-50 dark:bg-emerald-950/20', text: 'text-emerald-600 dark:text-emerald-400 font-bold', border: 'border-emerald-300 dark:border-emerald-900/60' };
+        case Rarity.Rare: return { bg: 'bg-indigo-50 dark:bg-indigo-950/20', text: 'text-indigo-600 dark:text-indigo-400 font-bold', border: 'border-indigo-300 dark:border-indigo-900/60' };
+        case Rarity.UltraRare: return { bg: 'bg-purple-50 dark:bg-purple-950/20', text: 'text-purple-600 dark:text-purple-400 font-bold', border: 'border-purple-300 dark:border-purple-900/60' };
+        case Rarity.Legendary: return { bg: 'bg-amber-50 dark:bg-amber-950/20', text: 'text-amber-600 dark:text-amber-400 font-bold border-dashed animate-pulse', border: 'border-amber-400 dark:border-amber-900/60' };
+        default: return { bg: 'bg-background dark:bg-slate-900', text: 'text-text-main dark:text-slate-100', border: 'border-text-dim dark:border-slate-700' };
     }
 };
 
@@ -85,11 +91,11 @@ const CreatureCard: React.FC<CreatureCardProps> = ({ instance, isLarge = false, 
     const effectiveStage = Math.min(instance.evolutionStage, maxEvoStage) as 1 | 2 | 3;
 
     // Fallback/Custom logic - use stage-specific name if available
-    const displayName = isCustom
+    const displayName = instance.customName || (isCustom
         ? instance.customName
         : (creatureData?.names
             ? (creatureData.names[effectiveStage - 1] || creatureData.name)
-            : (creatureData?.name || 'Unknown'));
+            : (creatureData?.name || 'Unknown')));
     const displayRarity = isCustom ? (instance.customRarity || Rarity.Common) : (creatureData?.rarity || Rarity.Common);
     const rarityClasses = getRarityClasses(displayRarity);
 
@@ -118,7 +124,7 @@ const CreatureCard: React.FC<CreatureCardProps> = ({ instance, isLarge = false, 
             );
         }
         if (creatureData) {
-            return <PixelCreature creature={creatureData} evolutionStage={effectiveStage} pixelSize={size} />;
+            return <PixelCreature creature={creatureData} evolutionStage={effectiveStage} pixelSize={size} isShiny={instance.isShiny} />;
         }
         return <div className="text-4xl">?</div>;
     };

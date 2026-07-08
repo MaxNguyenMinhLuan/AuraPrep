@@ -1,5 +1,5 @@
 
-import { Creature, Rarity, CreatureType, PowerUpType, LeagueType } from './types';
+import { Creature, Rarity, CreatureType, PowerUpType, LeagueType, BossDef } from './types';
 
 export const SUBTOPICS: string[] = [
     'Algebra: Absolute Value',
@@ -109,6 +109,24 @@ export const POWER_UPS: PowerUpDef[] = [
     }
 ];
 
+export const BOSSES: BossDef[] = [
+    { id: 'articuno', name: 'Articuno', spriteUrl: '/bosses/articuno.gif' },
+    { id: 'zapdos', name: 'Zapdos', spriteUrl: '/bosses/zapdos.gif' },
+    { id: 'moltres', name: 'Moltres', spriteUrl: '/bosses/moltres.gif' },
+    { id: 'articuno-galar', name: 'Galarian Articuno', spriteUrl: '/bosses/articuno-galar.gif' },
+    { id: 'zapdos-galar', name: 'Galarian Zapdos', spriteUrl: '/bosses/zapdos-galar.gif' },
+    { id: 'moltres-galar', name: 'Galarian Moltres', spriteUrl: '/bosses/moltres-galar.gif' }
+];
+
+export const getBossForSubtopic = (subtopic: string): BossDef => {
+    let hash = 0;
+    for (let i = 0; i < subtopic.length; i++) {
+        hash = subtopic.charCodeAt(i) + ((hash << 5) - hash);
+    }
+    const index = Math.abs(hash) % BOSSES.length;
+    return BOSSES[index];
+};
+
 // Pokemon sprite base URL for placeholder testing
 // NOTE: These Pokemon sprites are placeholders for testing only and will be replaced with original characters before commercial launch
 const SPRITE_BASE = 'https://img.pokemondb.net/sprites/black-white/anim/normal/';
@@ -128,7 +146,7 @@ const EMPTY_COLORS: { [key: string]: string } = {};
 
 export const INITIAL_CREATURES: Creature[] = [
     // ===== 3-STAGE EVOLUTION LINES =====
-    // Starter Pokemon (evolve at 16, 36)
+    // Starter Pokemon (evolve at 16, 32/36)
     {
         id: 1,
         name: 'Bulbasaur',
@@ -218,12 +236,12 @@ export const INITIAL_CREATURES: Creature[] = [
         spriteUrls: [sprite('pidgey'), sprite('pidgeotto'), sprite('pidgeot')]
     },
 
-    // Nidoran lines (evolve at 16, 36 with Moon Stone equivalent)
+    // Nidoran lines (evolve at 16, 36)
     {
         id: 7,
         name: 'Nidoran♀',
         names: ['Nidoran♀', 'Nidorina', 'Nidoqueen'],
-        rarity: Rarity.Common,
+        rarity: Rarity.Uncommon,
         type: CreatureType.Dark,
         pixelSprite: EMPTY_SPRITE,
         pixelColors: EMPTY_COLORS,
@@ -237,7 +255,7 @@ export const INITIAL_CREATURES: Creature[] = [
         id: 8,
         name: 'Nidoran♂',
         names: ['Nidoran♂', 'Nidorino', 'Nidoking'],
-        rarity: Rarity.Common,
+        rarity: Rarity.Uncommon,
         type: CreatureType.Dark,
         pixelSprite: EMPTY_SPRITE,
         pixelColors: EMPTY_COLORS,
@@ -285,7 +303,7 @@ export const INITIAL_CREATURES: Creature[] = [
         id: 11,
         name: 'Abra',
         names: ['Abra', 'Kadabra', 'Alakazam'],
-        rarity: Rarity.Common,
+        rarity: Rarity.Uncommon,
         type: CreatureType.Light,
         pixelSprite: EMPTY_SPRITE,
         pixelColors: EMPTY_COLORS,
@@ -301,7 +319,7 @@ export const INITIAL_CREATURES: Creature[] = [
         id: 12,
         name: 'Machop',
         names: ['Machop', 'Machoke', 'Machamp'],
-        rarity: Rarity.Common,
+        rarity: Rarity.Uncommon,
         type: CreatureType.Metal,
         pixelSprite: EMPTY_SPRITE,
         pixelColors: EMPTY_COLORS,
@@ -344,7 +362,7 @@ export const INITIAL_CREATURES: Creature[] = [
         spriteUrls: [sprite('geodude'), sprite('graveler'), sprite('golem')]
     },
 
-    // Gastly line (evolve at 25, 40) - RARE
+    // Gastly line (evolve at 25, 40)
     {
         id: 15,
         name: 'Gastly',
@@ -360,12 +378,12 @@ export const INITIAL_CREATURES: Creature[] = [
         spriteUrls: [sprite('gastly'), sprite('haunter'), sprite('gengar')]
     },
 
-    // Dratini line (slow - evolve at 30, 55) - RARE
+    // Dratini line (slow - evolve at 30, 55)
     {
         id: 16,
         name: 'Dratini',
         names: ['Dratini', 'Dragonair', 'Dragonite'],
-        rarity: Rarity.Rare,
+        rarity: Rarity.UltraRare,
         type: CreatureType.Water,
         pixelSprite: EMPTY_SPRITE,
         pixelColors: EMPTY_COLORS,
@@ -407,7 +425,7 @@ export const INITIAL_CREATURES: Creature[] = [
         id: 19,
         name: 'Ekans',
         names: ['Ekans', 'Arbok'],
-        rarity: Rarity.Common,
+        rarity: Rarity.Uncommon,
         type: CreatureType.Dark,
         pixelSprite: EMPTY_SPRITE,
         pixelColors: EMPTY_COLORS,
@@ -433,7 +451,7 @@ export const INITIAL_CREATURES: Creature[] = [
         id: 21,
         name: 'Sandshrew',
         names: ['Sandshrew', 'Sandslash'],
-        rarity: Rarity.Common,
+        rarity: Rarity.Uncommon,
         type: CreatureType.Metal,
         pixelSprite: EMPTY_SPRITE,
         pixelColors: EMPTY_COLORS,
@@ -446,7 +464,7 @@ export const INITIAL_CREATURES: Creature[] = [
         id: 22,
         name: 'Clefairy',
         names: ['Clefairy', 'Clefable'],
-        rarity: Rarity.Rare,
+        rarity: Rarity.Uncommon,
         type: CreatureType.Light,
         pixelSprite: EMPTY_SPRITE,
         pixelColors: EMPTY_COLORS,
@@ -459,7 +477,7 @@ export const INITIAL_CREATURES: Creature[] = [
         id: 23,
         name: 'Vulpix',
         names: ['Vulpix', 'Ninetales'],
-        rarity: Rarity.Common,
+        rarity: Rarity.Uncommon,
         type: CreatureType.Fire,
         pixelSprite: EMPTY_SPRITE,
         pixelColors: EMPTY_COLORS,
@@ -472,7 +490,7 @@ export const INITIAL_CREATURES: Creature[] = [
         id: 24,
         name: 'Jigglypuff',
         names: ['Jigglypuff', 'Wigglytuff'],
-        rarity: Rarity.Common,
+        rarity: Rarity.Uncommon,
         type: CreatureType.Light,
         pixelSprite: EMPTY_SPRITE,
         pixelColors: EMPTY_COLORS,
@@ -537,7 +555,7 @@ export const INITIAL_CREATURES: Creature[] = [
         id: 29,
         name: 'Meowth',
         names: ['Meowth', 'Persian'],
-        rarity: Rarity.Common,
+        rarity: Rarity.Uncommon,
         type: CreatureType.Metal,
         pixelSprite: EMPTY_SPRITE,
         pixelColors: EMPTY_COLORS,
@@ -550,7 +568,7 @@ export const INITIAL_CREATURES: Creature[] = [
         id: 30,
         name: 'Psyduck',
         names: ['Psyduck', 'Golduck'],
-        rarity: Rarity.Common,
+        rarity: Rarity.Uncommon,
         type: CreatureType.Water,
         pixelSprite: EMPTY_SPRITE,
         pixelColors: EMPTY_COLORS,
@@ -563,7 +581,7 @@ export const INITIAL_CREATURES: Creature[] = [
         id: 31,
         name: 'Mankey',
         names: ['Mankey', 'Primeape'],
-        rarity: Rarity.Common,
+        rarity: Rarity.Uncommon,
         type: CreatureType.Metal,
         pixelSprite: EMPTY_SPRITE,
         pixelColors: EMPTY_COLORS,
@@ -576,7 +594,7 @@ export const INITIAL_CREATURES: Creature[] = [
         id: 32,
         name: 'Growlithe',
         names: ['Growlithe', 'Arcanine'],
-        rarity: Rarity.Common,
+        rarity: Rarity.Uncommon,
         type: CreatureType.Fire,
         pixelSprite: EMPTY_SPRITE,
         pixelColors: EMPTY_COLORS,
@@ -602,7 +620,7 @@ export const INITIAL_CREATURES: Creature[] = [
         id: 34,
         name: 'Ponyta',
         names: ['Ponyta', 'Rapidash'],
-        rarity: Rarity.Common,
+        rarity: Rarity.Uncommon,
         type: CreatureType.Fire,
         pixelSprite: EMPTY_SPRITE,
         pixelColors: EMPTY_COLORS,
@@ -615,7 +633,7 @@ export const INITIAL_CREATURES: Creature[] = [
         id: 35,
         name: 'Slowpoke',
         names: ['Slowpoke', 'Slowbro'],
-        rarity: Rarity.Common,
+        rarity: Rarity.Uncommon,
         type: CreatureType.Water,
         pixelSprite: EMPTY_SPRITE,
         pixelColors: EMPTY_COLORS,
@@ -693,7 +711,7 @@ export const INITIAL_CREATURES: Creature[] = [
         id: 41,
         name: 'Drowzee',
         names: ['Drowzee', 'Hypno'],
-        rarity: Rarity.Common,
+        rarity: Rarity.Uncommon,
         type: CreatureType.Light,
         pixelSprite: EMPTY_SPRITE,
         pixelColors: EMPTY_COLORS,
@@ -758,7 +776,7 @@ export const INITIAL_CREATURES: Creature[] = [
         id: 46,
         name: 'Koffing',
         names: ['Koffing', 'Weezing'],
-        rarity: Rarity.Common,
+        rarity: Rarity.Uncommon,
         type: CreatureType.Dark,
         pixelSprite: EMPTY_SPRITE,
         pixelColors: EMPTY_COLORS,
@@ -771,7 +789,7 @@ export const INITIAL_CREATURES: Creature[] = [
         id: 47,
         name: 'Rhyhorn',
         names: ['Rhyhorn', 'Rhydon'],
-        rarity: Rarity.Common,
+        rarity: Rarity.Uncommon,
         type: CreatureType.Metal,
         pixelSprite: EMPTY_SPRITE,
         pixelColors: EMPTY_COLORS,
@@ -784,7 +802,7 @@ export const INITIAL_CREATURES: Creature[] = [
         id: 48,
         name: 'Horsea',
         names: ['Horsea', 'Seadra'],
-        rarity: Rarity.Common,
+        rarity: Rarity.Uncommon,
         type: CreatureType.Water,
         pixelSprite: EMPTY_SPRITE,
         pixelColors: EMPTY_COLORS,
@@ -849,7 +867,7 @@ export const INITIAL_CREATURES: Creature[] = [
         id: 53,
         name: 'Omanyte',
         names: ['Omanyte', 'Omastar'],
-        rarity: Rarity.Rare,
+        rarity: Rarity.Uncommon,
         type: CreatureType.Water,
         pixelSprite: EMPTY_SPRITE,
         pixelColors: EMPTY_COLORS,
@@ -862,7 +880,7 @@ export const INITIAL_CREATURES: Creature[] = [
         id: 54,
         name: 'Kabuto',
         names: ['Kabuto', 'Kabutops'],
-        rarity: Rarity.Rare,
+        rarity: Rarity.Uncommon,
         type: CreatureType.Water,
         pixelSprite: EMPTY_SPRITE,
         pixelColors: EMPTY_COLORS,
@@ -873,12 +891,11 @@ export const INITIAL_CREATURES: Creature[] = [
     },
 
     // ===== SINGLE-STAGE POKEMON (No Evolution) =====
-    // These can still level up to 100 and get stronger!
     {
         id: 55,
         name: 'Farfetch\'d',
         names: ['Farfetch\'d'],
-        rarity: Rarity.Common,
+        rarity: Rarity.Uncommon,
         type: CreatureType.Wind,
         pixelSprite: EMPTY_SPRITE,
         pixelColors: EMPTY_COLORS,
@@ -890,7 +907,7 @@ export const INITIAL_CREATURES: Creature[] = [
         id: 56,
         name: 'Onix',
         names: ['Onix'],
-        rarity: Rarity.Common,
+        rarity: Rarity.Uncommon,
         type: CreatureType.Metal,
         pixelSprite: EMPTY_SPRITE,
         pixelColors: EMPTY_COLORS,
@@ -902,7 +919,7 @@ export const INITIAL_CREATURES: Creature[] = [
         id: 57,
         name: 'Hitmonlee',
         names: ['Hitmonlee'],
-        rarity: Rarity.Rare,
+        rarity: Rarity.Uncommon,
         type: CreatureType.Metal,
         pixelSprite: EMPTY_SPRITE,
         pixelColors: EMPTY_COLORS,
@@ -914,7 +931,7 @@ export const INITIAL_CREATURES: Creature[] = [
         id: 58,
         name: 'Hitmonchan',
         names: ['Hitmonchan'],
-        rarity: Rarity.Rare,
+        rarity: Rarity.Uncommon,
         type: CreatureType.Metal,
         pixelSprite: EMPTY_SPRITE,
         pixelColors: EMPTY_COLORS,
@@ -926,7 +943,7 @@ export const INITIAL_CREATURES: Creature[] = [
         id: 59,
         name: 'Lickitung',
         names: ['Lickitung'],
-        rarity: Rarity.Common,
+        rarity: Rarity.Uncommon,
         type: CreatureType.Metal,
         pixelSprite: EMPTY_SPRITE,
         pixelColors: EMPTY_COLORS,
@@ -950,7 +967,7 @@ export const INITIAL_CREATURES: Creature[] = [
         id: 61,
         name: 'Tangela',
         names: ['Tangela'],
-        rarity: Rarity.Common,
+        rarity: Rarity.Uncommon,
         type: CreatureType.Leaf,
         pixelSprite: EMPTY_SPRITE,
         pixelColors: EMPTY_COLORS,
@@ -974,7 +991,7 @@ export const INITIAL_CREATURES: Creature[] = [
         id: 63,
         name: 'Mr. Mime',
         names: ['Mr. Mime'],
-        rarity: Rarity.Common,
+        rarity: Rarity.Rare,
         type: CreatureType.Light,
         pixelSprite: EMPTY_SPRITE,
         pixelColors: EMPTY_COLORS,
@@ -1070,7 +1087,7 @@ export const INITIAL_CREATURES: Creature[] = [
         id: 71,
         name: 'Ditto',
         names: ['Ditto'],
-        rarity: Rarity.Common,
+        rarity: Rarity.Rare,
         type: CreatureType.Metal,
         pixelSprite: EMPTY_SPRITE,
         pixelColors: EMPTY_COLORS,
@@ -1175,5 +1192,41 @@ export const INITIAL_CREATURES: Creature[] = [
         maxEvolutionStage: 1,
         description: 'A rare mythical Pokemon.',
         spriteUrls: [sprite('mew')]
+    },
+    {
+        id: 80,
+        name: 'Galarian Articuno',
+        names: ['Galarian Articuno'],
+        rarity: Rarity.Legendary,
+        type: CreatureType.Light,
+        pixelSprite: EMPTY_SPRITE,
+        pixelColors: EMPTY_COLORS,
+        maxEvolutionStage: 1,
+        description: 'A legendary bird Pokemon of Galar. Elegant and freezing.',
+        spriteUrls: ['https://img.pokemondb.net/sprites/home/normal/articuno-galarian.png']
+    },
+    {
+        id: 81,
+        name: 'Galarian Zapdos',
+        names: ['Galarian Zapdos'],
+        rarity: Rarity.Legendary,
+        type: CreatureType.Metal,
+        pixelSprite: EMPTY_SPRITE,
+        pixelColors: EMPTY_COLORS,
+        maxEvolutionStage: 1,
+        description: 'A legendary bird Pokemon of Galar. Fast-running and fierce.',
+        spriteUrls: ['https://img.pokemondb.net/sprites/home/normal/zapdos-galarian.png']
+    },
+    {
+        id: 82,
+        name: 'Galarian Moltres',
+        names: ['Galarian Moltres'],
+        rarity: Rarity.Legendary,
+        type: CreatureType.Dark,
+        pixelSprite: EMPTY_SPRITE,
+        pixelColors: EMPTY_COLORS,
+        maxEvolutionStage: 1,
+        description: 'A legendary bird Pokemon of Galar. Sinister aura and flaming fury.',
+        spriteUrls: ['https://img.pokemondb.net/sprites/home/normal/moltres-galarian.png']
     }
 ];

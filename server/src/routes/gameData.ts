@@ -1,4 +1,5 @@
 import express, { Router, Request, Response } from 'express';
+import { AuthenticatedRequest } from '../types';
 import { authMiddleware } from '../middleware/auth.middleware';
 import UserGameData from '../models/UserGameData';
 import { User } from '../models/User';
@@ -12,7 +13,7 @@ router.use(authMiddleware);
  * POST /api/game-data/sync
  * Sync localStorage data to MongoDB (one-time migration or periodic sync)
  */
-router.post('/sync', async (req: Request, res: Response) => {
+router.post('/sync', async (req: AuthenticatedRequest, res: Response) => {
   try {
     const userId = req.user?.id;
     if (!userId) {
@@ -112,7 +113,7 @@ router.post('/sync', async (req: Request, res: Response) => {
  * GET /api/game-data
  * Fetch user's game data from MongoDB
  */
-router.get('/', async (req: Request, res: Response) => {
+router.get('/', async (req: AuthenticatedRequest, res: Response) => {
   try {
     const userId = req.user?.id;
     if (!userId) {
@@ -136,7 +137,7 @@ router.get('/', async (req: Request, res: Response) => {
  * PATCH /api/game-data/mission
  * Update daily mission completion status
  */
-router.patch('/mission', async (req: Request, res: Response) => {
+router.patch('/mission', async (req: AuthenticatedRequest, res: Response) => {
   try {
     const userId = req.user?.id;
     if (!userId) {
@@ -175,7 +176,7 @@ router.patch('/mission', async (req: Request, res: Response) => {
  * PATCH /api/game-data/preferences
  * Update email notification preferences
  */
-router.patch('/preferences', async (req: Request, res: Response) => {
+router.patch('/preferences', async (req: AuthenticatedRequest, res: Response) => {
   try {
     const userId = req.user?.id;
     if (!userId) {

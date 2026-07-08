@@ -14,32 +14,59 @@
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=Playfair+Display:wght@700&family=Press+Start+2P&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/katex@0.16.8/dist/katex.min.css">
+    <style>
+        :root {
+            --color-background: #f3f4f6;
+            --color-surface: #ffffff;
+            --color-text-main: #111827;
+            --color-text-dim: #6b7280;
+            --color-text-dark: #9ca3af;
+            --color-highlight: #ca8a04;
+            --color-legendary: #ca8a04;
+            --color-primary: #4338ca;
+            --color-accent: #dc2626;
+        }
+        html.dark {
+            --color-background: #0f172a;
+            --color-surface: #1e293b;
+            --color-text-main: #f8fafc;
+            --color-text-dim: #94a3b8;
+            --color-text-dark: #64748b;
+            --color-highlight: #fbbf24; /* amber-400 - bright gold */
+            --color-legendary: #fbbf24; /* amber-400 - bright gold */
+            --color-primary: #b388ff; /* light neon purple */
+            --color-accent: #ff3b3b; /* bright saturated red */
+        }
+    </style>
     <script>
         tailwind.config = {
+            darkMode: 'class',
             theme: {
                 extend: {
                     fontFamily: {
                         sans: ['"Press Start 2P"', 'cursive'],
-                        serif: ['Playfair Display', 'serif'],
+                        serif: ['"Press Start 2P"', 'cursive'],
+                        mono: ['"Press Start 2P"', 'cursive'],
                     },
                     colors: {
-                        'background': '#f3f4f6',
-                        'surface': '#ffffff',
-                        'primary': '#4338ca',
+                        'background': 'var(--color-background)',
+                        'surface': 'var(--color-surface)',
+                        'primary': 'var(--color-primary)',
                         'secondary': '#ddd6fe',
                         'secondary-hover': '#c4b5fd',
-                        'accent': '#dc2626',
+                        'accent': 'var(--color-accent)',
                         'accent-dark': '#b91c1c',
-                        'highlight': '#ca8a04',
-                        'text-main': '#111827',
-                        'text-dim': '#6b7280',
-                        'text-dark': '#9ca3af',
+                        'highlight': 'var(--color-highlight)',
+                        'text-main': 'var(--color-text-main)',
+                        'text-dim': 'var(--color-text-dim)',
+                        'text-dark': 'var(--color-text-dark)',
                         'text-light': '#f8fafc',
                         'success': '#16a34a',
                         'success-dark': '#15803d',
                         'common': '#6b7280',
                         'rare': '#4338ca',
-                        'legendary': '#ca8a04',
+                        'legendary': 'var(--color-legendary)',
                     },
                     keyframes: {
                         fadeIn: {
@@ -110,13 +137,15 @@
                            '50%': { opacity: '0' }
                         },
                         shake: {
-                            '0%, 100%': { transform: 'translate3d(0, 0, 0)' },
-                            '10%, 30%, 50%, 70%, 90%': { transform: 'translate3d(-2px, 0, 0)' },
-                            '20%, 40%, 60%, 80%': { transform: 'translate3d(2px, 0, 0)' },
+                            '0%, 100%': { transform: 'translate(0, 0)' },
+                            '10%, 90%': { transform: 'translate(-4px, -2px) rotate(-1deg)' },
+                            '20%, 80%': { transform: 'translate(4px, 2px) rotate(1deg)' },
+                            '30%, 50%, 70%': { transform: 'translate(-4px, 4px) rotate(-1.5deg)' },
+                            '40%, 60%': { transform: 'translate(4px, -4px) rotate(1.5deg)' }
                         },
                         flash: {
                             '0%': { opacity: '0' },
-                            '20%': { opacity: '1' },
+                            '15%': { opacity: '1' },
                             '100%': { opacity: '0' },
                         },
                         burst: {
@@ -233,7 +262,7 @@
                         shimmer: 'shimmer 2s infinite linear',
                         reveal: 'reveal 0.8s cubic-bezier(0.22, 1, 0.36, 1) forwards',
                         blink: 'blink 1s step-start infinite',
-                        shake: 'shake 0.5s cubic-bezier(.36,.07,.19,.97) infinite',
+                        shake: 'shake 0.4s cubic-bezier(.36,.07,.19,.97) infinite',
                         flash: 'flash 0.8s ease-out',
                         burst: 'burst 1.2s ease-out forwards',
                         levelUp: 'levelUp 0.8s cubic-bezier(0.25, 1, 0.5, 1) forwards',
@@ -243,14 +272,14 @@
                         flyToBestiary: 'flyToBestiary 1s cubic-bezier(0.45, 0, 0.55, 1) forwards',
                         glowFlicker: 'glowFlicker 0.2s infinite ease-in-out',
                         // Genshin-style summon animations
-                        meteorShoot: 'meteorShoot 0.8s linear forwards',
-                        starBurst: 'starBurst 1s ease-out forwards',
+                        meteorShoot: 'meteorShoot 1.4s cubic-bezier(0.19, 1, 0.22, 1) forwards',
+                        starBurst: 'starBurst 1.2s cubic-bezier(0.1, 0.8, 0.3, 1) forwards',
                         portalOpen: 'portalOpen 0.8s ease-out forwards',
-                        energyGather: 'energyGather 0.5s ease-in forwards',
-                        wishRing: 'wishRing 1.5s ease-out forwards',
-                        lightBeam: 'lightBeam 1.2s ease-in-out forwards',
+                        energyGather: 'energyGather 0.8s cubic-bezier(0.25, 1, 0.5, 1) forwards',
+                        wishRing: 'wishRing 1.8s cubic-bezier(0.1, 0.8, 0.3, 1) forwards',
+                        lightBeam: 'lightBeam 1.5s cubic-bezier(0.4, 0, 0.2, 1) forwards',
                         glitterFall: 'glitterFall 2s linear forwards',
-                        creatureReveal: 'creatureReveal 1s cubic-bezier(0.34, 1.56, 0.64, 1) forwards',
+                        creatureReveal: 'creatureReveal 1.2s cubic-bezier(0.34, 1.56, 0.64, 1) forwards',
                         legendaryAura: 'legendaryAura 1.5s ease-in-out infinite',
                         rareAura: 'rareAura 1.5s ease-in-out infinite',
                         textGlow: 'textGlow 1.5s ease-in-out infinite',
@@ -281,6 +310,21 @@
     .aura-particle {
         animation: drift var(--duration) linear infinite;
         animation-delay: var(--delay);
+    }
+    @keyframes shakeOnce {
+        0%, 100% { transform: translate3d(0, 0, 0); }
+        10%, 30%, 50%, 70%, 90% { transform: translate3d(-5px, 0, 0); }
+        20%, 40%, 60%, 80% { transform: translate3d(5px, 0, 0); }
+    }
+    .shake-once {
+        animation: shakeOnce 0.6s cubic-bezier(.36,.07,.19,.97) both;
+    }
+    @keyframes redFlash {
+        0% { background-color: rgba(220, 38, 38, 0.15); border-color: rgba(220, 38, 38, 0.8); }
+        100% { background-color: transparent; }
+    }
+    .red-flash {
+        animation: redFlash 0.6s ease-out;
     }
 
     /* Safe area padding for notched devices (iPhone X+) */
@@ -331,6 +375,9 @@
         backdrop-filter: blur(10px);
         -webkit-backdrop-filter: blur(10px);
     }
+    html.dark .glass {
+        background: var(--color-surface);
+    }
     .glass-dark {
         background: rgba(0, 0, 0, 0.1);
         backdrop-filter: blur(10px);
@@ -340,6 +387,24 @@
     /* Smooth transitions */
     .transition-premium {
         transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
+    }
+
+    @keyframes bgFlicker {
+        0%, 100% {
+            background-color: #0f172a;
+        }
+        25% {
+            background-color: var(--flicker-color-1);
+        }
+        50% {
+            background-color: #0f172a;
+        }
+        75% {
+            background-color: var(--flicker-color-2);
+        }
+    }
+    .animate-bgFlicker {
+        animation: bgFlicker 0.25s linear infinite;
     }
 
     /* Press effect for buttons */
@@ -378,6 +443,9 @@
     .gradient-subtle {
         background: linear-gradient(135deg, rgba(255,255,255,0.9) 0%, rgba(243,244,246,0.9) 100%);
     }
+    html.dark .gradient-subtle {
+        background: var(--color-surface);
+    }
 
     /* Focus ring for accessibility */
     .focus-ring:focus {
@@ -398,6 +466,49 @@
         -moz-osx-font-smoothing: grayscale;
         text-rendering: optimizeLegibility;
     }
+
+    /* Tables styling inside formatted text */
+    .formatted-text table {
+        width: 100%;
+        border-collapse: collapse;
+        margin: 1rem 0;
+        font-size: 11px;
+        text-align: left;
+        background: rgba(255, 255, 255, 0.7);
+        border: 2px solid #ddd6fe;
+        border-radius: 8px;
+        overflow: hidden;
+        box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.05);
+    }
+    .formatted-text th {
+        background-color: #4338ca;
+        color: #ffffff;
+        font-weight: 600;
+        padding: 8px 12px;
+        font-family: '"Press Start 2P"', cursive;
+    }
+    .formatted-text td {
+        padding: 6px 12px;
+        border-bottom: 1px solid #ddd6fe;
+        font-family: '"Press Start 2P"', cursive;
+        color: #111827;
+    }
+    .formatted-text tr:last-child td {
+        border-bottom: none;
+    }
+    .formatted-text tr:nth-child(even) {
+        background-color: rgba(221, 214, 254, 0.15);
+    }
+    .formatted-text tr:hover {
+        background-color: rgba(221, 214, 254, 0.3);
+    }
+    
+    /* Math block overflow wrapping */
+    .katex-display {
+        overflow-x: auto;
+        overflow-y: hidden;
+        padding: 8px 0;
+    }
 </style>
 <script type="importmap">
 {
@@ -409,9 +520,9 @@
   }
 }
 </script>
-  <script type="module" crossorigin src="/assets/index-v76hDSAt.js"></script>
+  <script type="module" crossorigin src="/assets/index-Cg3fucL8.js"></script>
 </head>
 <body class="bg-background text-text-main font-sans text-[10px]">
-    <div id="root"></div>
+    <div id="root"></div>
 </body>
 </html>

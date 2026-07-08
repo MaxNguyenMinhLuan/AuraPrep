@@ -39,6 +39,10 @@ export const config = {
         clientId: process.env.GOOGLE_CLIENT_ID || ''
     },
 
+    firebase: {
+        projectId: process.env.FIREBASE_PROJECT_ID || 'auraprep-da99c'
+    },
+
     cors: {
         origin: parseCorsOrigins()
     },
@@ -48,6 +52,13 @@ export const config = {
         windowMs: parseInt(process.env.RATE_LIMIT_WINDOW_MS || '900000', 10), // 15 minutes
         max: parseInt(process.env.RATE_LIMIT_MAX || '100', 10), // 100 requests per window
         authMax: parseInt(process.env.RATE_LIMIT_AUTH_MAX || '10', 10) // 10 auth attempts per window
+    },
+
+    appUrl: process.env.APP_URL || 'http://localhost:3001',
+
+    sendgrid: {
+        apiKey: process.env.SENDGRID_API_KEY || '',
+        fromEmail: process.env.FROM_EMAIL || 'nudge@auraprep.com'
     }
 };
 

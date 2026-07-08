@@ -4,6 +4,11 @@ import { CreatureInstance, MissionInstance, User, TutorialState } from '../types
 import { INITIAL_CREATURES } from '../constants';
 import CreatureCard from './CreatureCard';
 import LoadingSpinner from './icons/LoadingSpinner';
+import AuraIcon from './icons/AuraIcon';
+import FireIcon from './icons/FireIcon';
+import LockIcon from './icons/LockIcon';
+import DumbbellIcon from './icons/DumbbellIcon';
+import CartIcon from './icons/CartIcon';
 import { getQuestionsUntilNextUnlock, PROGRESS_UNLOCK_QUESTIONS, LEADERBOARD_UNLOCK_QUESTIONS } from '../utils/tutorialSteps';
 
 interface DashboardProps {
@@ -72,15 +77,15 @@ const Dashboard: React.FC<DashboardProps> = ({
             <div className="flex flex-col gap-4 md:gap-6 md:col-span-1 lg:col-span-4 lg:h-full">
                 
                 {/* Stats Header (Mobile: Top, Desktop: Top of Left Col) */}
-                <div className="w-full flex justify-between items-center px-2 md:px-0 gap-2">
+                <div className="hidden lg:flex w-full justify-between items-center px-2 md:px-0 gap-2">
                     <div className="flex gap-2">
                         <div className="glass px-3 py-2 md:px-4 md:py-2.5 rounded-lg border border-secondary/50 text-xs md:text-sm font-bold text-primary shadow-card flex items-center gap-2 touch-target hover-lift">
-                            <span className="animate-gentleBounce">💎</span>
+                            <AuraIcon className="w-4 h-4 animate-gentleBounce text-primary" />
                             <span>{auraPoints.toLocaleString()}</span>
                         </div>
                         {dailyStreak > 0 && (
                             <div className="glass px-3 py-2 md:px-4 md:py-2.5 rounded-lg border border-accent/30 text-xs md:text-sm font-bold text-accent shadow-card flex items-center gap-1 animate-popIn touch-target hover-lift">
-                                <span className="animate-subtlePulse">🔥</span>
+                                <FireIcon className="w-4 h-4 animate-subtlePulse text-accent" />
                                 <span>{dailyStreak}</span>
                             </div>
                         )}
@@ -98,29 +103,33 @@ const Dashboard: React.FC<DashboardProps> = ({
                     </button>
                 </div>
 
-                {/* Active Guardian Display */}
-                <div className="flex flex-col items-center justify-center w-full bg-white lg:p-8 lg:border-2 lg:border-secondary/30 lg:rounded-xl lg:shadow-card gradient-subtle">
-                    <h2 className="text-sm text-primary mb-4 font-bold uppercase tracking-wide animate-fadeIn">Active Guardian</h2>
-                    {activeCreatureInstance && activeCreatureData ? (
-                        <div className="relative transform lg:scale-125 transition-premium hover:scale-[1.02] lg:hover:scale-[1.28]">
-                             <CreatureCard instance={activeCreatureInstance} isLarge={true} />
-                             {reviewQueueCount > 0 && (
-                                 <div className="absolute -top-4 -right-4 bg-accent text-white rounded-full w-8 h-8 flex items-center justify-center text-sm font-bold animate-gentleBounce shadow-glow-success border-2 border-white">
-                                     !
-                                 </div>
-                             )}
-                        </div>
-                    ) : (
-                        <div className="text-center p-8 bg-background/50 border-2 border-text-dark w-full max-w-xs border-dashed rounded-xl animate-subtlePulse">
-                           <p className="text-text-dim text-xs">No active guardian.</p>
-                           <p className="text-[10px] text-text-dark mt-2">Select one from your collection!</p>
-                        </div>
-                    )}
+                {/* Partner Auramon Display */}
+                <div className="w-full flex flex-col items-center">
+                    <h2 className="text-xs text-highlight mb-2 font-bold uppercase tracking-wide font-sans text-center animate-fadeIn">
+                        Partner Auramon
+                    </h2>
+                    <div className="flex flex-col items-center justify-center w-full bg-surface p-4 md:p-6 lg:p-8 lg:border-2 lg:border-secondary/30 lg:rounded-xl lg:shadow-card gradient-subtle">
+                        {activeCreatureInstance && activeCreatureData ? (
+                            <div className="relative transform lg:scale-125 transition-premium hover:scale-[1.02] lg:hover:scale-[1.28]">
+                                 <CreatureCard instance={activeCreatureInstance} isLarge={true} />
+                                 {reviewQueueCount > 0 && (
+                                     <div className="absolute -top-4 -right-4 bg-accent text-white rounded-full w-8 h-8 flex items-center justify-center text-sm font-bold animate-gentleBounce shadow-glow-success border-2 border-white">
+                                         !
+                                     </div>
+                                  )}
+                            </div>
+                        ) : (
+                            <div className="text-center p-8 bg-background/50 border-2 border-text-dark w-full max-w-xs border-dashed rounded-xl animate-subtlePulse">
+                               <p className="text-text-dim text-xs">No partner Auramon.</p>
+                               <p className="text-[10px] text-text-dark mt-2">Select one from your collection!</p>
+                            </div>
+                        )}
+                    </div>
                 </div>
 
                 {/* Collection List */}
                 <div className="w-full flex-grow lg:flex-grow-0">
-                    <h3 className="text-xs text-text-dim mb-2 text-left pl-1 uppercase font-bold">Your Guardians</h3>
+                    <h3 className="text-xs text-text-dim mb-2 text-left pl-1 uppercase font-bold">Your Auramons</h3>
                     {sortedCreatures.length > 0 ? (
                         <div className="flex flex-wrap gap-2 justify-center lg:justify-start p-3 bg-background/50 border-2 border-secondary/30 max-h-32 lg:max-h-64 overflow-y-auto shadow-inner-soft rounded-lg scrollbar-thin scrollbar-hide">
                             {sortedCreatures.map((c, index) => (
@@ -138,12 +147,12 @@ const Dashboard: React.FC<DashboardProps> = ({
                                         </div>
                                     )}
                                     <CreatureCard instance={c} isLarge={false} />
-                                </button>
+                                 </button>
                             ))}
                         </div>
                     ) : (
                         <div className="p-4 bg-background/50 border-2 border-text-dark text-center border-dashed rounded-lg animate-subtlePulse">
-                            <p className="text-text-dark text-xs">Visit the Summoner to get your first guardian!</p>
+                            <p className="text-text-dark text-xs">Visit the Summoner to get your first Auramon!</p>
                         </div>
                     )}
                 </div>
@@ -153,9 +162,9 @@ const Dashboard: React.FC<DashboardProps> = ({
             <div className="flex flex-col gap-4 md:gap-6 md:col-span-1 lg:col-span-8">
                 
                 {/* Daily Missions */}
-                <div className="w-full bg-background/50 md:bg-white border-2 border-primary/80 p-4 md:p-5 lg:p-6 space-y-4 shadow-card rounded-xl flex-grow animate-scaleIn">
+                <div className="w-full bg-surface border-2 border-primary/80 p-4 md:p-5 lg:p-6 space-y-4 shadow-card rounded-xl flex-grow animate-scaleIn">
                     <div className="flex justify-between items-center mb-2">
-                        <h2 className="text-base md:text-lg lg:text-2xl text-highlight font-serif">Daily Missions</h2>
+                        <h2 className="text-base md:text-lg lg:text-xl text-highlight font-sans">Daily Missions</h2>
                         <span className="text-[10px] md:text-xs bg-primary text-white px-2.5 py-1 rounded-full uppercase tracking-wider font-bold shadow-button animate-subtlePulse">Today</span>
                     </div>
                     <div className="h-px w-full bg-gradient-to-r from-transparent via-primary/30 to-transparent mb-4"></div>
@@ -217,8 +226,8 @@ const Dashboard: React.FC<DashboardProps> = ({
                                             {mission.description}
                                             {isBaselineMission && baselineProgress?.currentIndex ? ' (In Progress)' : ''}
                                         </span>
-                                        <span className="flex items-center text-xs font-bold bg-primary/10 px-2.5 py-1 rounded-full text-primary border border-primary/20 shadow-button">
-                                            {mission.reward} 💎
+                                        <span className="flex items-center gap-1 text-xs font-bold bg-primary/10 px-2.5 py-1 rounded-full text-primary border border-primary/20 shadow-button">
+                                            {mission.reward} <AuraIcon className="w-3.5 h-3.5" />
                                         </span>
                                     </div>
                                     <div className="flex justify-between items-center gap-4">
@@ -266,7 +275,7 @@ const Dashboard: React.FC<DashboardProps> = ({
                         onClick={isBaselineComplete ? onOpenReview : undefined}
                         disabled={!isBaselineComplete || reviewQueueCount === 0}
                         title={!isBaselineComplete ? 'Complete Welcome Mission to unlock' : undefined}
-                        className={`flex-1 p-4 md:p-5 lg:p-6 border-2 flex flex-col items-center justify-center gap-2 md:gap-3 transition-premium shadow-card hover:shadow-card-hover rounded-xl relative touch-target press-effect ${
+                        className={`group flex-1 p-4 md:p-5 lg:p-6 border-2 flex flex-col items-center justify-center gap-2 md:gap-3 transition-premium shadow-card hover:shadow-card-hover rounded-xl relative touch-target press-effect ${
                             !isBaselineComplete
                                 ? 'bg-background border-text-dark text-text-dark opacity-60 cursor-not-allowed border-b-4'
                                 : reviewQueueCount > 0
@@ -274,8 +283,8 @@ const Dashboard: React.FC<DashboardProps> = ({
                                     : 'bg-background border-text-dark text-text-dark opacity-60 cursor-not-allowed border-b-4'
                         }`}
                     >
-                        {!isBaselineComplete && <span className="absolute top-2 right-2 text-base md:text-lg">🔒</span>}
-                        <span className="text-2xl md:text-3xl lg:text-4xl filter drop-shadow-sm">🏋️</span>
+                        {!isBaselineComplete && <LockIcon className="absolute top-2.5 right-2.5 w-4 h-4 text-text-dark/50" />}
+                        <DumbbellIcon className="w-8 h-8 md:w-10 md:h-10 text-slate-400 dark:text-slate-500 filter drop-shadow-sm transform rotate-45 group-hover:rotate-[60deg] transition-transform duration-300" />
                         <div className="flex flex-col items-center">
                              <span className="font-bold text-xs md:text-sm lg:text-base uppercase tracking-tight">Training</span>
                              {isBaselineComplete && reviewQueueCount > 0 ? (
@@ -294,14 +303,14 @@ const Dashboard: React.FC<DashboardProps> = ({
                         onClick={isBaselineComplete ? onOpenShop : undefined}
                         disabled={!isBaselineComplete}
                         title={!isBaselineComplete ? 'Complete Welcome Mission to unlock' : undefined}
-                        className={`flex-1 p-4 md:p-5 lg:p-6 border-2 flex flex-col items-center justify-center gap-2 md:gap-3 transition-premium shadow-card hover:shadow-card-hover rounded-xl relative touch-target press-effect ${
+                        className={`group flex-1 p-4 md:p-5 lg:p-6 border-2 flex flex-col items-center justify-center gap-2 md:gap-3 transition-premium shadow-card hover:shadow-card-hover rounded-xl relative touch-target press-effect ${
                             !isBaselineComplete
                                 ? 'bg-background border-text-dark text-text-dark opacity-60 cursor-not-allowed border-b-4'
                                 : 'bg-surface border-highlight text-text-main hover:bg-highlight/5 border-b-4 border-highlight active:border-b-2 active:translate-y-0.5'
                         }`}
                     >
-                        {!isBaselineComplete && <span className="absolute top-2 right-2 text-base md:text-lg">🔒</span>}
-                        <span className="text-2xl md:text-3xl lg:text-4xl filter drop-shadow-sm">🛒</span>
+                        {!isBaselineComplete && <LockIcon className="absolute top-2.5 right-2.5 w-4 h-4 text-text-dark/50" />}
+                        <CartIcon className="w-8 h-8 md:w-10 md:h-10 text-slate-400 dark:text-slate-500 filter drop-shadow-sm transition-transform duration-300 group-hover:-rotate-12" />
                         <div className="flex flex-col items-center">
                             <span className={`font-bold text-xs md:text-sm lg:text-base uppercase tracking-tight ${isBaselineComplete ? 'text-highlight' : ''}`}>
                                 Shop
