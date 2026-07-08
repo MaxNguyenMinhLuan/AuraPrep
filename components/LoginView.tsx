@@ -130,7 +130,19 @@ const LoginView: React.FC<LoginViewProps> = ({ onLogin }) => {
                     {renderContent()}
                 </div>
 
-                <p className="mt-8 text-[10px] text-text-dark">
+                <div className="mt-6 pt-4 border-t border-secondary/20 flex flex-col items-center gap-2">
+                    <p className="text-xs text-text-dim">Want access to the closed beta?</p>
+                    <a 
+                        href="https://forms.gle/tTa8eumCJ13KJpjp8" 
+                        target="_blank" 
+                        rel="noopener noreferrer"
+                        className="text-xs font-bold text-highlight hover:text-highlight/85 hover:underline transition-colors flex items-center gap-1"
+                    >
+                        Apply to be a Beta Tester ↗
+                    </a>
+                </div>
+
+                <p className="mt-6 text-[10px] text-text-dark">
                     By signing in, you agree to the Seeker's Code of Conduct.<br/>
                     Your progress is synchronized across your devices.
                 </p>
