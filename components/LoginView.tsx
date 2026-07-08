@@ -3,6 +3,7 @@ import { User } from '../types';
 import LoadingSpinner from './icons/LoadingSpinner';
 import { AuthService } from '../services/authService';
 import { ALLOWED_EMAILS } from '../constants';
+import CodeOfConductModal from './CodeOfConductModal';
 
 interface LoginViewProps {
     onLogin: (user: User) => void;
@@ -11,6 +12,7 @@ interface LoginViewProps {
 const LoginView: React.FC<LoginViewProps> = ({ onLogin }) => {
     const [status, setStatus] = useState<'idle' | 'authenticating' | 'syncing' | 'error'>('idle');
     const [error, setError] = useState<string | null>(null);
+    const [isConductOpen, setIsConductOpen] = useState(false);
 
     const handleGoogleSignIn = async () => {
         try {
@@ -143,9 +145,19 @@ const LoginView: React.FC<LoginViewProps> = ({ onLogin }) => {
                 </div>
 
                 <p className="mt-6 text-[10px] text-text-dark">
-                    By signing in, you agree to the<br/>User Code of Conduct.
+                    By signing in, you agree to the<br/>
+                    <button 
+                        onClick={() => setIsConductOpen(true)}
+                        className="font-bold underline hover:text-text-main transition-colors focus:outline-none"
+                    >
+                        User Code of Conduct
+                    </button>.
                 </p>
             </div>
+
+            {isConductOpen && (
+                <CodeOfConductModal onClose={() => setIsConductOpen(false)} />
+            )}
         </div>
     );
 };
