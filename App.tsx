@@ -1,7 +1,7 @@
 
 import React, { useState, useMemo, useEffect } from 'react';
 import { UserProfile, CreatureInstance, View, DailyActivity, SkillLevel, MissionInstance, Question, User, LeagueType, TutorialState } from './types';
-import { SUBTOPICS, INITIAL_CREATURES, AURA_POINTS_PER_PRACTICE_STREAK, LEAGUES } from './constants';
+import { SUBTOPICS, INITIAL_CREATURES, AURA_POINTS_PER_PRACTICE_STREAK, LEAGUES, ALLOWED_EMAILS } from './constants';
 import useLocalStorage from './hooks/useLocalStorage';
 import useUserStorage, { clearLegacyData } from './hooks/useUserStorage';
 import { generateDailyMissions } from './utils/missionGenerator';
@@ -122,7 +122,13 @@ const App: React.FC = () => {
             try {
                 const validatedUser = await AuthService.getCurrentSession();
                 if (validatedUser) {
-                    setUser(validatedUser);
+                    const isAllowed = ALLOWED_EMAILS.map(e => e.toLowerCase()).includes(validatedUser.email.toLowerCase());
+                    if (isAllowed) {
+                        setUser(validatedUser);
+                    } else {
+                        await AuthService.logout();
+                        setUser(null);
+                    }
                 } else if (user) {
                     // User exists in localStorage but session is invalid/expired
                     setUser(null);
