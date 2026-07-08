@@ -1,7 +1,7 @@
 
 import React, { useState, useMemo, useEffect } from 'react';
 import { UserProfile, CreatureInstance, View, DailyActivity, SkillLevel, MissionInstance, Question, User, LeagueType, TutorialState } from './types';
-import { SUBTOPICS, INITIAL_CREATURES, AURA_POINTS_PER_PRACTICE_STREAK, LEAGUES, ALLOWED_EMAILS } from './constants';
+import { SUBTOPICS, INITIAL_CREATURES, AURA_POINTS_PER_PRACTICE_STREAK, LEAGUES } from './constants';
 import useLocalStorage from './hooks/useLocalStorage';
 import useUserStorage, { clearLegacyData } from './hooks/useUserStorage';
 import { generateDailyMissions } from './utils/missionGenerator';
@@ -122,7 +122,7 @@ const App: React.FC = () => {
             try {
                 const validatedUser = await AuthService.getCurrentSession();
                 if (validatedUser) {
-                    const isAllowed = ALLOWED_EMAILS.map(e => e.toLowerCase()).includes(validatedUser.email.toLowerCase());
+                    const isAllowed = await AuthService.isEmailAllowed(validatedUser.email);
                     if (isAllowed) {
                         setUser(validatedUser);
                     } else {

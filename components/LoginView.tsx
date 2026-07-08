@@ -2,7 +2,6 @@ import React, { useState } from 'react';
 import { User } from '../types';
 import LoadingSpinner from './icons/LoadingSpinner';
 import { AuthService } from '../services/authService';
-import { ALLOWED_EMAILS } from '../constants';
 import CodeOfConductModal from './CodeOfConductModal';
 
 interface LoginViewProps {
@@ -21,8 +20,8 @@ const LoginView: React.FC<LoginViewProps> = ({ onLogin }) => {
 
             const { user } = await AuthService.signInWithGoogle();
 
-            // Validate against Allowed Emails list (case-insensitive)
-            const isAllowed = ALLOWED_EMAILS.map(e => e.toLowerCase()).includes(user.email.toLowerCase());
+            // Validate against Allowed Emails list (dynamic Firestore check)
+            const isAllowed = await AuthService.isEmailAllowed(user.email);
             
             if (!isAllowed) {
                 // Instantly log them out so their session doesn't persist

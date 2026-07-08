@@ -1,10 +1,5 @@
 import { Creature, Rarity, CreatureType, PowerUpType, LeagueType, BossDef } from './types';
 
-export const ALLOWED_EMAILS: string[] = [
-    'maxidea2008@gmail.com',
-    'maxminhluannguyen@gmail.com'
-];
-
 export const SUBTOPICS: string[] = [
     'Algebra: Absolute Value',
     'Algebra: Linear Functions',

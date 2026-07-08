@@ -1,5 +1,6 @@
 import { User } from '../types';
-import { auth, googleProvider } from './firebase';
+import { auth, googleProvider, db } from './firebase';
+import { doc, getDoc } from 'firebase/firestore';
 import {
     signInWithPopup,
     signInWithEmailAndPassword,
@@ -140,6 +141,27 @@ class AuthServiceClass {
             console.error('Logout error:', error);
             // Still clear local storage even if sign out fails
             localStorage.removeItem(CURRENT_USER_KEY);
+        }
+    }
+
+    /**
+     * Check if email is in Firestore allowlist
+     */
+    async isEmailAllowed(email: string): Promise<boolean> {
+        try {
+            // Safety fallback for developer/admin
+            const lowercaseEmail = email.toLowerCase();
+            if (lowercaseEmail === 'maxidea2008@gmail.com' || lowercaseEmail === 'maxminhluannguyen@gmail.com') {
+                return true;
+            }
+            
+            const docRef = doc(db, "allowlist", lowercaseEmail);
+            const docSnap = await getDoc(docRef);
+            return docSnap.exists();
+        } catch (error) {
+            console.error('Error checking allowlist:', error);
+            // Default to false if database is unreachable or error occurs
+            return false;
         }
     }
 
