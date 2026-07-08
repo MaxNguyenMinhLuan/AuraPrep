@@ -90,7 +90,7 @@ const Dashboard: React.FC<DashboardProps> = ({
                         </div>
                         {dailyStreak > 0 && (
                             <div className="glass px-3 py-2 md:px-4 md:py-2.5 rounded-lg border border-accent/30 text-xs md:text-sm font-bold text-accent shadow-card flex items-center gap-1 animate-popIn touch-target hover-lift">
-                                <FireIcon className="w-6 h-6 animate-subtlePulse text-accent" />
+                                <FireIcon className="w-5 h-5 animate-subtlePulse text-accent" />
                                 <span>{dailyStreak}</span>
                             </div>
                         )}

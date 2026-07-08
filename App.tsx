@@ -1365,7 +1365,7 @@ const App: React.FC = () => {
                         </div>
                         {profile.dailyStreak > 0 && (
                             <div className="glass px-3 py-1.5 rounded-lg border border-accent/30 text-xs font-bold text-accent shadow-card flex items-center gap-1 animate-popIn">
-                                <FireIcon className="w-5 h-5 animate-subtlePulse text-accent" />
+                                <FireIcon className="w-4 h-4 animate-subtlePulse text-accent" />
                                 <span>{profile.dailyStreak}</span>
                             </div>
                         )}
