@@ -105,24 +105,24 @@ const LoginView: React.FC<LoginViewProps> = ({ onLogin }) => {
                         <span className="text-4xl">🔮</span>
                     </div>
                     <h1 className="font-sans text-4xl bg-gradient-to-tr from-[#c084fc] via-[#fcd34d] to-[#22d3ee] bg-clip-text text-transparent font-bold tracking-tighter mb-2 dark:drop-shadow-[0_0_12px_rgba(192,132,252,0.7)]">AuraPrep</h1>
-                    <p className="text-text-dim text-sm px-4">Gamified SAT Prep: Summon Guardians, Master the Exam.</p>
+                    <p className="text-text-dim text-sm px-4">Gamified SAT Prep</p>
                 </div>
 
                 <div className="space-y-6">
                     <div className="bg-background/50 p-6 rounded-xl border border-secondary/50 text-left">
-                        <h3 className="text-[10px] font-bold text-primary uppercase mb-3 tracking-widest">Academy Features</h3>
+                        <h3 className="text-[10px] font-bold text-primary uppercase mb-3 tracking-widest">Features</h3>
                         <ul className="space-y-3">
                             <li className="flex items-center gap-3 text-xs text-text-main">
                                 <span className="bg-success/20 text-success p-1 rounded-full text-[8px]">✓</span>
-                                Daily Mixed-Subject Missions
+                                Daily Adaptive Missions
                             </li>
                             <li className="flex items-center gap-3 text-xs text-text-main">
                                 <span className="bg-success/20 text-success p-1 rounded-full text-[8px]">✓</span>
-                                Summon & Evolve Creatures
+                                Collect & Evolve Creatures
                             </li>
                             <li className="flex items-center gap-3 text-xs text-text-main">
                                 <span className="bg-success/20 text-success p-1 rounded-full text-[8px]">✓</span>
-                                Global Hall of Legends
+                                Compete With Friends
                             </li>
                         </ul>
                     </div>
