@@ -37,3 +37,5 @@ node_modules
 nul
 .vercel
 .env*.local
+node_modules/
+server/node_modules/
