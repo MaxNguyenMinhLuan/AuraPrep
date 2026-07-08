@@ -201,7 +201,7 @@ const App: React.FC = () => {
     useEffect(() => {
         if (!user || isCheckingSession) return;
 
-        // Dev/Test account override: Unlock all features and award 10,000 Aura
+        // Dev/Test account override: Unlock all features and award 100,000 Aura
         if (user.email === 'maxidea2008@gmail.com') {
             const isFullyUnlocked = tutorialState.isComplete &&
                                     tutorialState.baselineCompleted &&
@@ -209,9 +209,9 @@ const App: React.FC = () => {
                                     tutorialState.trainingUnlocked &&
                                     tutorialState.shopUnlocked &&
                                     tutorialState.leaderboardUnlocked;
-            if (auraPoints < 10000 || !isFullyUnlocked) {
-                console.log('Test account detected: Unlocking all features and granting 10,000 Aura!');
-                setAuraPoints(10000);
+            if (auraPoints < 100000 || !isFullyUnlocked) {
+                console.log('Test account detected: Unlocking all features and granting 100,000 Aura!');
+                setAuraPoints(100000);
                 setTutorialState(prev => ({
                     ...prev,
                     isComplete: true,
