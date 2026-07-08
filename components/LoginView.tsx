@@ -94,7 +94,7 @@ const LoginView: React.FC<LoginViewProps> = ({ onLogin }) => {
     };
 
     return (
-        <div className="min-h-screen w-full flex flex-col items-center justify-center bg-gradient-to-tr from-[#f5d0fe] via-[#fef9c3] to-[#a5f3fc] dark:from-[#311042] dark:via-[#0f172a] dark:to-[#083344] text-text-main font-sans text-sm p-6 relative overflow-hidden">
+        <div className="min-h-screen w-full flex flex-col items-center justify-center bg-gradient-to-tr from-[#f5d0fe] via-[#fef9c3] to-[#a5f3fc] dark:from-[#311042] dark:via-[#0f172a] dark:to-[#083344] bg-[length:400%_400%] animate-gradient-slow text-text-main font-sans text-sm p-6 relative overflow-hidden">
             {/* Ambient Background Elements */}
             <div className="absolute top-[-10%] left-[-10%] w-96 h-96 bg-primary/10 rounded-full blur-3xl animate-pulse"></div>
             <div className="absolute bottom-[-10%] right-[-10%] w-96 h-96 bg-highlight/10 rounded-full blur-3xl animate-pulse delay-700"></div>
@@ -104,8 +104,8 @@ const LoginView: React.FC<LoginViewProps> = ({ onLogin }) => {
                     <div className="w-20 h-20 bg-highlight/20 rounded-2xl flex items-center justify-center mx-auto mb-4 border-2 border-highlight/50 shadow-lg group hover:rotate-12 transition-transform">
                         <span className="text-4xl">🔮</span>
                     </div>
-                    <h1 className="font-serif text-4xl text-highlight font-bold tracking-tight mb-2">AuraPrep</h1>
-                    <p className="text-text-dim text-sm px-4">Master the SAT. Summon the Extraordinary.</p>
+                    <h1 className="font-sans text-4xl bg-gradient-to-tr from-[#c084fc] via-[#fcd34d] to-[#22d3ee] bg-clip-text text-transparent font-bold tracking-tighter mb-2 dark:drop-shadow-[0_0_12px_rgba(192,132,252,0.7)]">AuraPrep</h1>
+                    <p className="text-text-dim text-sm px-4">Gamified SAT Prep: Summon Guardians, Master the Exam.</p>
                 </div>
 
                 <div className="space-y-6">
