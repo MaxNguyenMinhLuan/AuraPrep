@@ -143,8 +143,7 @@ const LoginView: React.FC<LoginViewProps> = ({ onLogin }) => {
                 </div>
 
                 <p className="mt-6 text-[10px] text-text-dark">
-                    By signing in, you agree to the Seeker's Code of Conduct.<br/>
-                    Your progress is synchronized across your devices.
+                    By signing in, you agree to the Seeker's Code of Conduct.
                 </p>
             </div>
         </div>
