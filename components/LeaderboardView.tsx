@@ -143,11 +143,11 @@ const LeaderboardView: React.FC<LeaderboardViewProps> = ({ username, weeklyGain,
                                 />
                             </div>
                             <div className={`w-24 md:w-28 lg:w-40 ${height} border-t-4 ${getPodiumColor(displayRank)} flex flex-col items-center pt-3 md:pt-4 rounded-t-xl shadow-lg relative ${displayRank === 1 ? 'z-10' : ''} ${entry.isUser ? 'ring-2 ring-highlight ring-inset bg-highlight/5' : ''}`}>
-                                <span className="absolute -top-8 md:-top-10 flex items-center justify-center bg-white dark:bg-slate-800 rounded-full p-1.5 shadow-md border-2 border-secondary/20">
-                                    {displayRank === 1 && <CrownIcon className="w-5 h-5 md:w-6 md:h-6 text-yellow-500" />}
-                                    {displayRank === 2 && <SecondPlaceIcon className="w-5 h-5 md:w-6 md:h-6 text-slate-400" />}
-                                    {displayRank === 3 && <ThirdPlaceIcon className="w-5 h-5 md:w-6 md:h-6 text-orange-600" />}
-                                </span>
+                                {displayRank === 1 && (
+                                    <span className="absolute -top-8 md:-top-10 flex items-center justify-center bg-white dark:bg-slate-800 rounded-full p-1.5 shadow-md border-2 border-secondary/20">
+                                        <CrownIcon className="w-5 h-5 md:w-6 md:h-6 text-yellow-500" />
+                                    </span>
+                                )}
                                 <p className="font-bold text-[9px] md:text-[10px] lg:text-xs truncate w-full px-2 text-center tracking-tighter mt-1">
                                     {entry.username} {entry.isUser ? '(You)' : ''}
                                 </p>
