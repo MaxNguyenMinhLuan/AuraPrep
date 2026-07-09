@@ -233,7 +233,7 @@ const LeaderboardView: React.FC<LeaderboardViewProps> = ({ username, weeklyGain,
             )}
 
             {/* Social / PvP Buttons */}
-            <div className="fixed bottom-20 right-6 lg:bottom-10 lg:right-10 flex flex-col items-end gap-3 z-30">
+            <div className="fixed bottom-[calc(env(safe-area-inset-bottom)+76px)] right-6 lg:bottom-10 lg:right-10 flex flex-col items-end gap-3 z-30">
                 <div className={`flex flex-col items-end gap-3 transition-all duration-300 transform ${isMenuOpen ? 'translate-y-0 opacity-100 scale-100' : 'translate-y-10 opacity-0 scale-50 pointer-events-none'}`}>
                     <button
                         onClick={() => handleAction("Coming Soon!")}
