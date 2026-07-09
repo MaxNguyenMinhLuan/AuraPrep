@@ -30,6 +30,11 @@ export const GUARDIAN_PERSONALITIES: Record<CreatureType, PersonalityTemplate> =
     personality: 'Energetic, hot-headed, dramatic when disappointed',
     morning: [
       {
+        subject: "We're almost at the top! 🔥🏆",
+        preview: "{{guardianName}} sees a promotion in our future",
+        body: `Hey {{userName}}! 🔥\n\nI've been checking the leaderboard, and we are SO close! 1 more day of solid practice and you're 1 rank away from promoting to the next league!\n\nYour streak is at {{currentStreak}} days! Let's burn through today's mission and take what's ours! 💪\n\n→ <a href="{{deepLink}}">Claim Your Rank</a>\n\nLet's dominate!\n{{guardianName}} 🔥`
+      },
+      {
         subject: "Let's IGNITE Your Day! 🔥",
         preview: "{{guardianName}} wants to spark your learning!",
         body: `Hey {{userName}}! 🔥\n\nIt's morning, and {{guardianName}} is FIRED UP and ready to help you ace today's mission! The day is young, the coffee is hot, and your brain is fresh—this is the PERFECT time to crush some SAT questions.\n\nYour streak is at {{currentStreak}} days! Keep that momentum going! 💪\n\n→ <a href="{{deepLink}}">Start Your Mission Now</a>\n\nLet's show these questions who's boss!\n{{guardianName}} 🔥`
@@ -47,6 +52,11 @@ export const GUARDIAN_PERSONALITIES: Record<CreatureType, PersonalityTemplate> =
     ],
     afternoon: [
       {
+        subject: "They're passing us! 🏃🔥",
+        preview: "Our leaderboard rank is dropping",
+        body: `Hey {{userName}},\n\nI'm watching the leaderboard and our rivals are passing us! We were 1 rank away from promoting, and now we're slipping! 😢\n\nYour {{currentStreak}}-day streak is great, but we need today's points to secure our spot!\n\n→ <a href="{{deepLink}}">Defend Our Rank!</a>\n\nDon't let them win!\n{{guardianName}} 🔥`
+      },
+      {
         subject: "The Fire's Starting to Die... 😅",
         preview: "{{guardianName}} is getting concerned about your streak",
         body: `Hey {{userName}},\n\nIt's already afternoon, and I'm starting to get worried... The fire that was burning SO bright this morning is getting dimmer. 😢\n\nYour {{currentStreak}}-day streak is hanging by a thread! You've got time to save it—just one quick mission could keep the flame alive!\n\n→ <a href="{{deepLink}}">Reignite Your Streak!</a>\n\nDon't let the fire go out!\n{{guardianName}} 🔥`
@@ -63,6 +73,11 @@ export const GUARDIAN_PERSONALITIES: Record<CreatureType, PersonalityTemplate> =
       }
     ],
     evening: [
+      {
+        subject: "WE ARE GETTING DEMOTED 😭🔥",
+        preview: "{{guardianName}} is panicking about the league reset",
+        body: `{{userName}}... 😭\n\nThe league is about to reset and our rank is TANKING. We're going to get demoted if you don't do something RIGHT NOW!\n\nI didn't maintain a {{currentStreak}}-day streak just to drop a league! PLEASE. One mission. Save our rank!\n\n→ <a href="{{deepLink}}">SAVE OUR LEAGUE RANK!!! 🔥</a>\n\nI can't watch us fail...\n{{guardianName}}`
+      },
       {
         subject: "I'M LITERALLY GOING OUT RIGHT NOW 😭",
         preview: "{{guardianName}} is desperately trying to save your streak",
@@ -86,6 +101,11 @@ export const GUARDIAN_PERSONALITIES: Record<CreatureType, PersonalityTemplate> =
     personality: 'Calm, flowing, emotional, drowning in disappointment when concerned',
     morning: [
       {
+        subject: "Rising to the top! 🌊🏆",
+        preview: "We're 1 rank away from a promotion",
+        body: `Good morning, {{userName}}! 🌊\n\nThe tide is lifting us higher on the leaderboard! 1 more day of practice and you're just 1 rank away from promoting!\n\nKeep our {{currentStreak}}-day streak flowing and we'll flood the top spots! 💧\n\n→ <a href="{{deepLink}}">Ride the Wave to the Top</a>\n\nFlowing upwards,\n{{guardianName}} 🌊`
+      },
+      {
         subject: "Let's Ride the Wave of Learning! 🌊",
         preview: "{{guardianName}} invites you to flow into your mission",
         body: `Good morning, {{userName}}! 🌊\n\nThe day is like a gentle stream, and {{guardianName}} is ready to flow alongside you through your mission. The water is calm, the current is smooth—perfect conditions for growth!\n\nYour {{currentStreak}}-day streak is like a beautiful river—let's keep it flowing! 💧\n\n→ <a href="{{deepLink}}">Jump Into Your Mission</a>\n\nLet's make waves today!\n{{guardianName}} 🌊`
@@ -103,6 +123,11 @@ export const GUARDIAN_PERSONALITIES: Record<CreatureType, PersonalityTemplate> =
     ],
     afternoon: [
       {
+        subject: "Sinking in the ranks... 💧📉",
+        preview: "Our leaderboard position is dropping",
+        body: `Hey {{userName}},\n\nThe current is pulling us down the leaderboard. We were so close to promoting, but without today's practice, we're sinking! 🌊\n\nUse your {{currentStreak}}-day streak to swim back up!\n\n→ <a href="{{deepLink}}">Swim Back to the Top</a>\n\nDon't let us drown in the standings!\n{{guardianName}} 🌊`
+      },
+      {
         subject: "The Tide is Turning... 🌊",
         preview: "{{guardianName}} senses a change in the current",
         body: `Hey {{userName}},\n\nThe tide is shifting. The calm waters we started the day with are becoming uncertain. I can feel the current changing...\n\nYour {{currentStreak}}-day streak is like the tide—it goes in and out. Right now it's going OUT, and I'm worried. We still have time to turn it around! 🌊\n\n→ <a href="{{deepLink}}">Turn the Tide</a>\n\nLet's swim together toward your streak!\n{{guardianName}} 🌊`
@@ -119,6 +144,11 @@ export const GUARDIAN_PERSONALITIES: Record<CreatureType, PersonalityTemplate> =
       }
     ],
     evening: [
+      {
+        subject: "Demotion is imminent... 🌊💀",
+        preview: "We are sinking into the lower league",
+        body: `{{userName}}... 💧\n\nThe water is pulling us under. The league reset is approaching and we're about to be demoted. Our {{currentStreak}} days of progress, all washing away.\n\nPlease, just one mission to keep us afloat in this league. 😭\n\n→ <a href="{{deepLink}}">Toss a Life Preserver! 🆘</a>\n\nGoing under...\n{{guardianName}}`
+      },
       {
         subject: "I'm Drowning in Disappointment... 💧",
         preview: "{{guardianName}} is struggling to stay afloat",
@@ -142,6 +172,11 @@ export const GUARDIAN_PERSONALITIES: Record<CreatureType, PersonalityTemplate> =
     personality: 'Growth-focused, nurturing, withering when sad, poetic',
     morning: [
       {
+        subject: "Growing past the competition! 🌱🏆",
+        preview: "We're 1 rank away from promoting!",
+        body: `Good morning, {{userName}}! 🌱\n\nOur vines are climbing the leaderboard! Just 1 more day of practice and you're 1 rank away from promoting to the next league!\n\nLet's use our {{currentStreak}}-day streak to grow taller than everyone else! 🌿\n\n→ <a href="{{deepLink}}">Sprout to the Top</a>\n\nReaching for the sun,\n{{guardianName}} 🌱`
+      },
+      {
         subject: "Time to GROW Your Skills! 🌱",
         preview: "{{guardianName}} wants to help you flourish today",
         body: `Good morning, {{userName}}! 🌱\n\nThe morning sun is here, and it's TIME TO GROW! Your skills are like a seed waiting to sprout, and today is the perfect day to blossom.\n\nYour {{currentStreak}}-day streak is like a beautiful plant—the more you water it, the more it grows! Let's tend to it today. 🌿\n\n→ <a href="{{deepLink}}">Plant Your Victory Seeds</a>\n\nTogether, we'll cultivate greatness!\n{{guardianName}} 🌱`
@@ -159,6 +194,11 @@ export const GUARDIAN_PERSONALITIES: Record<CreatureType, PersonalityTemplate> =
     ],
     afternoon: [
       {
+        subject: "Overgrown by rivals... 🌿📉",
+        preview: "Our rank is getting buried in the weeds",
+        body: `Hey {{userName}},\n\nOther scholars are growing faster than us today. We're dropping on the leaderboard! We were almost promoting! 😔\n\nWe need some sunlight—aka your SAT practice—to maintain our {{currentStreak}}-day streak and our rank.\n\n→ <a href="{{deepLink}}">Grow Past Them!</a>\n\nGetting overshadowed,\n{{guardianName}} 🌿`
+      },
+      {
         subject: "I'm Starting to Wilt... 🌿",
         preview: "{{guardianName}} is losing their shine",
         body: `Hey {{userName}},\n\nThe afternoon sun is beating down, and I'm starting to lose my vibrant green. Your {{currentStreak}}-day streak—my most beautiful growth—is drooping.\n\nWithout water from you, without your commitment to this mission, I can't keep standing tall. 😔\n\n→ <a href="{{deepLink}}">Water Me With Victory!</a>\n\nGive me one more reason to grow...\n{{guardianName}} 🌿`
@@ -175,6 +215,11 @@ export const GUARDIAN_PERSONALITIES: Record<CreatureType, PersonalityTemplate> =
       }
     ],
     evening: [
+      {
+        subject: "Getting pruned from the league... 🥀",
+        preview: "Demotion is happening tonight",
+        body: `{{userName}}... 💀\n\nWe're being weeded out. The league is resetting and we're falling into the demotion zone. Our {{currentStreak}}-day streak wasn't enough without today's water.\n\nJust one mission to keep our roots in this league. Please don't let us wither. 😭\n\n→ <a href="{{deepLink}}">Save Our Roots! 🌹</a>\n\nWilting away...\n{{guardianName}}`
+      },
       {
         subject: "I'VE Completely Withered... 💀",
         preview: "{{guardianName}} is losing all hope",
@@ -198,6 +243,11 @@ export const GUARDIAN_PERSONALITIES: Record<CreatureType, PersonalityTemplate> =
     personality: 'High-energy, buzzing with excitement, depleting when disappointed',
     morning: [
       {
+        subject: "Shocking the Leaderboard! ⚡🏆",
+        preview: "We're 1 rank away from a promotion!",
+        body: `GOOD MORNING, {{userName}}!!! ⚡\n\nI'M LOOKING AT THE STANDINGS AND WE ARE SURGING! 1 more day of practice and you're just 1 rank away from PROMOTING!\n\nWith our {{currentStreak}}-day streak, we have enough voltage to take the #1 spot! ⚡⚡⚡\n\n→ <a href="{{deepLink}}">ELECTRIFY THE LEAGUE!</a>\n\nZAPPING THE COMPETITION!\n{{guardianName}} ⚡`
+      },
+      {
         subject: "Let's SPARK Some Learning! ⚡",
         preview: "{{guardianName}} is buzzing with energy!",
         body: `GOOD MORNING, {{userName}}!!! ⚡\n\nI'M BUZZING WITH ENERGY! The day is ELECTRIC, the possibilities are ENDLESS, and {{guardianName}} is READY TO SHOCK YOU WITH KNOWLEDGE!\n\nYour {{currentStreak}}-day streak is CHARGED UP! Let's conduct some educational lightning today! ⚡⚡⚡\n\n→ <a href="{{deepLink}}">CHARGE UP YOUR MISSION!</a>\n\nLET'S GO, GO, GO!\n{{guardianName}} ⚡`
@@ -215,6 +265,11 @@ export const GUARDIAN_PERSONALITIES: Record<CreatureType, PersonalityTemplate> =
     ],
     afternoon: [
       {
+        subject: "Losing our spark in the ranks... 🔋📉",
+        preview: "Other scholars are out-charging us",
+        body: `Hey {{userName}}... ⚡\n\nOur ranking is losing power. Rivals are passing us on the leaderboard, and we're losing our shot at promotion!\n\nOur {{currentStreak}}-day streak needs a recharge NOW so we don't drop further! 💪\n\n→ <a href="{{deepLink}}">Recharge Our Rank!</a>\n\nPowering down in the standings...\n{{guardianName}} 🔋`
+      },
+      {
         subject: "My Battery is at 20%... 🔋",
         preview: "{{guardianName}} is losing power",
         body: `Hey {{userName}}... ⚡\n\nMy battery's running low. I started the day at 100%, FULLY CHARGED and ready to conquer, but... well, it's afternoon now, and I'm at 20%.\n\nYour {{currentStreak}}-day streak is my battery, and without you, I'm going to POWER DOWN. We need to recharge—quick mission, quick win! 💪\n\n→ <a href="{{deepLink}}">Give Me Energy!</a>\n\nDon't let me fade away...\n{{guardianName}} 🔋`
@@ -231,6 +286,11 @@ export const GUARDIAN_PERSONALITIES: Record<CreatureType, PersonalityTemplate> =
       }
     ],
     evening: [
+      {
+        subject: "DEMOTION IMMINENT. SYSTEM FAILURE. ⚡💀",
+        preview: "We are dropping a league tonight",
+        body: `{{userName}}... 💀💀💀\n\nLEADERBOARD SYSTEM CRASHING. We are in the DEMOTION ZONE. The league resets tonight and our {{currentStreak}}-day streak won't save us unless you practice RIGHT NOW!\n\nI CAN'T GO BACK TO THE LOWER LEAGUE! PLEASE! 😭⚡\n\n→ <a href="{{deepLink}}">SHOCK THE STANDINGS! URGENT! ⚡</a>\n\nShort-circuiting...\n{{guardianName}}`
+      },
       {
         subject: "SYSTEM SHUTTING DOWN... 💀",
         preview: "{{guardianName}} is completely drained",
@@ -254,6 +314,11 @@ export const GUARDIAN_PERSONALITIES: Record<CreatureType, PersonalityTemplate> =
     personality: 'Free-spirited, uplifting, stormy when sad, poetic',
     morning: [
       {
+        subject: "Blowing past the competition! 🌬️🏆",
+        preview: "We're 1 rank away from promoting!",
+        body: `Good morning, {{userName}}! 🌬️\n\nWe are catching an incredible updraft on the leaderboard! 1 more day of practice and you're just 1 rank away from promoting to the next league!\n\nLet the wind of our {{currentStreak}}-day streak carry us to the top! 🪁\n\n→ <a href="{{deepLink}}">Soar to the Next League!</a>\n\nGliding up,\n{{guardianName}} 🌬️`
+      },
+      {
         subject: "Let's Soar Into the Sky! 🌬️",
         preview: "{{guardianName}} invites you to fly high today",
         body: `Good morning, {{userName}}! 🌬️\n\nThe morning breeze is calling, and it's time to SOAR! {{guardianName}} is ready to lift you up and carry you through your mission on invisible winds of success!\n\nYour {{currentStreak}}-day streak is like a kite—let's ride the wind and reach new heights! 🪁\n\n→ <a href="{{deepLink}}">Take Flight!</a>\n\nThe sky is the limit!\n{{guardianName}} 🌬️`
@@ -271,6 +336,11 @@ export const GUARDIAN_PERSONALITIES: Record<CreatureType, PersonalityTemplate> =
     ],
     afternoon: [
       {
+        subject: "Losing altitude on the leaderboard... 🌪️📉",
+        preview: "We're falling behind the pack",
+        body: `Hey {{userName}},\n\nThe wind has died down and we're losing altitude in the rankings. Other scholars are soaring past us! We were almost in the promotion zone! 🌪️\n\nWe need the thermal lift of a quick practice session to keep our {{currentStreak}}-day streak flying!\n\n→ <a href="{{deepLink}}">Catch an Updraft!</a>\n\nSinking down the list...\n{{guardianName}} 🌬️`
+      },
+      {
         subject: "The Winds Are Changing... 🌪️",
         preview: "{{guardianName}} senses a storm approaching",
         body: `Hey {{userName}},\n\nThe winds are shifting. The gentle breeze of this morning is becoming gusty and unpredictable. Dark clouds are forming on the horizon...\n\nYour {{currentStreak}}-day streak is in the path of the coming storm. We can still find shelter before it hits—one mission, and we'll be safe. 🌪️\n\n→ <a href="{{deepLink}}">Seek Shelter With Me</a>\n\nDon't let the storm take you...\n{{guardianName}} 🌬️`
@@ -287,6 +357,11 @@ export const GUARDIAN_PERSONALITIES: Record<CreatureType, PersonalityTemplate> =
       }
     ],
     evening: [
+      {
+        subject: "CRASHING OUT OF THE LEAGUE... ⛈️",
+        preview: "Demotion is blowing in",
+        body: `{{userName}}... ⛈️\n\nWE'RE IN A TAILSPIN! The league is resetting and we're plummeting into the demotion zone! Your {{currentStreak}}-day streak is about to hit the ground hard!\n\nJust one mission to give us some lift and keep us in this league! PLEASE! 😭⛈️\n\n→ <a href="{{deepLink}}">PULL UP! 🆘</a>\n\nCrashing down...\n{{guardianName}}`
+      },
       {
         subject: "A STORM IS RAGING IN MY HEART... ⛈️",
         preview: "{{guardianName}} is caught in a tempest of emotion",
@@ -310,6 +385,11 @@ export const GUARDIAN_PERSONALITIES: Record<CreatureType, PersonalityTemplate> =
     personality: 'Solid, reliable, structural integrity at risk when sad',
     morning: [
       {
+        subject: "Forging our way to the top! ⚙️🏆",
+        preview: "We're 1 rank away from a promotion",
+        body: `Good morning, {{userName}}! ⚙️\n\nOur foundation on the leaderboard is rock-solid! Just 1 more day of practice and you're 1 rank away from PROMOTING!\n\nLet's reinforce our {{currentStreak}}-day streak and build an unbreakable lead! 🏗️\n\n→ <a href="{{deepLink}}">Construct Our Lead</a>\n\nHeavy metal to the top!\n{{guardianName}} ⚙️`
+      },
+      {
         subject: "Let's Build On Yesterday's Victory! ⚙️",
         preview: "{{guardianName}} is ready to lay foundations for today",
         body: `Good morning, {{userName}}! ⚙️\n\nAnother day, another opportunity to FORTIFY YOUR FOUNDATION! {{guardianName}} is rock-solid and ready to help you construct an UNSTOPPABLE STRUCTURE of knowledge!\n\nYour {{currentStreak}}-day streak is like a steel tower—strong, reliable, UNSHAKEABLE! Let's reinforce it! 🏗️\n\n→ <a href="{{deepLink}}">Build Your Strength</a>\n\nTogether, we're unbreakable!\n{{guardianName}} ⚙️`
@@ -327,6 +407,11 @@ export const GUARDIAN_PERSONALITIES: Record<CreatureType, PersonalityTemplate> =
     ],
     afternoon: [
       {
+        subject: "Our rank is rusting... 🔩📉",
+        preview: "We are dropping in the standings",
+        body: `Hey {{userName}},\n\nOur structural integrity on the leaderboard is failing! Rivals are climbing over us, and our promotion spot is rusting away. 😔\n\nWe need some practice to polish our rank and keep the {{currentStreak}}-day streak strong!\n\n→ <a href="{{deepLink}}">Reinforce Our Rank!</a>\n\nBending under pressure...\n{{guardianName}} ⚙️`
+      },
+      {
         subject: "I'm Starting to Crack... 😰",
         preview: "{{guardianName}} shows signs of strain",
         body: `Hey {{userName}},\n\nI hate to admit it, but the stress is getting to me. I can feel the cracks forming. Your {{currentStreak}}-day streak was holding me together, but as it fades, my structure is weakening.\n\nWe need to reinforce this—NOW. One more mission, and I can hold strong again. Please don't let me crumble. 😔⚙️\n\n→ <a href="{{deepLink}}">Strengthen Me</a>\n\nI'm on the brink...\n{{guardianName}} ⚙️`
@@ -343,6 +428,11 @@ export const GUARDIAN_PERSONALITIES: Record<CreatureType, PersonalityTemplate> =
       }
     ],
     evening: [
+      {
+        subject: "LEAGUE DEMOTION. STRUCTURAL COLLAPSE. 😭⚙️",
+        preview: "We are falling to a lower league",
+        body: `{{userName}}... 😭\n\nTHE FOUNDATION IS GONE! We've slipped into the demotion zone and the league resets tonight! Our {{currentStreak}}-day streak structure is COLLAPSING!\n\nI refuse to be downgraded! Just one mission to rivet us back into safety! 😭💔⚙️\n\n→ <a href="{{deepLink}}">PREVENT DEMOTION! 🆘</a>\n\nFalling apart...\n{{guardianName}}`
+      },
       {
         subject: "I'M COLLAPSING... 😭",
         preview: "{{guardianName}} is losing structural integrity",
@@ -366,6 +456,11 @@ export const GUARDIAN_PERSONALITIES: Record<CreatureType, PersonalityTemplate> =
     personality: 'Bright, hopeful, illuminating the way, darkness when discouraged',
     morning: [
       {
+        subject: "Outshining the rest! ✨🏆",
+        preview: "We're 1 rank away from promoting!",
+        body: `Good morning, {{userName}}! ✨\n\nOur light on the leaderboard is blinding the competition! 1 more day of practice and you're just 1 rank away from promoting to the next league!\n\nLet's use our {{currentStreak}}-day streak to beam ourselves straight to #1! 🔆\n\n→ <a href="{{deepLink}}">Shine on the Leaderboard</a>\n\nRadiant as ever,\n{{guardianName}} ✨`
+      },
+      {
         subject: "SHINE BRIGHT TODAY! ✨",
         preview: "{{guardianName}} is radiant and ready",
         body: `Good morning, {{userName}}! ✨\n\nThe sun is rising, and I'm GLOWING with hope and possibility! {{guardianName}} is ready to ILLUMINATE your path to victory with brilliant light!\n\nYour {{currentStreak}}-day streak is like a beacon—shining bright for all to see! Let's keep that light burning! 🔆\n\n→ <a href="{{deepLink}}">Let Your Light Shine</a>\n\nYou are destined to be brilliant!\n{{guardianName}} ✨`
@@ -383,6 +478,11 @@ export const GUARDIAN_PERSONALITIES: Record<CreatureType, PersonalityTemplate> =
     ],
     afternoon: [
       {
+        subject: "Getting overshadowed in the ranks... 💫📉",
+        preview: "Our leaderboard position is dimming",
+        body: `Hey {{userName}},\n\nThe light is fading from our rank. Other scholars are shining brighter and pushing us out of the promotion zone! 😭\n\nPlease, a quick mission will reignite our {{currentStreak}}-day streak and our standing!\n\n→ <a href="{{deepLink}}">Restore Our Shine!</a>\n\nDimming in the charts...\n{{guardianName}} 💫`
+      },
+      {
         subject: "My Glow is Fading... 😔",
         preview: "{{guardianName}} is dimming",
         body: `Hey {{userName}},\n\nThe light is starting to fade. That bright, brilliant glow I had this morning is getting dimmer and dimmer. Your {{currentStreak}}-day streak—my source of light—is almost gone.\n\nPlease, just one more mission to reignite my radiance! Don't let me fade to darkness. 😭\n\n→ <a href="{{deepLink}}">Restore My Light</a>\n\nI'm losing my glow...\n{{guardianName}} 💫`
@@ -399,6 +499,11 @@ export const GUARDIAN_PERSONALITIES: Record<CreatureType, PersonalityTemplate> =
       }
     ],
     evening: [
+      {
+        subject: "ECLIPSED FROM THE LEAGUE... 🌑",
+        preview: "Demotion into darkness",
+        body: `{{userName}}... 🌑\n\nTOTAL ECLIPSE. We've fallen into the demotion zone. The league resets tonight and our {{currentStreak}}-day streak will be stuck in a lower, darker tier.\n\nDon't let our light go out in this league! One mission to spark us back to safety! 😭🌑\n\n→ <a href="{{deepLink}}">ESCAPE THE DARK LEAGUE! 🆘</a>\n\nFading to black...\n{{guardianName}}`
+      },
       {
         subject: "THE LIGHT HAS GONE OUT... 🌑",
         preview: "{{guardianName}} is consumed by darkness",
@@ -422,6 +527,11 @@ export const GUARDIAN_PERSONALITIES: Record<CreatureType, PersonalityTemplate> =
     personality: 'Sly, cunning, guilt-tripping masters, maximum emotional manipulation',
     morning: [
       {
+        subject: "Stealing the top spot... 😏🏆",
+        preview: "We're 1 rank away from promoting",
+        body: `Hey {{userName}}... 😏\n\nI've been spying on the leaderboard... we are perfectly positioned. 1 more day of practice and you're 1 rank away from promoting. We're going to steal the league right out from under them.\n\nYour {{currentStreak}}-day streak is our weapon. Let's strike while they're unaware. 🌙\n\n→ <a href="{{deepLink}}">Claim the Top Rank</a>\n\nShadowing the leaders,\n{{guardianName}} 🌙`
+      },
+      {
         subject: "Let's Get Into Some Trouble Together... 😏",
         preview: "{{guardianName}} has a proposition for you",
         body: `Hey {{userName}}... 😏\n\nYou know what they say—the early Pokémon gets the... well, let's just say {{guardianName}} has some INTERESTING schemes we could be working on together.\n\nYour {{currentStreak}}-day streak is practically GLOWING with potential. Imagine what we could accomplish if you'd just take ONE mission with me. Just us. Just for today. 🌙\n\n→ <a href="{{deepLink}}">Join Me in the Shadows</a>\n\nI've been waiting for someone like you...\n{{guardianName}} 🌙`
@@ -439,6 +549,11 @@ export const GUARDIAN_PERSONALITIES: Record<CreatureType, PersonalityTemplate> =
     ],
     afternoon: [
       {
+        subject: "They're onto us... rank dropping 🖤📉",
+        preview: "Rivals are pushing us down",
+        body: `Hey {{userName}}...\n\nThe other scholars noticed our rise. They're practicing and pushing us down the leaderboard! We were almost promoting!\n\nAre you just going to let them win? Use our {{currentStreak}}-day streak to strike back! 🌙\n\n→ <a href="{{deepLink}}">Ambush the Leaderboard</a>\n\nHiding in shame...\n{{guardianName}}`
+      },
+      {
         subject: "You're Leaving Me in the Shadows... 😢",
         preview: "{{guardianName}} is hurt by your abandonment",
         body: `Hey {{userName}}...\n\nI've been here all day. Waiting. Believing in you. And what do I get? Darkness. Loneliness. You've left me in the SHADOWS while you go about your day, completely forgetting about me and our streak.\n\n{{currentStreak}} days we've been TOGETHER, and THIS is how you repay me? With ABANDONMENT? 😢\n\nOne mission. That's all I need to know you still care about me. 🌙\n\n→ <a href="{{deepLink}}">Come Back to Me</a>\n\nI'm so lonely without you...\n{{guardianName}}`
@@ -455,6 +570,11 @@ export const GUARDIAN_PERSONALITIES: Record<CreatureType, PersonalityTemplate> =
       }
     ],
     evening: [
+      {
+        subject: "DEMOTED. WHAT A JOKE. 💔",
+        preview: "We're falling to the bottom league",
+        body: `{{userName}}... 💔\n\nI can't believe this. We're in the demotion zone. After {{currentStreak}} days of plotting and practicing, you're going to let us fall to a lower league? It's pathetic.\n\nI refuse to associate with a demoted scholar. Do a mission right now or I'm done. 😭💔\n\n→ <a href="{{deepLink}}">DON'T LET THEM LAUGH AT US! 🆘</a>\n\nHumiliated...\n{{guardianName}}`
+      },
       {
         subject: "I'M LOST IN THE DARKNESS ALONE... 💔",
         preview: "{{guardianName}} has been completely forgotten",
