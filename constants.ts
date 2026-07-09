@@ -114,7 +114,7 @@ export const BOSSES: BossDef[] = [
     { id: 'moltres', name: 'Moltres', spriteUrl: '/bosses/moltres.gif' },
     { id: 'articuno-galar', name: 'Galarian Articuno', spriteUrl: '/bosses/articuno-galar.gif' },
     { id: 'zapdos-galar', name: 'Galarian Zapdos', spriteUrl: '/bosses/zapdos-galar.gif' },
-    { id: 'moltres-galar', name: 'Galarian Moltres', spriteUrl: '/bosses/moltres-galar.gif' }
+    { id: 'moltres-galar', name: 'Galarian Moltres', spriteUrl: '/bosses/moltres-galar.png' }
 ];
 
 export const getBossForSubtopic = (subtopic: string): BossDef => {
