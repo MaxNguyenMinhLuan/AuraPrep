@@ -162,7 +162,7 @@ const LeaderboardView: React.FC<LeaderboardViewProps> = ({ username, weeklyGain,
             {userVisibility !== 'visible' && (
                 <button 
                     onClick={scrollToUser}
-                    className={`fixed left-1/2 -translate-x-1/2 z-[60] bg-highlight text-white text-[10px] font-bold px-5 py-2.5 rounded-full shadow-2xl border-2 border-white flex items-center gap-2 animate-bounce transition-all duration-300 hover:scale-105 active:scale-95 ${userVisibility === 'above' ? 'top-20' : 'bottom-24'}`}
+                    className={`fixed left-1/2 -translate-x-1/2 z-[60] bg-highlight text-white text-[10px] font-bold px-5 py-2.5 rounded-full shadow-2xl border-2 border-white flex items-center gap-2 animate-bounce transition-all duration-300 hover:scale-105 active:scale-95 ${userVisibility === 'above' ? 'top-[calc(env(safe-area-inset-top)+76px)]' : 'bottom-[calc(env(safe-area-inset-bottom)+100px)]'}`}
                 >
                     {userVisibility === 'above' ? '▲' : '▼'} YOU
                 </button>
@@ -233,7 +233,7 @@ const LeaderboardView: React.FC<LeaderboardViewProps> = ({ username, weeklyGain,
             )}
 
             {/* Social / PvP Buttons */}
-            <div className="fixed bottom-[calc(env(safe-area-inset-bottom)+76px)] right-6 lg:bottom-10 lg:right-10 flex flex-col items-end gap-3 z-30">
+            <div className="fixed bottom-[calc(env(safe-area-inset-bottom)+96px)] right-6 lg:bottom-10 lg:right-10 flex flex-col items-end gap-3 z-30">
                 <div className={`flex flex-col items-end gap-3 transition-all duration-300 transform ${isMenuOpen ? 'translate-y-0 opacity-100 scale-100' : 'translate-y-10 opacity-0 scale-50 pointer-events-none'}`}>
                     <button
                         onClick={() => handleAction("Coming Soon!")}
