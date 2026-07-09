@@ -141,7 +141,7 @@ const PracticeSession: React.FC<{
     };
 
     return (
-        <div className="flex flex-col h-full animate-fadeIn max-w-3xl mx-auto overflow-y-auto pr-1 scroll-smooth">
+        <div className="flex flex-col h-auto animate-fadeIn max-w-3xl mx-auto pr-1">
             {showStreakToast && (
                 <div className="fixed top-20 left-1/2 -translate-x-1/2 bg-highlight text-background font-bold p-3 animate-fadeIn z-20 shadow-lg border-2 border-highlight rounded-lg text-xs md:text-sm">
                     Streak Complete! +{AURA_POINTS_PER_PRACTICE_STREAK} Aura!
@@ -151,14 +151,14 @@ const PracticeSession: React.FC<{
                 <button onClick={onExit} className="text-text-dim hover:text-highlight active:text-highlight flex items-center gap-2 p-2 -ml-2 touch-target">&larr; Back</button>
                  <p className="text-primary font-bold text-sm md:text-base">Streak: {'🔥'.repeat(streak)}{'⚫'.repeat(3 - streak)}</p>
             </div>
-
+ 
             {isLoading || !currentQuestion ? (
                  <div className="flex flex-col items-center justify-center flex-grow text-center h-[60vh]">
                     <LoadingSpinner />
                     <p className="text-text-dim mt-2 text-[10px]">Loading {difficulty} question...</p>
                 </div>
             ) : (
-                <div className={`p-4 md:p-6 border-2 flex-grow flex flex-col justify-between rounded-lg shadow-sm transition-all duration-300 ${
+                <div className={`p-4 md:p-6 border-2 flex flex-col justify-between rounded-lg shadow-sm transition-all duration-300 ${
                     isCorrect === false ? 'bg-accent/5 border-accent shadow-[0_0_20px_rgba(220,38,38,0.25)] shake-once red-flash' : 'bg-background/50 border-text-dark'
                 }`}>
                     <div>

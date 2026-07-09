@@ -111,7 +111,7 @@ const MissionView: React.FC<MissionViewProps> = ({ mission, onAnswer, onExit, in
     if (!currentQuestion) return null;
 
     return (
-        <div className="flex flex-col h-full animate-fadeIn relative">
+        <div className="flex flex-col h-auto animate-fadeIn relative">
             {showJeopardyModal && (
                 <div className="fixed inset-0 bg-black/60 backdrop-blur-sm z-50 flex items-center justify-center p-4">
                     <div className="bg-surface border-4 border-highlight p-6 max-w-sm w-full shadow-card-hover animate-scaleIn text-center rounded-xl">
@@ -150,7 +150,7 @@ const MissionView: React.FC<MissionViewProps> = ({ mission, onAnswer, onExit, in
                 </div>
             </div>
 
-            <div className={`p-3 md:p-4 border-2 flex-grow flex flex-col justify-between overflow-y-auto rounded-xl shadow-card scroll-smooth transition-all duration-300 ${
+            <div className={`p-3 md:p-4 border-2 flex flex-col justify-between rounded-xl shadow-card transition-all duration-300 ${
                 isCorrect === false ? 'bg-accent/5 border-accent shadow-[0_0_20px_rgba(220,38,38,0.25)] shake-once red-flash' : 'bg-surface border-secondary/30'
             }`}>
                 <div className="pb-4">

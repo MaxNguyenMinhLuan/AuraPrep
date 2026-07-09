@@ -76,10 +76,10 @@ const Dashboard: React.FC<DashboardProps> = ({
     });
 
     return (
-        <div className="flex flex-col h-full animate-fadeIn space-y-4 md:space-y-6 lg:space-y-0 md:grid md:grid-cols-2 lg:grid-cols-12 md:gap-6 lg:gap-8 lg:h-auto">
+        <div className="flex flex-col h-auto animate-fadeIn space-y-4 md:space-y-6 lg:space-y-0 md:grid md:grid-cols-2 lg:grid-cols-12 md:gap-6 lg:gap-8">
 
             {/* Left Column (Tablet: 1/2, Desktop: 4/12) - Active Guardian & Stats */}
-            <div className="flex flex-col gap-4 md:gap-6 md:col-span-1 lg:col-span-4 lg:h-full">
+            <div className="flex flex-col gap-4 md:gap-6 md:col-span-1 lg:col-span-4">
                 
                 {/* Stats Header (Mobile: Top, Desktop: Top of Left Col) */}
                 <div className="hidden lg:flex w-full justify-between items-center px-2 md:px-0 gap-2">

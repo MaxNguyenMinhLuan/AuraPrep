@@ -79,7 +79,7 @@ const ReviewView: React.FC<ReviewViewProps> = ({ questions, onAnswer, onExit }) 
     }
 
     return (
-        <div className="flex flex-col h-full animate-fadeIn overflow-y-auto pr-1">
+        <div className="flex flex-col h-auto animate-fadeIn pr-1">
             <div className="text-center mb-4 flex justify-between items-center">
                  <button onClick={onExit} className="text-text-dim hover:text-highlight">&larr; Exit</button>
                  <span className="text-[8px] font-bold text-highlight">TRAINING MODE</span>
@@ -93,7 +93,7 @@ const ReviewView: React.FC<ReviewViewProps> = ({ questions, onAnswer, onExit }) 
                 </div>
             </div>
 
-            <div className={`p-4 border-2 flex-grow flex flex-col justify-between relative overflow-hidden rounded-lg shadow-md transition-all duration-300 ${
+            <div className={`p-4 border-2 flex flex-col justify-between relative rounded-lg shadow-md transition-all duration-300 ${
                 isCorrect === false ? 'bg-accent/5 border-accent shadow-[0_0_20px_rgba(220,38,38,0.25)] shake-once red-flash' : 'bg-surface border-accent/50'
             }`}>
                 <div className="absolute top-0 right-0 bg-accent text-white text-[8px] px-2 py-1 font-bold rounded-bl-md">REVIEW</div>
