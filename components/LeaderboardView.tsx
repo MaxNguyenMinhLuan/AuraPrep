@@ -160,12 +160,14 @@ const LeaderboardView: React.FC<LeaderboardViewProps> = ({ username, weeklyGain,
 
             {/* Tracking Bubble for off-screen user */}
             {userVisibility !== 'visible' && (
-                <button 
-                    onClick={scrollToUser}
-                    className={`fixed left-1/2 -translate-x-1/2 z-[60] bg-highlight text-white text-[10px] font-bold px-5 py-2.5 rounded-full shadow-2xl border-2 border-white flex items-center gap-2 animate-bounce transition-all duration-300 hover:scale-105 active:scale-95 ${userVisibility === 'above' ? 'top-[calc(env(safe-area-inset-top)+76px)]' : 'bottom-[calc(env(safe-area-inset-bottom)+100px)]'}`}
-                >
-                    {userVisibility === 'above' ? '▲' : '▼'} YOU
-                </button>
+                <div className={`fixed left-0 right-0 flex justify-center z-[60] pointer-events-none ${userVisibility === 'above' ? 'top-[calc(env(safe-area-inset-top)+76px)]' : 'bottom-[calc(env(safe-area-inset-bottom)+100px)]'}`}>
+                    <button 
+                        onClick={scrollToUser}
+                        className="pointer-events-auto bg-highlight text-white text-[10px] font-bold px-5 py-2.5 rounded-full shadow-2xl border-2 border-white flex items-center gap-2 animate-bounce transition-all duration-300 hover:scale-105 active:scale-95"
+                    >
+                        {userVisibility === 'above' ? '▲' : '▼'} YOU
+                    </button>
+                </div>
             )}
 
             {/* Scrollable List Container */}
