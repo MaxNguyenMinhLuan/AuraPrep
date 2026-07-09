@@ -80,3 +80,17 @@ export interface IRefreshToken {
     userAgent?: string;
     ipAddress?: string;
 }
+
+export interface DBQuestion {
+    Question: string;
+    A: string;
+    B: string;
+    C: string;
+    D: string;
+    CorrectAns: 'A' | 'B' | 'C' | 'D';
+    Type: string;
+    Difficulty: 'Easy' | 'Medium' | 'Hard' | 'Extra Hard';
+    Source: string;
+    Explanation?: string; 
+    GraphData?: any;
+}
