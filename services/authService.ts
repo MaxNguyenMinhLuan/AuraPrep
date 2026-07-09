@@ -151,7 +151,14 @@ class AuthServiceClass {
         try {
             // Safety fallback for developer/admin
             const lowercaseEmail = email.toLowerCase();
-            if (lowercaseEmail === 'maxidea2008@gmail.com' || lowercaseEmail === 'maxminhluannguyen@gmail.com') {
+            const whitelist = [
+                'maxidea2008@gmail.com',
+                'maxminhluannguyen@gmail.com',
+                'christina.teng17@gmail.com',
+                'allisonmandreyev@gmail.com',
+                'justin.eunho.joung@gmail.com'
+            ];
+            if (whitelist.includes(lowercaseEmail)) {
                 return true;
             }
             
