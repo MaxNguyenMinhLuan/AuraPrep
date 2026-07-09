@@ -54,6 +54,7 @@ const App: React.FC = () => {
     const [baselineResults, setBaselineResults] = useState<any>(null);
     const [isProfileOpen, setIsProfileOpen] = useState(false);
     const [headerImageError, setHeaderImageError] = useState(false);
+    const [showBossFightWarning, setShowBossFightWarning] = useState<{show: boolean, targetView?: View}>({ show: false });
     useEffect(() => {
         setHeaderImageError(false);
     }, [user?.photoUrl]);
@@ -61,9 +62,8 @@ const App: React.FC = () => {
     // Get user ID for user-specific storage
     const handleViewChange = (newView: View) => {
         if (isBossFightActive) {
-            const confirmExit = window.confirm("Are you sure you want to quit the boss fight? You will lose all your progress in this fight.");
-            if (!confirmExit) return;
-            setIsBossFightActive(false);
+            setShowBossFightWarning({ show: true, targetView: newView });
+            return;
         }
         setCurrentView(newView);
     };
@@ -1457,13 +1457,46 @@ const App: React.FC = () => {
                     onClose={() => setStreakToShow(null)}
                 />
             )}
-            {isProfileOpen && (
+            {isProfileOpen && user && (
                 <ProfileModal
                     user={user}
                     onClose={() => setIsProfileOpen(false)}
+                    profile={profile}
                     onUpdateUser={handleUpdateUser}
                     onLogout={handleLogout}
                 />
+            )}
+            {/* Boss Fight Quit Warning Modal */}
+            {showBossFightWarning.show && (
+                <div className="fixed inset-0 z-[100] flex items-center justify-center p-4 bg-black/60 backdrop-blur-sm animate-fadeIn">
+                    <div className="bg-surface rounded-3xl p-6 md:p-8 max-w-sm w-full shadow-[0_0_40px_rgba(255,50,50,0.3)] border border-red-500/30 animate-scaleIn relative overflow-hidden">
+                        <div className="absolute top-0 left-0 w-full h-1 bg-gradient-to-r from-red-500 to-orange-500"></div>
+                        <h3 className="text-xl font-bold text-text-main mb-3">Abandon Boss Fight?</h3>
+                        <p className="text-text-dim text-sm mb-6">
+                            Are you sure you want to quit the boss fight? You will <span className="text-red-400 font-bold">lose all your progress</span> in this fight!
+                        </p>
+                        <div className="flex gap-3">
+                            <button
+                                onClick={() => setShowBossFightWarning({ show: false })}
+                                className="flex-1 py-3 px-4 bg-secondary/50 hover:bg-secondary text-text-main font-semibold rounded-xl transition-premium press-effect"
+                            >
+                                Cancel
+                            </button>
+                            <button
+                                onClick={() => {
+                                    setIsBossFightActive(false);
+                                    if (showBossFightWarning.targetView) {
+                                        setCurrentView(showBossFightWarning.targetView);
+                                    }
+                                    setShowBossFightWarning({ show: false });
+                                }}
+                                className="flex-1 py-3 px-4 bg-red-500/20 hover:bg-red-500/30 text-red-500 font-bold rounded-xl border border-red-500/50 transition-premium press-effect"
+                            >
+                                Quit Fight
+                            </button>
+                        </div>
+                    </div>
+                </div>
             )}
             {/* Tutorial overlay */}
             {!tutorialState.isComplete && renderTutorial()}

@@ -226,7 +226,7 @@ const BossFightPrep: React.FC<{
     };
 
     return (
-        <div className="flex flex-col justify-center min-h-[75vh] lg:min-h-0 w-full max-w-2xl mx-auto pb-10 px-2 animate-fadeIn">
+        <div className="flex flex-col w-full max-w-2xl mx-auto pb-24 pt-8 lg:pt-12 px-4 animate-fadeIn">
              <div className="text-center mb-6">
                  <button onClick={onCancel} className="text-text-dim hover:text-highlight float-left">&larr; Back</button>
                 <h1 className="font-serif text-3xl text-accent leading-tight">Boss Loadout</h1>
