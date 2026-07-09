@@ -1362,7 +1362,7 @@ const App: React.FC = () => {
             />
             {/* Mobile floating controls (z-30 front layer) */}
             {user && (
-                <div className="lg:hidden fixed top-3 left-3 right-3 z-30 flex items-center justify-between pointer-events-none">
+                <div className="lg:hidden fixed top-[calc(env(safe-area-inset-top)+12px)] left-3 right-3 z-30 flex items-center justify-between pointer-events-none">
                     {/* Left side stats (click events enabled) */}
                     <div className="flex gap-1.5 items-center pointer-events-auto">
                         <div className="glass px-3 py-1.5 rounded-lg border border-secondary/50 text-xs font-bold text-primary shadow-card flex items-center gap-1.5">
@@ -1410,7 +1410,7 @@ const App: React.FC = () => {
                     </div>
                 </div>
             )}
-            <main className="flex-grow p-3 md:p-4 pb-20 md:pb-24 lg:pb-8 lg:p-8 lg:ml-64 w-full max-w-7xl mx-auto transition-all duration-300">
+            <main className="flex-grow p-3 md:p-4 pt-[calc(env(safe-area-inset-top)+64px)] pb-20 md:pb-24 lg:pt-8 lg:pb-8 lg:p-8 lg:ml-64 w-full max-w-7xl mx-auto transition-all duration-300">
                 {renderView()}
             </main>
             {streakToShow !== null && (
