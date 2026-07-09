@@ -41,7 +41,7 @@ export function createSeedMission(): DailyMission {
         subtopic: 'Mixed', // Special indicator for mixed subtopics
         questionCount: DEFAULT_SEED_MISSION_CONFIG.questionCount,
         reward: 150, // Generous reward to encourage completion
-        xp: 50,
+        xp: 75,
     };
 }
 

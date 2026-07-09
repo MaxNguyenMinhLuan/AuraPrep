@@ -704,10 +704,10 @@ const App: React.FC = () => {
                 const evolveLevel2 = creatureData?.evolveLevel2;
 
                 // Calculate new level from XP (level = floor(xp / XP_PER_LEVEL), min 5)
-                const XP_PER_LEVEL = 10;
+                const XP_PER_LEVEL = 15;
                 const MIN_LEVEL = 5;
                 const MAX_LEVEL = 100;
-                const newLevel = Math.min(MAX_LEVEL, Math.max(MIN_LEVEL, Math.floor(newXp / XP_PER_LEVEL) + MIN_LEVEL));
+                const newLevel = Math.min(MAX_LEVEL, Math.max(MIN_LEVEL, Math.floor(newXp / XP_PER_LEVEL)));
 
                 let newStage = c.evolutionStage;
                 // Only evolve if the creature has that evolution stage available and reached the level
@@ -865,8 +865,8 @@ const App: React.FC = () => {
                                     return [...p, {
                                         id: nextId,
                                         creatureId: id,
-                                        xp: 50,  // Start with 50 XP (level 5)
-                                        level: 5,  // Starting level
+                                        xp: 75,
+                                        level: 5,
                                         evolutionStage: 1,
                                         ...customData
                                     }];
@@ -957,7 +957,7 @@ const App: React.FC = () => {
         setCreatures(prev => [...prev, {
             id: nextId,
             creatureId: starterId,
-            xp: 50,
+            xp: 75,
             level: 5,
             evolutionStage: 1,
         }]);
