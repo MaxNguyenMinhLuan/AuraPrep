@@ -102,8 +102,8 @@ const LoginView: React.FC<LoginViewProps> = ({ onLogin }) => {
 
             <div className="z-10 w-full max-w-md bg-white/80 backdrop-blur-md rounded-2xl shadow-2xl border-2 border-secondary/30 p-8 text-center animate-reveal">
                 <div className="mb-8">
-                    <div className="w-20 h-20 bg-highlight/10 rounded-2xl flex items-center justify-center mx-auto mb-4 border-2 border-highlight/30 shadow-lg group hover:rotate-12 transition-transform overflow-hidden p-3">
-                        <img src="/app-icon.png?v=2" alt="AuraPrep Logo" className="w-full h-full object-contain" />
+                    <div className="w-20 h-20 bg-white rounded-2xl flex items-center justify-center mx-auto mb-4 border-2 border-highlight/30 shadow-lg group hover:rotate-12 transition-transform overflow-hidden">
+                        <img src="/app-icon.png?v=2" alt="AuraPrep Logo" className="w-full h-full object-cover" />
                     </div>
                     <h1 className="font-sans text-4xl bg-gradient-to-tr from-[#c084fc] via-[#fcd34d] to-[#22d3ee] bg-clip-text text-transparent font-bold tracking-tighter mb-2 dark:drop-shadow-[0_0_12px_rgba(192,132,252,0.7)]">AuraPrep</h1>
                     <p className="text-text-dim text-sm px-4">Gamified SAT Prep</p>
