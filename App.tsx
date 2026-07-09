@@ -219,30 +219,7 @@ const App: React.FC = () => {
         if (!user || isCheckingSession) return;
         if (hasHydratedRef.current) return;
 
-        // Dev/Test account override: Unlock all features and award 100,000 Aura
-        if (user.email === 'maxidea2008@gmail.com') {
-            const isFullyUnlocked = tutorialState.isComplete &&
-                                    tutorialState.baselineCompleted &&
-                                    tutorialState.progressUnlocked &&
-                                    tutorialState.trainingUnlocked &&
-                                    tutorialState.shopUnlocked &&
-                                    tutorialState.leaderboardUnlocked;
-            if (auraPoints < 100000 || !isFullyUnlocked) {
-                console.log('Test account detected: Unlocking all features and granting 100,000 Aura!');
-                setAuraPoints(100000);
-                setTutorialState(prev => ({
-                    ...prev,
-                    isComplete: true,
-                    currentPhase: 'complete',
-                    baselineCompleted: true,
-                    progressUnlocked: true,
-                    trainingUnlocked: true,
-                    shopUnlocked: true,
-                    leaderboardUnlocked: true,
-                }));
-                return;
-            }
-        }
+
 
         const syncData = async () => {
             try {
@@ -295,7 +272,35 @@ const App: React.FC = () => {
         };
 
         syncData();
-    }, [user, isCheckingSession, auraPoints, tutorialState]);
+    }, [user, isCheckingSession]);
+
+    // Dev account enforcer - runs independently of sync hydration
+    useEffect(() => {
+        if (user?.email === 'maxidea2008@gmail.com') {
+            let changed = false;
+            if (auraPoints < 100000) {
+                setAuraPoints(Math.max(auraPoints, 100000));
+                changed = true;
+            }
+            const isFullyUnlocked = tutorialState?.isComplete && tutorialState?.leaderboardUnlocked;
+            if (!isFullyUnlocked) {
+                setTutorialState(prev => ({
+                    ...prev,
+                    isComplete: true,
+                    currentPhase: 'complete',
+                    baselineCompleted: true,
+                    progressUnlocked: true,
+                    trainingUnlocked: true,
+                    shopUnlocked: true,
+                    leaderboardUnlocked: true,
+                }));
+                changed = true;
+            }
+            if (changed) {
+                console.log('Dev account enforcer applied.');
+            }
+        }
+    }, [user, auraPoints, tutorialState]);
 
     // Periodic sync every 5 minutes to keep backend up-to-date
     // Uses refs to avoid restarting the interval on every state change and to track dirty-checking

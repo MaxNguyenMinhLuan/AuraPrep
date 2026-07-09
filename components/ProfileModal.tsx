@@ -8,6 +8,13 @@ interface ProfileModalProps {
     onLogout: () => void;
 }
 
+const PROFANITY_REGEX = /\b(fuck|shit|bitch|asshole|cunt|dick|pussy|whore|slut|fag|nigger|nigga|retard)\b/i;
+
+const containsProfanity = (text: string): boolean => {
+    if (!text) return false;
+    return PROFANITY_REGEX.test(text);
+};
+
 const PREMADE_AVATARS = [
     { id: 'seeker', url: 'https://api.dicebear.com/7.x/avataaars/svg?seed=Seeker' },
     { id: 'champion', url: 'https://api.dicebear.com/7.x/avataaars/svg?seed=Champion' },
