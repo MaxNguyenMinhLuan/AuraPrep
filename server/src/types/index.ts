@@ -1,7 +1,13 @@
 import { Request } from 'express';
 import mongoose from 'mongoose';
 
-export interface AuthenticatedRequest extends Request {
+export interface AuthenticatedRequest<
+    P = import('express-serve-static-core').ParamsDictionary,
+    ResBody = any,
+    ReqBody = any,
+    ReqQuery = import('express-serve-static-core').Query,
+    Locals extends Record<string, any> = Record<string, any>
+> extends Request<P, ResBody, ReqBody, ReqQuery, Locals> {
     user?: {
         id: string;
         email: string;
