@@ -310,8 +310,9 @@ const BossFightSession: React.FC<{
     const BOSS_FIGHT_LENGTH = 10;
     const initialBossHealth = (level === 'Hard' || level === 'Master') ? 9 : 8;
     const [bossHealth, setBossHealth] = useState(initialBossHealth);
-    const [bossTakesDamage, setBossTakesDamage] = useState(false);
+    const [bossTakesDamage, setBossTakesDamage] = useState<number | false>(false);
     const [isBlasted, setIsBlasted] = useState(false);
+    const [isBossDefeated, setIsBossDefeated] = useState(false);
     const [timeRemaining, setTimeRemaining] = useState(1200); // 20 minutes in seconds
 
     const boss = getBossForSubtopic(subtopic);
@@ -322,6 +323,7 @@ const BossFightSession: React.FC<{
     const [disabledOptions, setDisabledOptions] = useState<number[]>([]);
     const [hintVisible, setHintVisible] = useState(false);
     const [secondChanceActive, setSecondChanceActive] = useState(false);
+    const [doubleJeopardyActive, setDoubleJeopardyActive] = useState(false);
 
     const requirement = getBossFightRequirement(level);
     const difficulty = getDifficultyForLevel(level);
@@ -359,6 +361,7 @@ const BossFightSession: React.FC<{
         setDisabledOptions([]);
         setHintVisible(false);
         setSecondChanceActive(false);
+        setDoubleJeopardyActive(false);
     }, [currentIndex]);
 
     const handleAnswerSelect = (index: number) => {
@@ -377,8 +380,9 @@ const BossFightSession: React.FC<{
         updateProfile(subtopic, correct);
         
         if (correct) {
-            setBossHealth(prev => Math.max(0, prev - 1));
-            setBossTakesDamage(true);
+            const damage = doubleJeopardyActive ? 2 : 1;
+            setBossHealth(prev => Math.max(0, prev - damage));
+            setBossTakesDamage(damage);
             setTimeout(() => setBossTakesDamage(false), 500);
         } else {
             addToReviewQueue(questions[currentIndex]);
@@ -396,6 +400,8 @@ const BossFightSession: React.FC<{
             setHintVisible(true);
         } else if (type === 'SECOND_CHANCE') {
             setSecondChanceActive(true);
+        } else if (type === 'DOUBLE_JEOPARDY') {
+            setDoubleJeopardyActive(true);
         } else if (type === 'SKIP') {
             setIsSkipping(true);
             const newQuestionData = await generateSatQuestion(subtopic, difficulty);
@@ -410,6 +416,7 @@ const BossFightSession: React.FC<{
             setDisabledOptions([]);
             setHintVisible(false);
             setSecondChanceActive(false);
+            setDoubleJeopardyActive(false);
             setIsSkipping(false);
         }
         setAvailablePowerUps(prev => prev.filter(p => p !== type));
@@ -417,7 +424,7 @@ const BossFightSession: React.FC<{
     };
 
     const handleNext = useCallback(() => {
-        if (currentIndex < questions.length - 1) {
+        if (currentIndex < questions.length - 1 && bossHealth > 0) {
             setCurrentIndex(prev => prev + 1);
             setSelectedAnswer(null);
             setIsCorrect(null);
@@ -426,7 +433,8 @@ const BossFightSession: React.FC<{
                 setIsBlasted(true);
                 setTimeout(() => setFightComplete(true), 2500);
             } else {
-                setFightComplete(true);
+                setIsBossDefeated(true);
+                setTimeout(() => setFightComplete(true), 2500);
             }
         }
     }, [currentIndex, questions.length, bossHealth]);
@@ -494,9 +502,17 @@ const BossFightSession: React.FC<{
                 </div>
                 
                 <div className={`p-6 ${selectedAnswer === null && availablePowerUps.length > 0 ? 'pb-20 lg:pb-6' : ''} border-2 ${
-                    isCorrect === false ? 'bg-accent/5 border-accent shadow-[0_0_20px_rgba(220,38,38,0.25)] shake-once red-flash' : secondChanceActive ? 'bg-surface border-highlight shadow-[0_0_15px_rgba(202,138,4,0.5)]' : 'bg-surface border-accent/50'
+                    isCorrect === false ? 'bg-accent/5 border-accent shadow-[0_0_20px_rgba(220,38,38,0.25)] shake-once red-flash' 
+                    : doubleJeopardyActive ? 'bg-surface border-rose-500 shadow-[0_0_15px_rgba(244,63,94,0.5)]' 
+                    : secondChanceActive ? 'bg-surface border-highlight shadow-[0_0_15px_rgba(202,138,4,0.5)]' 
+                    : 'bg-surface border-accent/50'
                 } flex-grow flex flex-col justify-between relative rounded-lg shadow-lg`}>
                     {secondChanceActive && <div className="absolute top-0 left-0 w-full bg-highlight text-white text-[8px] font-bold text-center py-1 rounded-t-sm">SECOND WIND ACTIVE</div>}
+                    {doubleJeopardyActive && (
+                        <div className="absolute top-0 left-0 w-full bg-rose-500 text-white text-[8px] font-bold text-center py-1 rounded-t-sm animate-pulse shadow-[0_0_10px_rgba(244,63,94,0.8)]">
+                            DOUBLE JEOPARDY ACTIVE - 2X DAMAGE
+                        </div>
+                    )}
                     
                     <div>
                       {currentQuestion.graphData && <QuestionGraph data={currentQuestion.graphData} />}
@@ -539,7 +555,7 @@ const BossFightSession: React.FC<{
                             {availablePowerUps.map((type, i) => {
                                 const def = POWER_UPS.find(p => p.id === type);
                                 if(!def) return null;
-                                const isActive = (type === 'SECOND_CHANCE' && secondChanceActive) || (type === 'HINT' && hintVisible);
+                                const isActive = (type === 'SECOND_CHANCE' && secondChanceActive) || (type === 'HINT' && hintVisible) || (type === 'DOUBLE_JEOPARDY' && doubleJeopardyActive);
                                 return (
                                     <button 
                                         key={i}
@@ -567,7 +583,7 @@ const BossFightSession: React.FC<{
                                 </div>
                             )}
                             <button onClick={handleNext} className="mt-6 w-full bg-primary text-light font-bold py-4 border-b-4 border-primary/70 rounded-md hover:bg-primary/90 transition-colors">
-                                {currentIndex < questions.length - 1 ? 'Next' : 'Finish'}
+                                {currentIndex < questions.length - 1 && bossHealth > 0 ? 'Next' : 'Finish'}
                             </button>
                         </div>
                     )}
@@ -608,17 +624,18 @@ const BossFightSession: React.FC<{
                             ></div>
                         </div>
                         
-                        <div className={`relative w-[110%] flex-1 mb-6 transition-transform duration-300 ${bossTakesDamage ? 'animate-shake brightness-150 scale-95' : 'animate-float'} ${isBlasted ? 'animate-spin scale-150 brightness-200' : ''}`}>
-                            <img 
-                                src={boss.spriteUrl} 
-                                alt={boss.name}
-                                className="w-full h-full object-contain filter drop-shadow-[0_10px_10px_rgba(0,0,0,0.5)] z-10 relative"
-                                style={{ imageRendering: 'pixelated' }}
-                            />
+                        <div className={`relative w-[110%] flex-1 mb-6 transition-all duration-1000 ${bossTakesDamage !== false ? 'animate-shake brightness-150 scale-95' : 'animate-float'} ${isBlasted ? 'animate-spin scale-150 brightness-200' : ''} ${isBossDefeated ? 'rotate-[720deg] scale-0 opacity-0 brightness-200 filter blur-md' : ''}`}>
+                            <img src={boss.spriteUrl} alt={boss.name} className="w-full h-full object-contain filter drop-shadow-[0_10px_10px_rgba(0,0,0,0.5)] z-10 relative" style={{ imageRendering: 'pixelated' }} />
                             {isBlasted && <div className="absolute inset-0 bg-accent rounded-full animate-ping opacity-50 z-20"></div>}
-                            {bossTakesDamage && (
-                                <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 text-5xl font-bold text-accent drop-shadow-lg animate-bounce z-30">
-                                    -1
+                            {isBossDefeated && (
+                                <>
+                                    <div className="absolute inset-0 bg-white rounded-full animate-ping opacity-100 z-20 shadow-[0_0_100px_rgba(255,255,255,1)]"></div>
+                                    <div className="absolute inset-[-50%] bg-highlight/60 rounded-full animate-ping blur-xl z-10" style={{ animationDuration: '1s' }}></div>
+                                </>
+                            )}
+                            {bossTakesDamage !== false && (
+                                <div className={`absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 font-black drop-shadow-[0_0_15px_rgba(0,0,0,0.5)] animate-bounce z-30 ${doubleJeopardyActive ? 'text-rose-500 text-6xl md:text-7xl scale-125 font-serif' : 'text-accent text-5xl'}`}>
+                                    -{bossTakesDamage}
                                 </div>
                             )}
                         </div>
