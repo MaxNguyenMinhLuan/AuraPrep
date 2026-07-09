@@ -484,6 +484,32 @@ const App: React.FC = () => {
         }
     }, [dailyActivity.date, profile.lastStreakDate, user, tutorialState.currentPhase]);
 
+    // Continuous spawning of missions during onboarding diagnostic phase
+    useEffect(() => {
+        if (!user || isCheckingSession) return;
+        
+        // Check if user is still in the onboarding/diagnostic phase (before completing tutorial)
+        if (!tutorialState.isComplete) {
+            const hasMissions = dailyActivity.missions && dailyActivity.missions.length > 0;
+            const allCompleted = hasMissions && dailyActivity.missions.every(m => m.completed);
+            
+            if (allCompleted) {
+                console.log('Onboarding user completed all missions. Spawning new onboarding/diagnostic missions immediately...');
+                const today = new Date().toISOString().split('T')[0];
+                const newMissions = generateDailyMissions(profile).map(mission => ({
+                    ...mission,
+                    completed: false,
+                    progress: 0,
+                    correctAnswers: 0,
+                }));
+                setDailyActivity({
+                    date: today,
+                    missions: newMissions
+                });
+            }
+        }
+    }, [dailyActivity.missions, tutorialState.isComplete, user, isCheckingSession, profile]);
+
     // Side effect to sync view state when mission data is missing
     useEffect(() => {
         if (currentView === View.MISSION) {
