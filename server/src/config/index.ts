@@ -5,11 +5,22 @@ dotenv.config({ path: path.resolve(__dirname, '../../.env') });
 
 // Parse CORS origins (comma-separated for multiple origins)
 const parseCorsOrigins = (): string | string[] => {
-    const origins = process.env.CORS_ORIGIN || 'http://localhost:5173';
-    if (origins.includes(',')) {
-        return origins.split(',').map(o => o.trim());
+    const origins = process.env.CORS_ORIGIN || '';
+    if (origins) {
+        if (origins.includes(',')) {
+            return origins.split(',').map(o => o.trim());
+        }
+        return origins;
     }
-    return origins;
+    // Whitelist dev and production origins
+    return [
+        'http://localhost:5173',
+        'http://localhost:3001',
+        'https://auraprep.academy',
+        'https://auraprep.web.app',
+        'https://auraprep-da99c.web.app',
+        'https://auraprep-da99c.firebaseapp.com'
+    ];
 };
 
 export const config = {
