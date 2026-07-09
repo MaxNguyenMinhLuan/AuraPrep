@@ -28,7 +28,8 @@ router.post('/sync', async (req: AuthenticatedRequest, res: Response) => {
       activeCreatureId,
       auraPoints,
       dailyActivity,
-      reviewQueue
+      reviewQueue,
+      lastSyncedAt
     } = req.body;
 
     // Get user info from database
@@ -90,6 +91,20 @@ router.post('/sync', async (req: AuthenticatedRequest, res: Response) => {
         dailyActivity
       });
     } else {
+      // Conflict Resolution: Check if DB is newer than client's last sync
+      if (lastSyncedAt) {
+        const clientTime = new Date(lastSyncedAt).getTime();
+        const serverTime = new Date(gameData.updatedAt).getTime();
+        
+        // If DB updated > 2 seconds after the client's last known sync, reject
+        if (serverTime > clientTime + 2000) {
+          return res.status(409).json({
+            error: 'Conflict: Stale data. Database has newer data.',
+            gameData
+          });
+        }
+      }
+
       // Update existing record
       gameData.email = user.email;
       gameData.auraBalance = auraPoints || 500;

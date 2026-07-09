@@ -261,13 +261,17 @@ const App: React.FC = () => {
                     if (backendData.userTeam) setUserTeam(backendData.userTeam);
                     if (backendData.tutorialState) setTutorialState(backendData.tutorialState);
                     
+                    if (backendData.updatedAt) {
+                        lastSyncedAtRef.current = backendData.updatedAt;
+                    }
+                    
                     hasHydratedRef.current = true;
                 } else {
                     // Try to migrate localStorage data on first login if backend has no profile
                     const migrated = await migrateLocalStorageToBackend(user.uid, token);
                     if (!migrated) {
                         // If no localStorage data to migrate, just sync current empty state
-                        await syncGameDataToBackend(
+                        const initialSync = await syncGameDataToBackend(
                             profile,
                             creatures,
                             activeCreatureId,
@@ -278,6 +282,9 @@ const App: React.FC = () => {
                             tutorialState,
                             token
                         );
+                        if (initialSync?.gameData?.updatedAt) {
+                            lastSyncedAtRef.current = initialSync.gameData.updatedAt;
+                        }
                     }
                     hasHydratedRef.current = true;
                 }
@@ -291,7 +298,9 @@ const App: React.FC = () => {
     }, [user, isCheckingSession, auraPoints, tutorialState]);
 
     // Periodic sync every 5 minutes to keep backend up-to-date
-    // Uses a ref to avoid restarting the interval on every state change
+    // Uses refs to avoid restarting the interval on every state change and to track dirty-checking
+    const lastSyncedAtRef = React.useRef<string | undefined>(undefined);
+    const lastSyncedDataStrRef = React.useRef<string>('');
     const syncDataRef = React.useRef({ profile, creatures, activeCreatureId, auraPoints, dailyActivity, reviewQueue, userTeam, tutorialState });
     useEffect(() => {
         syncDataRef.current = { profile, creatures, activeCreatureId, auraPoints, dailyActivity, reviewQueue, userTeam, tutorialState };
@@ -306,7 +315,14 @@ const App: React.FC = () => {
                 if (!token) return;
                 const currentData = syncDataRef.current;
 
-                await syncGameDataToBackend(
+                // Dirty checking
+                const currentDataStr = JSON.stringify(currentData);
+                if (currentDataStr === lastSyncedDataStrRef.current) {
+                    // No local changes made since last sync, skip pushing to backend
+                    return;
+                }
+
+                const result = await syncGameDataToBackend(
                     currentData.profile,
                     currentData.creatures,
                     currentData.activeCreatureId,
@@ -315,8 +331,27 @@ const App: React.FC = () => {
                     currentData.reviewQueue,
                     currentData.userTeam,
                     currentData.tutorialState,
-                    token
+                    token,
+                    lastSyncedAtRef.current
                 );
+
+                if (result?.status === 'conflict' && result.data) {
+                    console.warn('Conflict detected: Pulling newer data from backend');
+                    const conflictData = result.data;
+                    setProfile(conflictData.profile);
+                    if (conflictData.creatures) setCreatures(conflictData.creatures);
+                    if (conflictData.activeCreature?.creatureId !== undefined) setActiveCreatureId(conflictData.activeCreature.creatureId);
+                    if (conflictData.auraBalance !== undefined) setAuraPoints(conflictData.auraBalance);
+                    if (conflictData.dailyActivity) setDailyActivity(conflictData.dailyActivity);
+                    if (conflictData.reviewQueue) setReviewQueue(conflictData.reviewQueue);
+                    if (conflictData.userTeam) setUserTeam(conflictData.userTeam);
+                    if (conflictData.tutorialState) setTutorialState(conflictData.tutorialState);
+                    
+                    lastSyncedAtRef.current = conflictData.updatedAt;
+                } else if (result?.gameData?.updatedAt) {
+                    lastSyncedAtRef.current = result.gameData.updatedAt;
+                    lastSyncedDataStrRef.current = currentDataStr;
+                }
             } catch (error) {
                 console.error('Periodic sync failed:', error);
             }

@@ -9,8 +9,9 @@ interface GameDataSyncPayload {
   auraPoints: number;
   dailyActivity: any;
   reviewQueue: any[];
-  userTeam: number[];
-  tutorialState: any;
+  userTeam?: number[];
+  tutorialState?: any;
+  lastSyncedAt?: string;
 }
 
 interface EmailPreferences {
@@ -33,7 +34,8 @@ export async function syncGameDataToBackend(
   reviewQueue: any[],
   userTeam: number[],
   tutorialState: any,
-  authToken: string
+  authToken: string,
+  lastSyncedAt?: string
 ): Promise<any> {
   try {
     const payload: GameDataSyncPayload = {
@@ -44,7 +46,8 @@ export async function syncGameDataToBackend(
       dailyActivity,
       reviewQueue,
       userTeam,
-      tutorialState
+      tutorialState,
+      lastSyncedAt
     };
 
     const response = await fetch(`${API_URL}/game-data/sync`, {
@@ -57,6 +60,10 @@ export async function syncGameDataToBackend(
     });
 
     if (!response.ok) {
+      if (response.status === 409) {
+        const conflictData = await response.json();
+        return { status: 'conflict', data: conflictData.gameData };
+      }
       throw new Error(`Failed to sync game data: ${response.statusText}`);
     }
 
