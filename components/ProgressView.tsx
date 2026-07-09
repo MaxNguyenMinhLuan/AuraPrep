@@ -684,12 +684,20 @@ const ProgressView: React.FC<ProgressViewProps> = ({ profile, setAuraPoints, upd
     const [lastLevelUpInfo, setLastLevelUpInfo] = useState<{ from: SkillLevel, to: SkillLevel } | null>(null);
     const [equippedPowerUps, setEquippedPowerUps] = useState<PowerUpType[]>([]);
     const [questionCounts, setQuestionCounts] = useState<Record<string, number>>({});
+    const [isLoadingCounts, setIsLoadingCounts] = useState(true);
     const [searchQuery, setSearchQuery] = useState('');
 
     useEffect(() => {
         const loadCounts = async () => {
-            const counts = await fetchQuestionCounts();
-            setQuestionCounts(counts);
+            try {
+                setIsLoadingCounts(true);
+                const counts = await fetchQuestionCounts();
+                setQuestionCounts(counts);
+            } catch (err) {
+                console.error(err);
+            } finally {
+                setIsLoadingCounts(false);
+            }
         };
         loadCounts();
     }, []);
@@ -837,6 +845,7 @@ const ProgressView: React.FC<ProgressViewProps> = ({ profile, setAuraPoints, upd
                     const idx = INDEXED_QUESTIONS[subtopic];
                     const localCount = idx ? (idx.Easy.length + idx.Medium.length + idx.Hard.length + idx['Extra Hard'].length) : 0;
                     const qCount = questionCounts[subtopic] !== undefined ? questionCounts[subtopic] : localCount;
+                    const displayCount = isLoadingCounts ? '...' : qCount;
 
                     return (
                         <button
@@ -845,8 +854,8 @@ const ProgressView: React.FC<ProgressViewProps> = ({ profile, setAuraPoints, upd
                             className="w-full text-left p-4 bg-surface hover:bg-secondary/30 border-b-4 border-secondary/30 transition-premium rounded-xl shadow-card hover:shadow-card-hover hover:-translate-y-1 relative group overflow-hidden press-effect animate-fadeInScale"
                             style={{ animationDelay: `${index * 0.03}s` }}
                         >
-                            <div className={`absolute top-0 right-0 px-1.5 py-0.5 rounded-bl-lg uppercase tracking-tighter text-[8px] font-bold ${qCount > 0 ? 'bg-success/20 text-success' : 'bg-text-dark/20 text-text-dim'}`}>
-                                {qCount} Question{qCount !== 1 ? 's' : ''}
+                            <div className={`absolute top-0 right-0 px-1.5 py-0.5 rounded-bl-lg uppercase tracking-tighter text-[8px] font-bold ${isLoadingCounts ? 'bg-secondary/20 text-primary animate-pulse' : qCount > 0 ? 'bg-success/20 text-success' : 'bg-text-dark/20 text-text-dim'}`}>
+                                {isLoadingCounts ? 'Loading...' : `${displayCount} Question${qCount !== 1 ? 's' : ''}`}
                             </div>
 
                             <div className="flex justify-between items-center mb-2">
