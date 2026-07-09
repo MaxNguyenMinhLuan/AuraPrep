@@ -23,6 +23,8 @@ router.post('/sync', async (req: AuthenticatedRequest, res: Response) => {
     const {
       profile,
       creatures,
+      userTeam,
+      tutorialState,
       activeCreatureId,
       auraPoints,
       dailyActivity,
@@ -79,13 +81,25 @@ router.post('/sync', async (req: AuthenticatedRequest, res: Response) => {
             afternoon: 0,
             evening: 0
           }
-        }
+        },
+        profile,
+        creatures,
+        userTeam,
+        tutorialState,
+        reviewQueue,
+        dailyActivity
       });
     } else {
       // Update existing record
       gameData.email = user.email;
       gameData.auraBalance = auraPoints || 500;
       gameData.totalQuestionsAnswered = dailyActivity?.missionsCompleted || 0;
+      gameData.profile = profile;
+      gameData.creatures = creatures;
+      gameData.userTeam = userTeam;
+      gameData.tutorialState = tutorialState;
+      gameData.reviewQueue = reviewQueue;
+      gameData.dailyActivity = dailyActivity;
 
       if (activeCreature) {
         gameData.activeCreature = {

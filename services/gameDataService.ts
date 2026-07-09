@@ -9,6 +9,8 @@ interface GameDataSyncPayload {
   auraPoints: number;
   dailyActivity: any;
   reviewQueue: any[];
+  userTeam: number[];
+  tutorialState: any;
 }
 
 interface EmailPreferences {
@@ -29,6 +31,8 @@ export async function syncGameDataToBackend(
   auraPoints: number,
   dailyActivity: any,
   reviewQueue: any[],
+  userTeam: number[],
+  tutorialState: any,
   authToken: string
 ): Promise<any> {
   try {
@@ -38,7 +42,9 @@ export async function syncGameDataToBackend(
       activeCreatureId,
       auraPoints,
       dailyActivity,
-      reviewQueue
+      reviewQueue,
+      userTeam,
+      tutorialState
     };
 
     const response = await fetch(`${API_URL}/game-data/sync`, {
@@ -178,6 +184,8 @@ export async function migrateLocalStorageToBackend(
     const auraPoints = JSON.parse(localStorage.getItem(`aura_${userId}_auraPoints`) || '0');
     const dailyActivity = JSON.parse(localStorage.getItem(`aura_${userId}_dailyActivity`) || '{}');
     const reviewQueue = JSON.parse(localStorage.getItem(`aura_${userId}_reviewQueue`) || '[]');
+    const userTeam = JSON.parse(localStorage.getItem(`aura_${userId}_userTeam`) || '[]');
+    const tutorialState = JSON.parse(localStorage.getItem(`aura_${userId}_tutorialState`) || 'null');
 
     // Only migrate if we have data
     if (!userProfile || Object.keys(userProfile).length === 0) {
@@ -193,6 +201,8 @@ export async function migrateLocalStorageToBackend(
       auraPoints,
       dailyActivity,
       reviewQueue,
+      userTeam,
+      tutorialState,
       authToken
     );
 

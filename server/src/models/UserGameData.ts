@@ -47,6 +47,12 @@ interface IUserGameData extends Document {
   auraBalance: number;
   emailNotifications: IEmailNotifications;
   metrics: IMetrics;
+  profile?: any;
+  creatures?: any[];
+  userTeam?: number[];
+  tutorialState?: any;
+  reviewQueue?: any[];
+  dailyActivity?: any;
   createdAt: Date;
   updatedAt: Date;
 }
@@ -98,7 +104,13 @@ const UserGameDataSchema = new Schema<IUserGameData>(
     totalCorrect: { type: Number, required: true, default: 0 },
     auraBalance: { type: Number, required: true, default: 500 },
     emailNotifications: { type: EmailNotificationsSchema, required: true },
-    metrics: { type: MetricsSchema, required: true }
+    metrics: { type: MetricsSchema, required: true },
+    profile: { type: Schema.Types.Mixed },
+    creatures: [{ type: Schema.Types.Mixed }],
+    userTeam: [{ type: Number }],
+    tutorialState: { type: Schema.Types.Mixed },
+    reviewQueue: [{ type: Schema.Types.Mixed }],
+    dailyActivity: { type: Schema.Types.Mixed }
   },
   { timestamps: true }
 );

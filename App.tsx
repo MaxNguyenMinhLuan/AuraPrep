@@ -43,7 +43,7 @@ import { INITIAL_TUTORIAL_STATE, TUTORIAL_DIALOGUE, STARTER_IDS, PROGRESS_UNLOCK
 // import BaselineResults from './components/Tutorial/BaselineResults';
 // import { processBaselineResults, baselineResultsToStats } from './utils/baselineScoring';
 import { hasCompletedStealthPlacement, processStealthMissionAnswer } from './services/stealthMissionService';
-import { migrateLocalStorageToBackend, syncGameDataToBackend } from './services/gameDataService';
+import { migrateLocalStorageToBackend, syncGameDataToBackend, fetchGameDataFromBackend } from './services/gameDataService';
 import { DifficultyTier } from './types/stealthDiagnostic';
 
 const App: React.FC = () => {
@@ -206,9 +206,18 @@ const App: React.FC = () => {
         }
     }, [isCheckingSession]);
 
+    const hasHydratedRef = React.useRef(false);
+
+    useEffect(() => {
+        if (!user) {
+            hasHydratedRef.current = false;
+        }
+    }, [user?.uid]);
+
     // Sync game data to backend on user login
     useEffect(() => {
         if (!user || isCheckingSession) return;
+        if (hasHydratedRef.current) return;
 
         // Dev/Test account override: Unlock all features and award 100,000 Aura
         if (user.email === 'maxidea2008@gmail.com') {
@@ -240,20 +249,37 @@ const App: React.FC = () => {
                 const token = await AuthService.getAuthToken();
                 if (!token) return;
 
-                // Try to migrate localStorage data on first login
-                const migrated = await migrateLocalStorageToBackend(user.uid, token);
-
-                if (!migrated) {
-                    // If no localStorage data to migrate, just sync current state
-                    await syncGameDataToBackend(
-                        profile,
-                        creatures,
-                        activeCreatureId,
-                        auraPoints,
-                        dailyActivity,
-                        reviewQueue,
-                        token
-                    );
+                const backendData = await fetchGameDataFromBackend(token);
+                if (backendData && backendData.profile) {
+                    // Hydrate local state from backend
+                    setProfile(backendData.profile);
+                    if (backendData.creatures) setCreatures(backendData.creatures);
+                    if (backendData.activeCreature?.creatureId !== undefined) setActiveCreatureId(backendData.activeCreature.creatureId);
+                    if (backendData.auraBalance !== undefined) setAuraPoints(backendData.auraBalance);
+                    if (backendData.dailyActivity) setDailyActivity(backendData.dailyActivity);
+                    if (backendData.reviewQueue) setReviewQueue(backendData.reviewQueue);
+                    if (backendData.userTeam) setUserTeam(backendData.userTeam);
+                    if (backendData.tutorialState) setTutorialState(backendData.tutorialState);
+                    
+                    hasHydratedRef.current = true;
+                } else {
+                    // Try to migrate localStorage data on first login if backend has no profile
+                    const migrated = await migrateLocalStorageToBackend(user.uid, token);
+                    if (!migrated) {
+                        // If no localStorage data to migrate, just sync current empty state
+                        await syncGameDataToBackend(
+                            profile,
+                            creatures,
+                            activeCreatureId,
+                            auraPoints,
+                            dailyActivity,
+                            reviewQueue,
+                            userTeam,
+                            tutorialState,
+                            token
+                        );
+                    }
+                    hasHydratedRef.current = true;
                 }
             } catch (error) {
                 console.error('Failed to sync game data:', error);
@@ -266,10 +292,10 @@ const App: React.FC = () => {
 
     // Periodic sync every 5 minutes to keep backend up-to-date
     // Uses a ref to avoid restarting the interval on every state change
-    const syncDataRef = React.useRef({ profile, creatures, activeCreatureId, auraPoints, dailyActivity, reviewQueue });
+    const syncDataRef = React.useRef({ profile, creatures, activeCreatureId, auraPoints, dailyActivity, reviewQueue, userTeam, tutorialState });
     useEffect(() => {
-        syncDataRef.current = { profile, creatures, activeCreatureId, auraPoints, dailyActivity, reviewQueue };
-    }, [profile, creatures, activeCreatureId, auraPoints, dailyActivity, reviewQueue]);
+        syncDataRef.current = { profile, creatures, activeCreatureId, auraPoints, dailyActivity, reviewQueue, userTeam, tutorialState };
+    }, [profile, creatures, activeCreatureId, auraPoints, dailyActivity, reviewQueue, userTeam, tutorialState]);
 
     useEffect(() => {
         if (!user) return;
@@ -278,15 +304,17 @@ const App: React.FC = () => {
             try {
                 const token = await AuthService.getAuthToken();
                 if (!token) return;
-                const data = syncDataRef.current;
+                const currentData = syncDataRef.current;
 
                 await syncGameDataToBackend(
-                    data.profile,
-                    data.creatures,
-                    data.activeCreatureId,
-                    data.auraPoints,
-                    data.dailyActivity,
-                    data.reviewQueue,
+                    currentData.profile,
+                    currentData.creatures,
+                    currentData.activeCreatureId,
+                    currentData.auraPoints,
+                    currentData.dailyActivity,
+                    currentData.reviewQueue,
+                    currentData.userTeam,
+                    currentData.tutorialState,
                     token
                 );
             } catch (error) {
