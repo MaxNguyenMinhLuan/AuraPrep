@@ -420,7 +420,7 @@ const SummonView: React.FC<SummonViewProps> = ({ auraPoints, setAuraPoints, user
                 </>
             )}
 
-            <div className="w-full flex items-center justify-center max-w-lg mx-auto my-3 md:my-6">
+            <div className="w-full flex items-center justify-center max-w-lg md:max-w-2xl lg:max-w-3xl mx-auto my-3 md:my-6">
                 <div
                     className={`w-full bg-slate-900 flex items-center justify-center relative overflow-hidden transition-all duration-700 shadow-[0_20px_50px_rgba(0,0,0,0.3)] ${
                         phase === 'charging' ? 'animate-shake' : ''
@@ -582,7 +582,7 @@ const SummonView: React.FC<SummonViewProps> = ({ auraPoints, setAuraPoints, user
             </div>
 
             {/* Summon buttons */}
-            <div className="w-full mt-3 md:mt-6 space-y-3 max-w-lg mx-auto">
+            <div className="w-full mt-3 md:mt-6 space-y-3 max-w-lg md:max-w-2xl lg:max-w-3xl mx-auto">
                 <div className="flex flex-col sm:flex-row gap-3 md:gap-4 max-w-2xl mx-auto">
                     <button
                         onClick={() => performSummon(1)}

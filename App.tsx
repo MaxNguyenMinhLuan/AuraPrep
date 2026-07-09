@@ -398,9 +398,29 @@ const App: React.FC = () => {
         const now = new Date();
         const today = now.toISOString().split('T')[0];
         
+        // Check if user has access to daily missions yet
+        const hasDailyMissionsAccess = [
+            'daily-missions-unlocked',
+            'progress-unlocked',
+            'progress-tour',
+            'tutorial-practice',
+            'training-unlocked',
+            'forced-training',
+            'shop-unlocked',
+            'forced-shop',
+            'tutorial-boss',
+            'tutorial-skill-complete',
+            'leaderboard-unlocked',
+            'leaderboard-tour',
+            'complete'
+        ].includes(tutorialState.currentPhase);
+
+        const shouldGenerateMissions = dailyActivity.date !== today || 
+            (hasDailyMissionsAccess && (!dailyActivity.missions || dailyActivity.missions.length === 0));
+
         // Daily reset
-        if (dailyActivity.date !== today) {
-            if (profile.lastStreakDate) {
+        if (shouldGenerateMissions) {
+            if (dailyActivity.date !== today && profile.lastStreakDate) {
                 const lastDate = new Date(profile.lastStreakDate);
                 const currentDate = new Date(today);
                 const diffTime = Math.abs(currentDate.getTime() - lastDate.getTime());
@@ -413,23 +433,6 @@ const App: React.FC = () => {
 
             // Tutorial: Generate missions based on current phase
             let newMissions: MissionInstance[];
-
-            // Check if user has access to daily missions yet
-            const hasDailyMissionsAccess = [
-                'daily-missions-unlocked',
-                'progress-unlocked',
-                'progress-tour',
-                'tutorial-practice',
-                'training-unlocked',
-                'forced-training',
-                'shop-unlocked',
-                'forced-shop',
-                'tutorial-boss',
-                'tutorial-skill-complete',
-                'leaderboard-unlocked',
-                'leaderboard-tour',
-                'complete'
-            ].includes(tutorialState.currentPhase);
 
             if (hasDailyMissionsAccess) {
                 // User has unlocked daily missions - generate normal missions
