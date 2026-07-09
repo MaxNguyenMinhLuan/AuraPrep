@@ -1360,7 +1360,7 @@ const App: React.FC = () => {
     }
 
     return (
-        <div className="min-h-screen w-full bg-gradient-to-tr from-[#f5d0fe] via-[#fef9c3] to-[#a5f3fc] dark:from-[#311042] dark:via-[#0f172a] dark:to-[#083344] text-text-main font-sans text-sm flex flex-col lg:flex-row pt-safe">
+        <div className="min-h-screen w-full bg-gradient-to-tr from-[#f5d0fe] via-[#fef9c3] to-[#a5f3fc] dark:from-[#311042] dark:via-[#0f172a] dark:to-[#083344] text-text-main font-sans text-sm flex flex-col lg:flex-row">
             <BottomNavBar
                 currentView={currentView}
                 setCurrentView={handleViewChange}
@@ -1420,7 +1420,7 @@ const App: React.FC = () => {
                     </div>
                 </div>
             )}
-            <main className="flex-grow p-3 md:p-4 pt-[calc(env(safe-area-inset-top)+64px)] pb-20 md:pb-24 lg:pt-8 lg:pb-8 lg:p-8 lg:ml-64 w-full max-w-7xl mx-auto transition-all duration-300">
+            <main className="flex-grow p-3 md:p-4 pt-[calc(env(safe-area-inset-top)+64px)] pb-[calc(env(safe-area-inset-bottom)+110px)] lg:pt-8 lg:pb-8 lg:p-8 lg:ml-64 w-full max-w-7xl mx-auto transition-all duration-300">
                 {renderView()}
             </main>
             {streakToShow !== null && (
