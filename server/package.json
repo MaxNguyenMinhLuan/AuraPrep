@@ -1,7 +1,7 @@
 {
   "name": "auraprep-server",
-  "version": "1.0.0",
-  "description": "AuraPrep authentication backend",
+  "version": "1.0.1",
+  "description": "AuraPrep gamified backend",
   "main": "dist/index.js",
   "scripts": {
     "dev": "tsx watch src/index.ts",
