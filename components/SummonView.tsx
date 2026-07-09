@@ -410,7 +410,7 @@ const SummonView: React.FC<SummonViewProps> = ({ auraPoints, setAuraPoints, user
     const isAnimating = phase === 'charging' || phase === 'shooting' || phase === 'reveal';
 
     return (
-        <div className={`flex flex-col items-center h-full text-center p-2 md:p-4 max-w-4xl mx-auto ${
+        <div className={`flex flex-col items-center justify-center min-h-[75vh] lg:min-h-0 w-full text-center p-2 md:p-4 pb-12 max-w-4xl mx-auto ${
             isAnimating ? 'fixed inset-0 z-50 w-screen h-screen bg-slate-900 p-0 max-w-none overflow-y-auto lg:relative lg:w-full lg:h-full lg:bg-transparent lg:p-4 lg:max-w-4xl lg:overflow-visible' : ''
         }`}>
             {!isAnimating && (
@@ -420,7 +420,7 @@ const SummonView: React.FC<SummonViewProps> = ({ auraPoints, setAuraPoints, user
                 </>
             )}
 
-            <div className="flex-grow w-full flex items-center justify-center h-full">
+            <div className="w-full flex items-center justify-center max-w-lg mx-auto my-3 md:my-6">
                 <div
                     className={`w-full bg-slate-900 flex items-center justify-center relative overflow-hidden transition-all duration-700 shadow-[0_20px_50px_rgba(0,0,0,0.3)] ${
                         phase === 'charging' ? 'animate-shake' : ''
@@ -582,7 +582,7 @@ const SummonView: React.FC<SummonViewProps> = ({ auraPoints, setAuraPoints, user
             </div>
 
             {/* Summon buttons */}
-            <div className="w-full mt-6 md:mt-10 space-y-4">
+            <div className="w-full mt-3 md:mt-6 space-y-3 max-w-lg mx-auto">
                 <div className="flex flex-col sm:flex-row gap-3 md:gap-4 max-w-2xl mx-auto">
                     <button
                         onClick={() => performSummon(1)}
@@ -603,7 +603,7 @@ const SummonView: React.FC<SummonViewProps> = ({ auraPoints, setAuraPoints, user
                 </div>
             </div>
 
-            <div className="mt-4 md:mt-8 glass px-4 md:px-8 py-2 md:py-3 rounded-xl border-2 border-secondary/30 shadow-card animate-fadeIn flex items-center gap-2 md:gap-3 hover-lift">
+            <div className="mt-4 glass px-4 md:px-8 py-2 md:py-3 rounded-xl border-2 border-secondary/30 shadow-card animate-fadeIn flex items-center gap-2 md:gap-3 hover-lift">
                 <AuraIcon className="w-4 h-4 md:w-5 md:h-5 text-primary animate-gentleBounce" />
                 <p className="text-[10px] md:text-xs tracking-widest uppercase font-bold text-primary flex items-center gap-1">Your Aura: <span className="text-highlight font-black ml-1 flex items-center gap-1">{auraPoints.toLocaleString()} <AuraIcon className="w-3.5 h-3.5 text-highlight" /></span></p>
             </div>
