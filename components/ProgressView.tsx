@@ -226,14 +226,14 @@ const BossFightPrep: React.FC<{
     };
 
     return (
-        <div className="flex flex-col h-full animate-fadeIn max-w-2xl mx-auto overflow-y-auto pr-1">
+        <div className="flex flex-col justify-center min-h-[75vh] lg:min-h-0 w-full max-w-2xl mx-auto pb-10 px-2 animate-fadeIn">
              <div className="text-center mb-6">
                  <button onClick={onCancel} className="text-text-dim hover:text-highlight float-left">&larr; Back</button>
                 <h1 className="font-serif text-3xl text-accent leading-tight">Boss Loadout</h1>
                 <p className="text-center text-text-dim mt-2 text-[10px]">Select up to 2 power-ups to bring into battle.</p>
             </div>
             
-            <div className="space-y-4 flex-grow overflow-y-auto pr-2">
+            <div className="space-y-3 w-full my-4">
                 {POWER_UPS.map(powerUp => {
                     const count = inventory[powerUp.id] || 0;
                     const isSelected = selected.includes(powerUp.id);
@@ -268,7 +268,7 @@ const BossFightPrep: React.FC<{
 
             <button 
                 onClick={() => onStart(selected)} 
-                className="w-full bg-accent text-light font-bold py-4 mt-6 border-b-4 border-accent-dark hover:bg-accent/90 transition-all rounded-lg shadow-lg text-sm tracking-widest"
+                className="w-full bg-accent text-light font-bold py-4 mt-4 border-b-4 border-accent-dark hover:bg-accent/90 transition-all rounded-lg shadow-lg text-sm tracking-widest"
             >
                 ENTER FIGHT
             </button>
