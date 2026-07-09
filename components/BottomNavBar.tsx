@@ -178,7 +178,7 @@ const BottomNavBar: React.FC<BottomNavBarProps> = ({ currentView, setCurrentView
             </nav>
 
             {/* Mobile & Tablet Bottom Bar (Hidden on lg+) */}
-            <nav className="lg:hidden fixed bottom-0 left-0 right-0 h-16 md:h-20 bg-surface border-t border-secondary/30 flex items-center justify-around z-50 pb-safe shadow-[0_-4px_20px_rgba(0,0,0,0.08)]">
+            <nav className="lg:hidden fixed bottom-0 left-0 right-0 pt-3 pb-[calc(env(safe-area-inset-bottom)+10px)] bg-surface border-t border-secondary/30 flex items-center justify-around z-50 shadow-[0_-4px_20px_rgba(0,0,0,0.08)]">
                 <NavItem
                     id="nav-mission-mobile"
                     label="Missions"
