@@ -277,8 +277,8 @@ const BestiaryView: React.FC<BestiaryViewProps> = ({ userCreatures, userTeam, on
                 <div className="space-y-8 animate-fadeIn">
                     {/* Active Team slots */}
                     <div className="bg-surface rounded-xl p-4 shadow-card border border-secondary/30">
-                        <div className="flex justify-between items-center mb-3">
-                            <h2 className="text-sm font-bold text-primary uppercase tracking-wider">Active Team ({userTeam.length} / 6)</h2>
+                        <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-2 mb-3">
+                            <h2 className="text-sm font-bold text-primary uppercase tracking-wider whitespace-nowrap">Active Team ({userTeam.length} / 6)</h2>
                             {isSelectingForTeam && (
                                 <span className="text-xs text-highlight font-bold animate-pulse">
                                     👉 Click an Auramon below to add to team
