@@ -48,6 +48,7 @@ interface ProgressViewProps {
     consumePowerUp: (type: PowerUpType) => void;
     addToReviewQueue: (question: Question) => void;
     awardAura: (amount: number) => void;
+    setIsBossFightActive?: (isActive: boolean) => void;
 }
 
 //--- SUB-COMPONENTS ---//
@@ -660,7 +661,7 @@ const LevelUpAnimation: React.FC<{
 
 //--- MAIN COMPONENT ---//
 
-const ProgressView: React.FC<ProgressViewProps & { addToReviewQueue: (q: Question) => void }> = ({ profile, setAuraPoints, updateProfile, levelUpSubtopic, consumePowerUp, addToReviewQueue, awardAura }) => {
+const ProgressView: React.FC<ProgressViewProps> = ({ profile, setAuraPoints, updateProfile, levelUpSubtopic, consumePowerUp, addToReviewQueue, awardAura, setIsBossFightActive }) => {
     const [view, setView] = useState<'list' | 'options' | 'practice' | 'prep' | 'bossFight' | 'levelUp'>('list');
     const [selectedSubtopic, setSelectedSubtopic] = useState<string | null>(null);
     const [lastLevelUpInfo, setLastLevelUpInfo] = useState<{ from: SkillLevel, to: SkillLevel } | null>(null);
@@ -688,9 +689,11 @@ const ProgressView: React.FC<ProgressViewProps & { addToReviewQueue: (q: Questio
     const startBossFight = (powerUps: PowerUpType[]) => {
         setEquippedPowerUps(powerUps);
         setView('bossFight');
+        setIsBossFightActive?.(true);
     };
 
     const handleBossFightComplete = (success: boolean) => {
+        setIsBossFightActive?.(false);
         if (success && selectedSubtopic) {
             const currentLevel = profile.stats[selectedSubtopic].level;
             const nextLevel = getNextLevel(currentLevel);

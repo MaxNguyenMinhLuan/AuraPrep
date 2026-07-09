@@ -49,6 +49,7 @@ import { DifficultyTier } from './types/stealthDiagnostic';
 const App: React.FC = () => {
     const [user, setUser] = useLocalStorage<User | null>('user', null);
     const [currentView, setCurrentView] = useState<View>(View.DASHBOARD);
+    const [isBossFightActive, setIsBossFightActive] = useState(false);
     const [isCheckingSession, setIsCheckingSession] = useState(true);
     const [baselineResults, setBaselineResults] = useState<any>(null);
     const [isProfileOpen, setIsProfileOpen] = useState(false);
@@ -58,6 +59,14 @@ const App: React.FC = () => {
     }, [user?.photoUrl]);
 
     // Get user ID for user-specific storage
+    const handleViewChange = (newView: View) => {
+        if (isBossFightActive) {
+            const confirmExit = window.confirm("Are you sure you want to quit the boss fight? You will lose all your progress in this fight.");
+            if (!confirmExit) return;
+            setIsBossFightActive(false);
+        }
+        setCurrentView(newView);
+    };
     const userId = user?.uid || null;
 
     // Initial profile factory
@@ -766,6 +775,7 @@ const App: React.FC = () => {
                             consumePowerUp={(type) => setProfile(p => ({...p, inventory: {...p.inventory, [type]: Math.max(0, (p.inventory[type] || 0) - 1)}}))}
                             addToReviewQueue={addToReviewQueue}
                             awardAura={awardAura}
+                            setIsBossFightActive={setIsBossFightActive}
                         />;
             case View.LEADERBOARD:
                 return <LeaderboardView 
@@ -1353,7 +1363,7 @@ const App: React.FC = () => {
         <div className="min-h-screen w-full bg-gradient-to-tr from-[#f5d0fe] via-[#fef9c3] to-[#a5f3fc] dark:from-[#311042] dark:via-[#0f172a] dark:to-[#083344] text-text-main font-sans text-sm flex flex-col lg:flex-row pt-safe">
             <BottomNavBar
                 currentView={currentView}
-                setCurrentView={setCurrentView}
+                setCurrentView={handleViewChange}
                 user={user}
                 tutorialState={tutorialState}
                 onOpenProfile={() => setIsProfileOpen(true)}
