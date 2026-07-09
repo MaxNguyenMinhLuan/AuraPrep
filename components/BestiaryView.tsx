@@ -2,6 +2,7 @@ import React, { useState } from 'react';
 import { CreatureInstance, Rarity, CreatureType, XP_PER_LEVEL, MAX_LEVEL } from '../types';
 import { INITIAL_CREATURES } from '../constants';
 import CreatureCard, { PixelCreature } from './CreatureCard';
+import { containsProfanity } from '../utils/profanity';
 
 interface BestiaryViewProps {
     userCreatures: CreatureInstance[];
@@ -67,6 +68,10 @@ const BestiaryView: React.FC<BestiaryViewProps> = ({ userCreatures, userTeam, on
     });
 
     const handleSaveName = () => {
+        if (containsProfanity(tempName)) {
+            alert("This nickname contains inappropriate language.");
+            return;
+        }
         if (currentInstance) {
             onRenameCreature(currentInstance.id, tempName);
             setIsEditingName(false);

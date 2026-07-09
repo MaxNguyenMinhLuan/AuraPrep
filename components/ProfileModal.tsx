@@ -9,9 +9,9 @@ interface ProfileModalProps {
 }
 
 const PREMADE_AVATARS = [
-    { id: 'aura', url: 'https://api.dicebear.com/7.x/avataaars/svg?seed=Aura' },
     { id: 'seeker', url: 'https://api.dicebear.com/7.x/avataaars/svg?seed=Seeker' },
-    { id: 'sage', url: 'https://api.dicebear.com/7.x/avataaars/svg?seed=Sage' },
+    { id: 'champion', url: 'https://api.dicebear.com/7.x/avataaars/svg?seed=Champion' },
+    { id: 'mystic', url: 'https://api.dicebear.com/7.x/avataaars/svg?seed=Mystic' },
     { id: 'guardian', url: 'https://api.dicebear.com/7.x/avataaars/svg?seed=Guardian' },
     { id: 'scholar', url: 'https://api.dicebear.com/7.x/avataaars/svg?seed=Scholar' },
     { id: 'wizard', url: 'https://api.dicebear.com/7.x/avataaars/svg?seed=Wizard' },
@@ -22,6 +22,7 @@ const ProfileModal: React.FC<ProfileModalProps> = ({ user, onClose, onUpdateUser
     const [photoUrl, setPhotoUrl] = useState(user.photoUrl || PREMADE_AVATARS[0].url);
     const [isCopied, setIsCopied] = useState(false);
     const [modalImageError, setModalImageError] = useState(false);
+    const [error, setError] = useState<string | null>(null);
 
     useEffect(() => {
         setModalImageError(false);
@@ -34,6 +35,11 @@ const ProfileModal: React.FC<ProfileModalProps> = ({ user, onClose, onUpdateUser
     };
 
     const handleSave = () => {
+        if (containsProfanity(name)) {
+            setError("Name contains inappropriate language.");
+            return;
+        }
+        setError(null);
         onUpdateUser({ name, photoUrl });
         onClose();
     };
@@ -89,10 +95,11 @@ const ProfileModal: React.FC<ProfileModalProps> = ({ user, onClose, onUpdateUser
                             <input 
                                 type="text" 
                                 value={name}
-                                onChange={(e) => setName(e.target.value)}
-                                className="w-full bg-background border-2 border-secondary/30 rounded-lg px-4 py-2 text-sm focus:border-primary outline-none transition-colors"
+                                onChange={(e) => { setName(e.target.value); setError(null); }}
+                                className={`w-full bg-background border-2 rounded-lg px-4 py-2 text-sm outline-none transition-colors ${error ? 'border-accent focus:border-accent shadow-[0_0_10px_rgba(220,38,38,0.2)]' : 'border-secondary/30 focus:border-primary'}`}
                                 placeholder="Enter seeker name..."
                             />
+                            {error && <p className="text-accent text-xs font-bold mt-1 animate-shake">{error}</p>}
                         </div>
 
                         {/* Avatar Grid Selection */}
