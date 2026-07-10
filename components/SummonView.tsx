@@ -293,9 +293,9 @@ const SummonView: React.FC<SummonViewProps> = ({ auraPoints, setAuraPoints, user
 
             if (isNoDuplicateSummon) {
                 const rand = Math.random() * 100;
-                if (rand < 61) chosenRarity = Rarity.Common;
-                else if (rand < 86) chosenRarity = Rarity.Uncommon;
-                else if (rand < 99) chosenRarity = Rarity.Rare;
+                if (rand < 61.5) chosenRarity = Rarity.Common;
+                else if (rand < 86.5) chosenRarity = Rarity.Uncommon;
+                else if (rand < 99.5) chosenRarity = Rarity.Rare;
                 else chosenRarity = Rarity.UltraRare;
 
                 let possibleCreatures = INITIAL_CREATURES.filter(c => 
@@ -315,9 +315,9 @@ const SummonView: React.FC<SummonViewProps> = ({ auraPoints, setAuraPoints, user
                 creature = possibleCreatures[Math.floor(Math.random() * possibleCreatures.length)];
             } else {
                 const rand = Math.random() * 100;
-                if (rand < 61) chosenRarity = Rarity.Common;
-                else if (rand < 86) chosenRarity = Rarity.Uncommon;
-                else if (rand < 99) chosenRarity = Rarity.Rare;
+                if (rand < 61.5) chosenRarity = Rarity.Common;
+                else if (rand < 86.5) chosenRarity = Rarity.Uncommon;
+                else if (rand < 99.5) chosenRarity = Rarity.Rare;
                 else chosenRarity = Rarity.UltraRare;
 
                 const possibleCreatures = INITIAL_CREATURES.filter(c => c.rarity === chosenRarity);
