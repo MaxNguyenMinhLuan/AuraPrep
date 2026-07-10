@@ -17,7 +17,7 @@ import StreakPopup from './components/StreakPopup';
 import LeaderboardView from './components/LeaderboardView';
 import LoginView from './components/LoginView';
 import ProfileModal from './components/ProfileModal';
-import { generateSatQuestion } from './services/questionService';
+import { generateSatQuestion, loadLocalQuestions } from './services/questionService';
 import { getDifficultyForLevel } from './utils/mastery';
 import { AuthService } from './services/authService';
 import SunIcon from './components/icons/SunIcon';
@@ -127,6 +127,9 @@ const App: React.FC = () => {
 
     // Check for valid session on app load
     useEffect(() => {
+        // Eagerly trigger questions static load
+        loadLocalQuestions();
+
         const checkSession = async () => {
             try {
                 const validatedUser = await AuthService.getCurrentSession();

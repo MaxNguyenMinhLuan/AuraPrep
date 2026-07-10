@@ -1,4 +1,3 @@
-
 import { Question, Difficulty, Point, GraphData } from '../types';
 import { getQuestionsByCategory } from '../data/questionBankIndexed';
 
@@ -35,49 +34,134 @@ const parseLegacyGraphData = (text: string): GraphData | undefined => {
     return { type: 'scatter', points };
 };
 
+// Subtopic to official domain mapping matching questions.json
+const SUBTOPIC_TO_DOMAIN_MAP: Record<string, string> = {
+    // Heart of Algebra
+    'Algebra: Linear Functions': 'Algebra',
+    'Algebra: Single Variable Equations': 'Algebra',
+    'Algebra: Systems of Linear Equations': 'Algebra',
+    'Algebra: Inequalities': 'Algebra',
+    'Algebra: Absolute Value': 'Algebra',
+    'Formulas and Expressions': 'Algebra',
+
+    // Advanced Math
+    'Algebra: Quadratic Equations': 'Advanced Math',
+    'Algebra: Exponential Functions': 'Advanced Math',
+    'Algebra: Polynomial Manipulation': 'Advanced Math',
+    'Algebra: Dividing Polynomials': 'Advanced Math',
+    'Algebra: Systems of Nonlinear Equations': 'Advanced Math',
+    'Function Notation': 'Advanced Math',
+
+    // Problem Solving and Data Analysis
+    'Ratios and Proportions': 'Problem-Solving and Data Analysis',
+    'Data: Scatterplots and Graphs': 'Problem-Solving and Data Analysis',
+    'Data: Categories and Probabilities': 'Problem-Solving and Data Analysis',
+    'Data: Central Tendency and Standard Deviation': 'Problem-Solving and Data Analysis',
+    'Data: Experimental Interpretation': 'Problem-Solving and Data Analysis',
+    'Numbers: Sequences': 'Problem-Solving and Data Analysis',
+
+    // Geometry and Trigonometry
+    'Geometry: Lines and Angles': 'Geometry and Trigonometry',
+    'Geometry: Triangles and Polygons': 'Geometry and Trigonometry',
+    'Geometry: Solid Geometry': 'Geometry and Trigonometry',
+    'Geometry: Circles': 'Geometry and Trigonometry',
+    'Geometry: Trigonometry': 'Geometry and Trigonometry',
+    'Coordinate Geometry: Lines and Slopes': 'Geometry and Trigonometry',
+    'Coordinate Geometry: Nonlinear Functions': 'Geometry and Trigonometry',
+
+    // Craft and Structure
+    'R/W: Identifying Main Idea': 'Craft and Structure',
+    'R/W: Text Structure and Purpose': 'Craft and Structure',
+    'R/W: Multiple Text Analysis': 'Craft and Structure',
+    'R/W: Determining Sentence Purpose': 'Craft and Structure',
+    'R/W: Vocabulary in Context': 'Craft and Structure',
+    'Rhetoric: Precision': 'Craft and Structure',
+
+    // Information and Ideas
+    'R/W: Finding Key Details': 'Information and Ideas',
+    'R/W: Drawing Inferences': 'Information and Ideas',
+    'R/W: Command of Evidence': 'Information and Ideas',
+    'R/W: Quantitative Analysis': 'Information and Ideas',
+
+    // Standard English Conventions
+    'Grammar: Sentence Structure': 'Standard English Conventions',
+    'Grammar: Subject-Verb Agreement': 'Standard English Conventions',
+    'Grammar: Verb Tense': 'Standard English Conventions',
+    'Grammar: Pronouns': 'Standard English Conventions',
+    'Grammar: Modifiers': 'Standard English Conventions',
+    'Grammar: Punctuation': 'Standard English Conventions',
+    'Grammar: Conventional Expression': 'Standard English Conventions',
+    'Grammar: Possessives': 'Standard English Conventions',
+
+    // Expression of Ideas
+    'Rhetoric: Transitions': 'Expression of Ideas',
+    'Rhetoric: Rhetorical Synthesis': 'Expression of Ideas'
+};
+
+let cachedQuestions: any[] | null = null;
+let loadPromise: Promise<any[]> | null = null;
+
+export const loadLocalQuestions = async (): Promise<any[]> => {
+    if (cachedQuestions) return cachedQuestions;
+    if (loadPromise) return loadPromise;
+
+    loadPromise = (async () => {
+        try {
+            const response = await fetch('/questions.json');
+            if (!response.ok) throw new Error('Failed to load questions.json');
+            cachedQuestions = await response.json();
+            return cachedQuestions || [];
+        } catch (err) {
+            console.error('Error loading static questions.json:', err);
+            cachedQuestions = [];
+            return [];
+        }
+    })();
+
+    return loadPromise;
+};
+
 export const generateSatQuestion = async (subtopic: string, difficulty: Difficulty): Promise<Omit<Question, 'subtopic'>> => {
-    // Map 'Extra Hard' to 'Hard' for the indexed lookup
     const mappedDifficulty: 'Easy' | 'Medium' | 'Hard' = difficulty === 'Extra Hard' ? 'Hard' : difficulty;
 
-    const maxRetries = 3;
-    let attempt = 0;
-
-    while (attempt < maxRetries) {
-        try {
-            const API_URL = import.meta.env.VITE_API_URL || 'http://localhost:5001/api';
-            const response = await fetch(`${API_URL}/questions?category=${encodeURIComponent(subtopic)}&difficulty=${encodeURIComponent(mappedDifficulty)}`);
-            
-            if (response.ok) {
-                const result = await response.json();
-                if (result.success && result.data) {
-                    const q = result.data;
-                    const cleanedQuestion = q.question.replace(/\(Graph shows.*?\)/g, '').trim();
-                    const legacyGraph = parseLegacyGraphData(q.question);
-                    
-                    return {
-                        question: cleanedQuestion,
-                        options: q.options,
-                        answerIndex: q.answerIndex,
-                        explanation: q.explanation || "Correct answer explanation not provided.",
-                        hasGraphic: q.hasGraphic || !!legacyGraph,
-                        graphData: legacyGraph
-                    };
+    try {
+        const questions = await loadLocalQuestions();
+        const domain = SUBTOPIC_TO_DOMAIN_MAP[subtopic];
+        
+        if (domain) {
+            const candidates = questions.filter(q => q.domain === domain && q.difficulty === mappedDifficulty);
+            if (candidates.length > 0) {
+                const randomIndex = Math.floor(Math.random() * candidates.length);
+                const q = candidates[randomIndex];
+                
+                let questionString = q.question.question;
+                if (q.question.paragraph && q.question.paragraph !== 'null') {
+                    questionString = `${q.question.paragraph}\n\n${q.question.question}`;
                 }
+                const cleanedQuestion = questionString.replace(/\(Graph shows.*?\)/g, '').trim();
+                const legacyGraph = parseLegacyGraphData(questionString);
+                
+                return {
+                    question: cleanedQuestion,
+                    options: [
+                        q.question.choices.A || '',
+                        q.question.choices.B || '',
+                        q.question.choices.C || '',
+                        q.question.choices.D || ''
+                    ],
+                    answerIndex: ['A', 'B', 'C', 'D'].indexOf(q.question.correct_answer),
+                    explanation: q.question.explanation !== 'null' && q.question.explanation ? q.question.explanation : "Correct answer explanation not provided.",
+                    hasGraphic: (q.visuals && q.visuals.type !== 'null') || !!legacyGraph,
+                    graphData: legacyGraph
+                };
             }
-            throw new Error(`API responded with status ${response.status}`);
-        } catch (error) {
-            attempt++;
-            console.warn(`Attempt ${attempt} to fetch question failed:`, error);
-            if (attempt >= maxRetries) {
-                break;
-            }
-            await new Promise(resolve => setTimeout(resolve, 2000));
         }
+    } catch (error) {
+        console.error('Error loading question locally:', error);
     }
 
-    // Fallback: use pre-indexed questions for O(1) lookup
+    // Fallback: use pre-indexed backup questions if loaded static files fail
     const candidates = getQuestionsByCategory(subtopic, mappedDifficulty);
-
     if (candidates.length > 0) {
         const randomIndex = Math.floor(Math.random() * candidates.length);
         const dbQuestion = candidates[randomIndex];
@@ -94,22 +178,23 @@ export const generateSatQuestion = async (subtopic: string, difficulty: Difficul
         };
     }
 
-    // Fallback to placeholder if nothing exists in bank
     return FALLBACK_QUESTION(subtopic, difficulty);
 };
 
 export const fetchQuestionCounts = async (): Promise<Record<string, number>> => {
     try {
-        const API_URL = import.meta.env.VITE_API_URL || 'http://localhost:5001/api';
-        const response = await fetch(`${API_URL}/questions/counts`);
-        if (response.ok) {
-            const result = await response.json();
-            if (result.success && result.data) {
-                return result.data;
+        const questions = await loadLocalQuestions();
+        const counts: Record<string, number> = {};
+        
+        for (const [subtopic, domain] of Object.entries(SUBTOPIC_TO_DOMAIN_MAP)) {
+            const count = questions.filter(q => q.domain === domain).length;
+            if (count > 0) {
+                counts[subtopic] = count;
             }
         }
+        return counts;
     } catch (error) {
-        console.error('Error fetching question counts from API:', error);
+        console.error('Error fetching question counts locally:', error);
+        return {};
     }
-    return {};
 };
