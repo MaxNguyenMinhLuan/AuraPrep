@@ -14,19 +14,26 @@ async function startServer(): Promise<void> {
 
         let mongoUri = config.mongodb.uri;
 
-        if (process.env.USE_IN_MEMORY_DB === 'true' || mongoUri.includes('auraprep.gkuuvix.mongodb.net')) {
-            console.log('Detected paused Atlas cluster or USE_IN_MEMORY_DB flag. Spinning up in-memory MongoDB...');
-            mongoServerInstance = await MongoMemoryServer.create();
-            mongoUri = mongoServerInstance.getUri();
-            console.log(`In-memory MongoDB started at: ${mongoUri}`);
-        }
-
         // Connect to MongoDB with connection pooling
         console.log('Connecting to MongoDB...');
         console.log(`MongoDB URI: ${mongoUri.replace(/\/\/[^:]+:[^@]+@/, '//***:***@')}`); // Hide credentials in logs
 
-        await mongoose.connect(mongoUri, config.mongodb.options);
-        console.log(`Connected to MongoDB (pool size: ${config.mongodb.options.maxPoolSize})`);
+        try {
+            if (process.env.USE_IN_MEMORY_DB === 'true' || mongoUri.includes('auraprep.gkuuvix.mongodb.net')) {
+                throw new Error('Forcing in-memory DB due to flag or paused cluster');
+            }
+            await mongoose.connect(mongoUri, config.mongodb.options);
+            console.log(`Connected to MongoDB (pool size: ${config.mongodb.options.maxPoolSize})`);
+        } catch (connError) {
+            console.warn('⚠️ Primary MongoDB connection failed or bypassed:', connError instanceof Error ? connError.message : connError);
+            console.log('Spinning up in-memory MongoDB as a fallback...');
+            mongoServerInstance = await MongoMemoryServer.create();
+            mongoUri = mongoServerInstance.getUri();
+            console.log(`In-memory MongoDB started at: ${mongoUri}`);
+            
+            await mongoose.connect(mongoUri, config.mongodb.options);
+            console.log('Connected to fallback in-memory MongoDB');
+        }
 
         // Seed backup questions & fetch official questions
         QuestionIngestionService.seedBackupQuestions();
