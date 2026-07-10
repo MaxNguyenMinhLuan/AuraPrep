@@ -688,18 +688,38 @@ const ProgressView: React.FC<ProgressViewProps> = ({ profile, setAuraPoints, upd
     const [searchQuery, setSearchQuery] = useState('');
 
     useEffect(() => {
+        let retryCount = 0;
+        const maxRetries = 6;
+        let timeoutId: any;
+
         const loadCounts = async () => {
             try {
-                setIsLoadingCounts(true);
+                if (retryCount === 0) {
+                    setIsLoadingCounts(true);
+                }
                 const counts = await fetchQuestionCounts();
-                setQuestionCounts(counts);
+                if (Object.keys(counts).length > 0) {
+                    setQuestionCounts(counts);
+                    setIsLoadingCounts(false);
+                } else {
+                    throw new Error('Empty counts received (server might be starting up)');
+                }
             } catch (err) {
-                console.error(err);
-            } finally {
-                setIsLoadingCounts(false);
+                console.warn(`Attempt ${retryCount + 1} failed to load question counts:`, err);
+                if (retryCount < maxRetries) {
+                    retryCount++;
+                    timeoutId = setTimeout(loadCounts, 5000);
+                } else {
+                    setIsLoadingCounts(false);
+                }
             }
         };
+
         loadCounts();
+
+        return () => {
+            if (timeoutId) clearTimeout(timeoutId);
+        };
     }, []);
 
     const handleStreakComplete = useCallback(() => {

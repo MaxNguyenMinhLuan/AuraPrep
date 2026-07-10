@@ -39,29 +39,40 @@ export const generateSatQuestion = async (subtopic: string, difficulty: Difficul
     // Map 'Extra Hard' to 'Hard' for the indexed lookup
     const mappedDifficulty: 'Easy' | 'Medium' | 'Hard' = difficulty === 'Extra Hard' ? 'Hard' : difficulty;
 
-    try {
-        const API_URL = import.meta.env.VITE_API_URL || 'http://localhost:5001/api';
-        const response = await fetch(`${API_URL}/questions?category=${encodeURIComponent(subtopic)}&difficulty=${encodeURIComponent(mappedDifficulty)}`);
-        
-        if (response.ok) {
-            const result = await response.json();
-            if (result.success && result.data) {
-                const q = result.data;
-                const cleanedQuestion = q.question.replace(/\(Graph shows.*?\)/g, '').trim();
-                const legacyGraph = parseLegacyGraphData(q.question);
-                
-                return {
-                    question: cleanedQuestion,
-                    options: q.options,
-                    answerIndex: q.answerIndex,
-                    explanation: q.explanation || "Correct answer explanation not provided.",
-                    hasGraphic: q.hasGraphic || !!legacyGraph,
-                    graphData: legacyGraph
-                };
+    const maxRetries = 3;
+    let attempt = 0;
+
+    while (attempt < maxRetries) {
+        try {
+            const API_URL = import.meta.env.VITE_API_URL || 'http://localhost:5001/api';
+            const response = await fetch(`${API_URL}/questions?category=${encodeURIComponent(subtopic)}&difficulty=${encodeURIComponent(mappedDifficulty)}`);
+            
+            if (response.ok) {
+                const result = await response.json();
+                if (result.success && result.data) {
+                    const q = result.data;
+                    const cleanedQuestion = q.question.replace(/\(Graph shows.*?\)/g, '').trim();
+                    const legacyGraph = parseLegacyGraphData(q.question);
+                    
+                    return {
+                        question: cleanedQuestion,
+                        options: q.options,
+                        answerIndex: q.answerIndex,
+                        explanation: q.explanation || "Correct answer explanation not provided.",
+                        hasGraphic: q.hasGraphic || !!legacyGraph,
+                        graphData: legacyGraph
+                    };
+                }
             }
+            throw new Error(`API responded with status ${response.status}`);
+        } catch (error) {
+            attempt++;
+            console.warn(`Attempt ${attempt} to fetch question failed:`, error);
+            if (attempt >= maxRetries) {
+                break;
+            }
+            await new Promise(resolve => setTimeout(resolve, 2000));
         }
-    } catch (error) {
-        console.error('Error fetching question from API, falling back to local data:', error);
     }
 
     // Fallback: use pre-indexed questions for O(1) lookup
