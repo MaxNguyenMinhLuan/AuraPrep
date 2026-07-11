@@ -878,6 +878,7 @@ const App: React.FC = () => {
                         />;
             case View.PROGRESS:
                 return <ProgressView
+                            userId={userId || 'guest'}
                             profile={profile}
                             setAuraPoints={setAuraPoints}
                             updateProfile={updateProfile}

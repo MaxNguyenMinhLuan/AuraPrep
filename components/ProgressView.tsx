@@ -1,11 +1,12 @@
 
-import React, { useState, useCallback, useEffect } from 'react';
+import React, { useState, useCallback, useEffect, useMemo } from 'react';
 import { Question, UserProfile, Difficulty, SkillLevel, PowerUpType } from '../types';
 import { generateSatQuestion, fetchQuestionCounts } from '../services/questionService';
 import { AURA_POINTS_PER_PRACTICE_STREAK, SUBTOPICS, POWER_UPS, getBossForSubtopic } from '../constants';
 import { getSkillProgress, getDifficultyForLevel, getNextLevel, getBossFightRequirement } from '../utils/mastery';
 import { INDEXED_QUESTIONS } from '../data/questionBankIndexed';
 import { getStrategyTip } from '../utils/strategyTips';
+import { getSkillsOfTheDay } from '../utils/skillsOfTheDay';
 import LoadingSpinner from './icons/LoadingSpinner';
 import QuestionGraph from './QuestionGraph';
 import ScissorsIcon from './icons/ScissorsIcon';
@@ -41,6 +42,7 @@ const renderPowerUpIcon = (id: PowerUpType, className = "w-6 h-6") => {
 };
 
 interface ProgressViewProps {
+    userId: string;
     profile: UserProfile;
     setAuraPoints: React.Dispatch<React.SetStateAction<number>>;
     updateProfile: (subtopic: string, isCorrect: boolean) => void;
@@ -688,7 +690,7 @@ const LevelUpAnimation: React.FC<{
 
 //--- MAIN COMPONENT ---//
 
-const ProgressView: React.FC<ProgressViewProps> = ({ profile, setAuraPoints, updateProfile, levelUpSubtopic, consumePowerUp, addToReviewQueue, awardAura, addXpToActiveCreature, setIsBossFightActive }) => {
+const ProgressView: React.FC<ProgressViewProps> = ({ userId, profile, setAuraPoints, updateProfile, levelUpSubtopic, consumePowerUp, addToReviewQueue, awardAura, addXpToActiveCreature, setIsBossFightActive }) => {
     const [view, setView] = useState<'list' | 'options' | 'practice' | 'prep' | 'bossFight' | 'levelUp'>('list');
     const [selectedSubtopic, setSelectedSubtopic] = useState<string | null>(null);
     const [lastLevelUpInfo, setLastLevelUpInfo] = useState<{ from: SkillLevel, to: SkillLevel } | null>(null);
@@ -848,9 +850,84 @@ const ProgressView: React.FC<ProgressViewProps> = ({ profile, setAuraPoints, upd
         return 'bg-accent';
     }
 
+    // Skills of the Day
+    const todaysSkills = useMemo(
+        () => getSkillsOfTheDay(userId, profile.stats),
+        // eslint-disable-next-line react-hooks/exhaustive-deps
+        [userId] // Recompute only when user changes; daily picks are cached in localStorage
+    );
+    const sotdSet = new Set([todaysSkills.mathSkill, todaysSkills.englishSkill]);
+
     const filteredSubtopics = SUBTOPICS.filter(subtopic =>
         subtopic.toLowerCase().includes(searchQuery.toLowerCase())
     );
+
+    // For the regular grid, exclude SotD cards (unless the user is searching for them)
+    const regularSubtopics = searchQuery
+        ? filteredSubtopics
+        : filteredSubtopics.filter(s => !sotdSet.has(s));
+
+    const renderSkillCard = (subtopic: string, index: number, isHot = false) => {
+        const stat = profile.stats[subtopic] || { correct: 0, incorrect: 0, level: 'Easy' };
+        const { level } = stat;
+        const progress = getSkillProgress(level);
+        const idx = INDEXED_QUESTIONS[subtopic];
+        const localCount = idx ? (idx.Easy.length + idx.Medium.length + idx.Hard.length + idx['Extra Hard'].length) : 0;
+        const qCount = questionCounts[subtopic] !== undefined ? questionCounts[subtopic] : localCount;
+        const displayCount = isLoadingCounts ? '...' : qCount;
+
+        if (isHot) {
+            return (
+                <button
+                    key={subtopic}
+                    onClick={() => handleSelectSubtopic(subtopic)}
+                    className="w-full text-left p-4 relative group overflow-hidden press-effect animate-fadeInScale rounded-xl shadow-[0_0_20px_rgba(202,138,4,0.35)] border-b-4 hover:-translate-y-1 transition-premium shimmer-overlay"
+                    style={{
+                        background: 'linear-gradient(135deg, #fef3c7 0%, #fde68a 40%, #fbbf24 80%, #f59e0b 100%)',
+                        borderColor: '#d97706',
+                        animationDelay: `${index * 0.06}s`,
+                    }}
+                >
+                    {/* Animated gold shimmer ring */}
+                    <div className="absolute inset-0 rounded-xl border-2 border-yellow-300/60 animate-pulse pointer-events-none" />
+
+                    {/* Question count badge */}
+                    <div className={`absolute top-0 right-0 px-1.5 py-0.5 rounded-bl-lg uppercase tracking-tighter text-[8px] font-bold ${isLoadingCounts ? 'bg-yellow-600/30 text-yellow-900 animate-pulse' : qCount > 0 ? 'bg-yellow-600/30 text-yellow-900' : 'bg-yellow-400/30 text-yellow-800'}`}>
+                        {isLoadingCounts ? 'Loading...' : `${displayCount} Question${qCount !== 1 ? 's' : ''}`}
+                    </div>
+
+                    <div className="flex justify-between items-center mb-2">
+                        <span className="text-[10px] font-bold flex-1 pr-2 truncate text-yellow-900">{subtopic}</span>
+                        <span className={`text-[8px] font-bold px-2 py-0.5 rounded-full ${getLevelColor(level)} text-text-light uppercase shadow-button`}>{level}</span>
+                    </div>
+                    <div className="w-full bg-yellow-200/60 h-2.5 border border-yellow-400/50 rounded-full overflow-hidden">
+                        <div className={`${getLevelColor(level)} h-full ${qCount === 0 ? 'opacity-30' : ''} rounded-full transition-all duration-500`} style={{ width: `${progress}%` }} />
+                    </div>
+                </button>
+            );
+        }
+
+        return (
+            <button
+                key={subtopic}
+                onClick={() => handleSelectSubtopic(subtopic)}
+                className="w-full text-left p-4 bg-surface hover:bg-secondary/30 border-b-4 border-secondary/30 transition-premium rounded-xl shadow-card hover:shadow-card-hover hover:-translate-y-1 relative group overflow-hidden press-effect animate-fadeInScale"
+                style={{ animationDelay: `${index * 0.03}s` }}
+            >
+                <div className={`absolute top-0 right-0 px-1.5 py-0.5 rounded-bl-lg uppercase tracking-tighter text-[8px] font-bold ${isLoadingCounts ? 'bg-secondary/20 text-primary animate-pulse' : qCount > 0 ? 'bg-success/20 text-success' : 'bg-text-dark/20 text-text-dim'}`}>
+                    {isLoadingCounts ? 'Loading...' : `${displayCount} Question${qCount !== 1 ? 's' : ''}`}
+                </div>
+
+                <div className="flex justify-between items-center mb-2">
+                    <span className={`text-[10px] font-bold flex-1 pr-2 truncate ${qCount > 0 ? 'text-text-main' : 'text-text-dim'}`}>{subtopic}</span>
+                    <span className={`text-[8px] font-bold px-2 py-0.5 rounded-full ${getLevelColor(level)} text-text-light uppercase shadow-button`}>{level}</span>
+                </div>
+                <div className="w-full bg-background/50 h-2.5 border border-secondary/30 rounded-full overflow-hidden shadow-inner-soft">
+                    <div className={`${getLevelColor(level)} h-full ${qCount === 0 ? 'opacity-30' : ''} rounded-full transition-all duration-500`} style={{ width: `${progress}%` }} />
+                </div>
+            </button>
+        );
+    };
 
     return (
         <div className="animate-fadeIn">
@@ -871,37 +948,24 @@ const ProgressView: React.FC<ProgressViewProps> = ({ profile, setAuraPoints, upd
                 <span className="absolute left-3.5 top-1/2 -translate-y-1/2 text-text-dim text-sm">🔍</span>
             </div>
 
+            {/* ✨ Skills of the Day — shown only when not searching */}
+            {!searchQuery && (
+                <div className="mb-8 animate-fadeIn">
+                    <div className="flex items-center gap-2 mb-3">
+                        <span className="text-base">⭐</span>
+                        <h2 className="text-[11px] md:text-xs font-bold text-highlight uppercase tracking-widest">Skills of the Day</h2>
+                        <span className="text-base">⭐</span>
+                        <span className="ml-auto text-[9px] text-text-dim italic">Resets daily • Your weakest picks</span>
+                    </div>
+                    <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 md:gap-4">
+                        {renderSkillCard(todaysSkills.mathSkill, 0, true)}
+                        {renderSkillCard(todaysSkills.englishSkill, 1, true)}
+                    </div>
+                </div>
+            )}
+
             <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-3 md:gap-4 pb-20">
-                {filteredSubtopics.map((subtopic, index) => {
-                    const stat = profile.stats[subtopic] || { correct: 0, incorrect: 0, level: 'Easy' };
-                    const { level } = stat;
-                    const progress = getSkillProgress(level);
-                    const idx = INDEXED_QUESTIONS[subtopic];
-                    const localCount = idx ? (idx.Easy.length + idx.Medium.length + idx.Hard.length + idx['Extra Hard'].length) : 0;
-                    const qCount = questionCounts[subtopic] !== undefined ? questionCounts[subtopic] : localCount;
-                    const displayCount = isLoadingCounts ? '...' : qCount;
-
-                    return (
-                        <button
-                            key={subtopic}
-                            onClick={() => handleSelectSubtopic(subtopic)}
-                            className="w-full text-left p-4 bg-surface hover:bg-secondary/30 border-b-4 border-secondary/30 transition-premium rounded-xl shadow-card hover:shadow-card-hover hover:-translate-y-1 relative group overflow-hidden press-effect animate-fadeInScale"
-                            style={{ animationDelay: `${index * 0.03}s` }}
-                        >
-                            <div className={`absolute top-0 right-0 px-1.5 py-0.5 rounded-bl-lg uppercase tracking-tighter text-[8px] font-bold ${isLoadingCounts ? 'bg-secondary/20 text-primary animate-pulse' : qCount > 0 ? 'bg-success/20 text-success' : 'bg-text-dark/20 text-text-dim'}`}>
-                                {isLoadingCounts ? 'Loading...' : `${displayCount} Question${qCount !== 1 ? 's' : ''}`}
-                            </div>
-
-                            <div className="flex justify-between items-center mb-2">
-                                <span className={`text-[10px] font-bold flex-1 pr-2 truncate ${qCount > 0 ? 'text-text-main' : 'text-text-dim'}`}>{subtopic}</span>
-                                <span className={`text-[8px] font-bold px-2 py-0.5 rounded-full ${getLevelColor(level)} text-text-light uppercase shadow-button`}>{level}</span>
-                            </div>
-                            <div className="w-full bg-background/50 h-2.5 border border-secondary/30 rounded-full overflow-hidden shadow-inner-soft">
-                                <div className={`${getLevelColor(level)} h-full ${qCount === 0 ? 'opacity-30' : ''} rounded-full transition-all duration-500`} style={{ width: `${progress}%` }}></div>
-                            </div>
-                        </button>
-                    )
-                })}
+                {regularSubtopics.map((subtopic, index) => renderSkillCard(subtopic, index))}
             </div>
         </div>
     );
