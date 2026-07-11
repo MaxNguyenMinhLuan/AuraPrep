@@ -341,7 +341,7 @@ const Dashboard: React.FC<DashboardProps> = ({
                         rel="noopener noreferrer"
                         className="text-xs text-text-dim hover:text-highlight transition-colors underline decoration-dotted underline-offset-4"
                     >
-                        Give Feedback or Suggest a Feature
+                        Give Feedback or<br className="lg:hidden" /> Suggest a Feature
                     </a>
                 </div>
             </div>
