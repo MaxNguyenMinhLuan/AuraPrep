@@ -373,6 +373,11 @@ const App: React.FC = () => {
         return () => clearTimeout(timer);
     }, [user, profile, creatures, activeCreatureId, auraPoints, dailyActivity, reviewQueue, userTeam, tutorialState]);
 
+    // Scroll window to top on view changes
+    useEffect(() => {
+        window.scrollTo({ top: 0, behavior: 'instant' });
+    }, [currentView]);
+
     // Helper to get ISO week number
     const getWeekNumber = (date: Date) => {
         const d = new Date(Date.UTC(date.getFullYear(), date.getMonth(), date.getDate()));
