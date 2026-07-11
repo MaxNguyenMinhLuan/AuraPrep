@@ -2,7 +2,6 @@
 import { UserProfile, DailyMission } from '../types';
 import { SUBTOPICS } from '../constants';
 import { SKILL_LEVELS } from './mastery';
-import { INDEXED_QUESTIONS } from '../data/questionBankIndexed';
 
 // Helper to shuffle an array
 const shuffleArray = <T>(array: T[]): T[] => {
@@ -15,20 +14,10 @@ const shuffleArray = <T>(array: T[]): T[] => {
 };
 
 export const generateDailyMissions = (profile: UserProfile): DailyMission[] => {
-    // Audit available topics using the indexed bank (which includes alias-mapped categories)
-    const availableSubtopics = Object.keys(INDEXED_QUESTIONS);
-
-    const subtopicsWithLevels = SUBTOPICS
-        .filter(s => availableSubtopics.includes(s)) // ONLY pick topics we have data for
-        .map(subtopic => ({
-            subtopic,
-            level: profile.stats[subtopic]?.level || 'Easy',
-        }));
-
-    // If database is very empty, fallback to a few known types just to prevent crash
-    if (subtopicsWithLevels.length === 0) {
-        subtopicsWithLevels.push({ subtopic: 'Grammar: Punctuation', level: 'Easy' });
-    }
+    const subtopicsWithLevels = SUBTOPICS.map(subtopic => ({
+        subtopic,
+        level: profile.stats[subtopic]?.level || 'Easy',
+    }));
 
     // Sort by level index, ascending (Easy -> Medium -> Hard -> Master)
     subtopicsWithLevels.sort((a, b) => SKILL_LEVELS.indexOf(a.level) - SKILL_LEVELS.indexOf(b.level));

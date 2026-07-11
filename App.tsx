@@ -305,31 +305,36 @@ const App: React.FC = () => {
         }
     }, [user, auraPoints, tutorialState]);
 
-    // Periodic sync every 5 minutes to keep backend up-to-date
-    // Uses refs to avoid restarting the interval on every state change and to track dirty-checking
+    // Auto-sync whenever local game data changes (debounced by 3 seconds)
+    // Uses refs to track dirty-checking and prevent infinite sync loops
     const lastSyncedAtRef = React.useRef<string | undefined>(undefined);
     const lastSyncedDataStrRef = React.useRef<string>('');
-    const syncDataRef = React.useRef({ profile, creatures, activeCreatureId, auraPoints, dailyActivity, reviewQueue, userTeam, tutorialState });
-    useEffect(() => {
-        syncDataRef.current = { profile, creatures, activeCreatureId, auraPoints, dailyActivity, reviewQueue, userTeam, tutorialState };
-    }, [profile, creatures, activeCreatureId, auraPoints, dailyActivity, reviewQueue, userTeam, tutorialState]);
 
     useEffect(() => {
-        if (!user) return;
+        if (!user || !hasHydratedRef.current) return;
 
-        const interval = setInterval(async () => {
+        const timer = setTimeout(async () => {
             try {
                 const token = await AuthService.getAuthToken();
                 if (!token) return;
-                const currentData = syncDataRef.current;
 
-                // Dirty checking
+                const currentData = {
+                    profile,
+                    creatures,
+                    activeCreatureId,
+                    auraPoints,
+                    dailyActivity,
+                    reviewQueue,
+                    userTeam,
+                    tutorialState
+                };
+
                 const currentDataStr = JSON.stringify(currentData);
                 if (currentDataStr === lastSyncedDataStrRef.current) {
-                    // No local changes made since last sync, skip pushing to backend
-                    return;
+                    return; // No changes to sync
                 }
 
+                console.log('Syncing updated game data to backend...');
                 const result = await syncGameDataToBackend(
                     currentData.profile,
                     currentData.creatures,
@@ -344,7 +349,7 @@ const App: React.FC = () => {
                 );
 
                 if (result?.status === 'conflict' && result.data) {
-                    console.warn('Conflict detected: Pulling newer data from backend');
+                    console.warn('Sync conflict: Pulling newer data from backend');
                     const conflictData = result.data;
                     setProfile(conflictData.profile);
                     if (conflictData.creatures) setCreatures(conflictData.creatures);
@@ -361,12 +366,12 @@ const App: React.FC = () => {
                     lastSyncedDataStrRef.current = currentDataStr;
                 }
             } catch (error) {
-                console.error('Periodic sync failed:', error);
+                console.error('Auto-sync failed:', error);
             }
-        }, 5 * 60 * 1000); // 5 minutes
+        }, 3000); // 3-second debounce
 
-        return () => clearInterval(interval);
-    }, [user]);
+        return () => clearTimeout(timer);
+    }, [user, profile, creatures, activeCreatureId, auraPoints, dailyActivity, reviewQueue, userTeam, tutorialState]);
 
     // Helper to get ISO week number
     const getWeekNumber = (date: Date) => {
