@@ -43,7 +43,7 @@ import { INITIAL_TUTORIAL_STATE, TUTORIAL_DIALOGUE, STARTER_IDS, PROGRESS_UNLOCK
 // import BaselineResults from './components/Tutorial/BaselineResults';
 // import { processBaselineResults, baselineResultsToStats } from './utils/baselineScoring';
 import { hasCompletedStealthPlacement, processStealthMissionAnswer } from './services/stealthMissionService';
-import { migrateLocalStorageToBackend, syncGameDataToBackend, fetchGameDataFromBackend } from './services/gameDataService';
+import { migrateLocalStorageToBackend, syncGameDataToBackend, fetchGameData } from './services/gameDataService';
 import { DifficultyTier } from './types/stealthDiagnostic';
 
 const App: React.FC = () => {
@@ -229,7 +229,7 @@ const App: React.FC = () => {
                 const token = await AuthService.getAuthToken();
                 if (!token) return;
 
-                const backendData = await fetchGameDataFromBackend(token);
+                const backendData = await fetchGameData(token);
                 if (backendData && backendData.profile) {
                     // Hydrate local state from backend
                     setProfile(backendData.profile);

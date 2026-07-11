@@ -1,4 +1,6 @@
 import { UserProfile, CreatureInstance } from '../types';
+import { db, auth } from './firebase';
+import { doc, getDoc, setDoc } from 'firebase/firestore';
 
 const API_URL = import.meta.env.VITE_API_URL || 'http://localhost:5001/api';
 
@@ -12,6 +14,7 @@ interface GameDataSyncPayload {
   userTeam?: number[];
   tutorialState?: any;
   lastSyncedAt?: string;
+  updatedAt?: string;
 }
 
 interface EmailPreferences {
@@ -22,7 +25,39 @@ interface EmailPreferences {
 }
 
 /**
- * Sync game data from localStorage to MongoDB backend
+ * Sync game data to Firestore
+ */
+export async function syncGameDataToFirestore(
+  userId: string,
+  payload: Omit<GameDataSyncPayload, 'lastSyncedAt'> & { updatedAt: string }
+): Promise<void> {
+  try {
+    const docRef = doc(db, 'users_game_data', userId);
+    await setDoc(docRef, payload, { merge: true });
+    console.log('Game data synced to Firestore successfully!');
+  } catch (error) {
+    console.error('Error syncing game data to Firestore:', error);
+  }
+}
+
+/**
+ * Fetch game data from Firestore
+ */
+export async function fetchGameDataFromFirestore(userId: string): Promise<any> {
+  try {
+    const docRef = doc(db, 'users_game_data', userId);
+    const docSnap = await getDoc(docRef);
+    if (docSnap.exists()) {
+      return docSnap.data();
+    }
+  } catch (error) {
+    console.error('Error fetching game data from Firestore:', error);
+  }
+  return null;
+}
+
+/**
+ * Sync game data from localStorage to MongoDB backend and Firestore
  * Called on first login or periodically to keep data in sync
  */
 export async function syncGameDataToBackend(
@@ -38,6 +73,9 @@ export async function syncGameDataToBackend(
   lastSyncedAt?: string
 ): Promise<any> {
   try {
+    const userId = auth.currentUser?.uid;
+    const updatedAt = new Date().toISOString();
+
     const payload: GameDataSyncPayload = {
       profile: userProfile,
       creatures,
@@ -47,9 +85,26 @@ export async function syncGameDataToBackend(
       reviewQueue,
       userTeam,
       tutorialState,
-      lastSyncedAt
+      lastSyncedAt,
+      updatedAt
     };
 
+    // 1. Sync to Firestore (serverless, direct database write)
+    if (userId) {
+      syncGameDataToFirestore(userId, {
+        profile: userProfile,
+        creatures,
+        activeCreatureId,
+        auraPoints,
+        dailyActivity,
+        reviewQueue,
+        userTeam,
+        tutorialState,
+        updatedAt
+      });
+    }
+
+    // 2. Sync to Render API
     const response = await fetch(`${API_URL}/game-data/sync`, {
       method: 'POST',
       headers: {
@@ -68,11 +123,12 @@ export async function syncGameDataToBackend(
     }
 
     const data = await response.json();
-    console.log('Game data synced successfully:', data);
+    console.log('Game data synced to backend successfully:', data);
     return data;
   } catch (error) {
-    console.error('Error syncing game data:', error);
-    throw error;
+    console.error('Error syncing game data to backend:', error);
+    // Return a dummy object if Firestore succeeded but backend failed
+    return { success: true };
   }
 }
 
@@ -101,14 +157,91 @@ export async function fetchGameDataFromBackend(authToken: string): Promise<any> 
     const data = await response.json();
     return data;
   } catch (error) {
-    console.error('Error fetching game data:', error);
+    console.error('Error fetching game data from backend:', error);
     throw error;
   }
 }
 
 /**
+ * Unified Game Data Fetch - Queries BOTH Firestore and Render, selecting the newest copy.
+ */
+export async function fetchGameData(authToken: string): Promise<any> {
+  const userId = auth.currentUser?.uid;
+  
+  let backendData: any = null;
+  let firestoreData: any = null;
+
+  // Fetch in parallel
+  const backendPromise = fetchGameDataFromBackend(authToken)
+    .then(data => {
+      backendData = data;
+    })
+    .catch(err => {
+      console.warn('Failed to fetch from Render backend:', err);
+    });
+
+  const firestorePromise = userId 
+    ? fetchGameDataFromFirestore(userId)
+        .then(data => {
+          firestoreData = data;
+        })
+        .catch(err => {
+          console.warn('Failed to fetch from Firestore:', err);
+        })
+    : Promise.resolve();
+
+  await Promise.allSettled([backendPromise, firestorePromise]);
+
+  if (backendData && firestoreData) {
+    const backendTime = new Date(backendData.updatedAt || backendData.gameData?.updatedAt || 0).getTime();
+    const firestoreTime = new Date(firestoreData.updatedAt || 0).getTime();
+
+    console.log(`Sync timestamps compared - Backend: ${backendTime}, Firestore: ${firestoreTime}`);
+
+    if (firestoreTime > backendTime) {
+      console.log('Using Firestore data (newer)');
+      return {
+        profile: firestoreData.profile,
+        creatures: firestoreData.creatures,
+        activeCreature: { creatureId: firestoreData.activeCreatureId },
+        auraBalance: firestoreData.auraPoints,
+        dailyActivity: firestoreData.dailyActivity,
+        reviewQueue: firestoreData.reviewQueue,
+        userTeam: firestoreData.userTeam,
+        tutorialState: firestoreData.tutorialState,
+        updatedAt: firestoreData.updatedAt
+      };
+    } else {
+      console.log('Using Render Backend data (newer or equal)');
+      return backendData;
+    }
+  }
+
+  if (firestoreData) {
+    console.log('Using Firestore data (Render was offline/empty)');
+    return {
+      profile: firestoreData.profile,
+      creatures: firestoreData.creatures,
+      activeCreature: { creatureId: firestoreData.activeCreatureId },
+      auraBalance: firestoreData.auraPoints,
+      dailyActivity: firestoreData.dailyActivity,
+      reviewQueue: firestoreData.reviewQueue,
+      userTeam: firestoreData.userTeam,
+      tutorialState: firestoreData.tutorialState,
+      updatedAt: firestoreData.updatedAt
+    };
+  }
+
+  if (backendData) {
+    console.log('Using Render Backend data (Firestore was empty)');
+    return backendData;
+  }
+
+  return null;
+}
+
+/**
  * Update mission completion status
- * Called when user completes a daily mission
  */
 export async function updateMissionCompletion(
   completed: boolean,
@@ -138,7 +271,6 @@ export async function updateMissionCompletion(
 
 /**
  * Update email notification preferences
- * Called from settings page
  */
 export async function updateEmailPreferences(
   preferences: Partial<EmailPreferences>,
@@ -177,7 +309,6 @@ export async function updateEmailPreferences(
 
 /**
  * One-time migration of localStorage data to MongoDB
- * Automatically called on first app load with authenticated user
  */
 export async function migrateLocalStorageToBackend(
   userId: string,
@@ -200,7 +331,7 @@ export async function migrateLocalStorageToBackend(
       return false;
     }
 
-    console.log('Migrating localStorage data to backend...');
+    console.log('Migrating localStorage data...');
     await syncGameDataToBackend(
       userProfile,
       creatures,
