@@ -86,10 +86,10 @@ export const TUTORIAL_DIALOGUE = {
     },
 
     chooseActiveCreature: {
-        intro: "Now you have multiple Guardians! Time to choose your active partner.",
-        instruction: "Your ACTIVE Guardian is the one who gains XP from your missions.",
-        prompt: "Tap on a Guardian and set them as your active partner!",
-        confirmation: (name: string) => `${name} is now your active Guardian! They'll grow with you.`
+        intro: "Now you have multiple Guardians! Time to choose your partner Auramon.",
+        instruction: "Your partner Auramon is the one who gains XP from your missions.",
+        prompt: "Tap on a Guardian and set them as your partner Auramon!",
+        confirmation: (name: string) => `${name} is now your partner Auramon! They'll grow with you.`
     },
 
     explainDailyMissions: {
