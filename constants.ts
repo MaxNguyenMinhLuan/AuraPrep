@@ -33,7 +33,7 @@ export const SUBTOPICS: string[] = [
     'R/W: Finding Key Details',
     'R/W: Drawing Inferences',
     'R/W: Identifying Main Idea',
-    'R/W: Rhetorical Synthesis',
+    // 'R/W: Rhetorical Synthesis', // TEMPORARILY HIDDEN - no questions available yet (needs College Board import)
     'R/W: Determining Sentence Purpose',
     'R/W: Vocabulary in Context',
     'Grammar: Subject-Verb Agreement',
@@ -46,6 +46,12 @@ export const SUBTOPICS: string[] = [
     'Grammar: Verb Tense',
     'Rhetoric: Precision',
     'Rhetoric: Transitions'
+];
+
+// Skills that are defined but have no questions yet.
+// To restore a skill, move it back into SUBTOPICS above.
+export const COMING_SOON_SUBTOPICS: string[] = [
+    'R/W: Rhetorical Synthesis',
 ];
 
 export const LEAGUES: LeagueType[] = [
