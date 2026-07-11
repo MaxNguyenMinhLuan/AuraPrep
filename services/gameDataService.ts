@@ -4,6 +4,9 @@ import { doc, getDoc, setDoc } from 'firebase/firestore';
 
 const API_URL = import.meta.env.VITE_API_URL || 'http://localhost:5001/api';
 
+// How long to wait for the Render backend before giving up (ms)
+const BACKEND_TIMEOUT_MS = 8000;
+
 interface GameDataSyncPayload {
   profile: UserProfile;
   creatures: CreatureInstance[];
@@ -25,23 +28,41 @@ interface EmailPreferences {
 }
 
 /**
- * Sync game data to Firestore
+ * Helper: wraps a promise with a timeout; resolves to null on timeout.
+ */
+function withTimeout<T>(promise: Promise<T>, ms: number): Promise<T | null> {
+  return new Promise((resolve) => {
+    const timer = setTimeout(() => resolve(null), ms);
+    promise
+      .then((v) => { clearTimeout(timer); resolve(v); })
+      .catch(() => { clearTimeout(timer); resolve(null); });
+  });
+}
+
+// ─────────────────────────────────────────────────────────────
+// FIRESTORE  (primary, always-on sync layer)
+// ─────────────────────────────────────────────────────────────
+
+/**
+ * Write game data to Firestore.  Always awaited so callers know if it failed.
  */
 export async function syncGameDataToFirestore(
   userId: string,
   payload: Omit<GameDataSyncPayload, 'lastSyncedAt'> & { updatedAt: string }
-): Promise<void> {
+): Promise<boolean> {
   try {
     const docRef = doc(db, 'users_game_data', userId);
     await setDoc(docRef, payload, { merge: true });
-    console.log('Game data synced to Firestore successfully!');
+    console.log('[Firestore] Game data saved ✓');
+    return true;
   } catch (error) {
-    console.error('Error syncing game data to Firestore:', error);
+    console.error('[Firestore] Error saving game data:', error);
+    return false;
   }
 }
 
 /**
- * Fetch game data from Firestore
+ * Read game data from Firestore.
  */
 export async function fetchGameDataFromFirestore(userId: string): Promise<any> {
   try {
@@ -51,14 +72,18 @@ export async function fetchGameDataFromFirestore(userId: string): Promise<any> {
       return docSnap.data();
     }
   } catch (error) {
-    console.error('Error fetching game data from Firestore:', error);
+    console.error('[Firestore] Error reading game data:', error);
   }
   return null;
 }
 
+// ─────────────────────────────────────────────────────────────
+// RENDER BACKEND  (secondary; may be slow/offline)
+// ─────────────────────────────────────────────────────────────
+
 /**
- * Sync game data from localStorage to MongoDB backend and Firestore
- * Called on first login or periodically to keep data in sync
+ * Sync to Render API with a timeout so a cold-start server
+ * never blocks the UI for minutes.
  */
 export async function syncGameDataToBackend(
   userProfile: UserProfile,
@@ -72,11 +97,25 @@ export async function syncGameDataToBackend(
   authToken: string,
   lastSyncedAt?: string
 ): Promise<any> {
-  try {
-    const userId = auth.currentUser?.uid;
-    const updatedAt = new Date().toISOString();
+  const userId = auth.currentUser?.uid;
+  const updatedAt = new Date().toISOString();
 
-    const payload: GameDataSyncPayload = {
+  const payload: GameDataSyncPayload = {
+    profile: userProfile,
+    creatures,
+    activeCreatureId,
+    auraPoints,
+    dailyActivity,
+    reviewQueue,
+    userTeam,
+    tutorialState,
+    lastSyncedAt,
+    updatedAt
+  };
+
+  // 1. Firestore — primary, always awaited
+  if (userId) {
+    await syncGameDataToFirestore(userId, {
       profile: userProfile,
       creatures,
       activeCreatureId,
@@ -85,27 +124,13 @@ export async function syncGameDataToBackend(
       reviewQueue,
       userTeam,
       tutorialState,
-      lastSyncedAt,
       updatedAt
-    };
+    });
+  }
 
-    // 1. Sync to Firestore (serverless, direct database write)
-    if (userId) {
-      syncGameDataToFirestore(userId, {
-        profile: userProfile,
-        creatures,
-        activeCreatureId,
-        auraPoints,
-        dailyActivity,
-        reviewQueue,
-        userTeam,
-        tutorialState,
-        updatedAt
-      });
-    }
-
-    // 2. Sync to Render API
-    const response = await fetch(`${API_URL}/game-data/sync`, {
+  // 2. Render backend — secondary, with timeout
+  try {
+    const fetchPromise = fetch(`${API_URL}/game-data/sync`, {
       method: 'POST',
       headers: {
         'Content-Type': 'application/json',
@@ -114,31 +139,35 @@ export async function syncGameDataToBackend(
       body: JSON.stringify(payload)
     });
 
+    const response = await withTimeout(fetchPromise, BACKEND_TIMEOUT_MS);
+    if (!response) {
+      console.warn('[Render] Sync timed out – Firestore already saved.');
+      return { gameData: { updatedAt } };
+    }
+
     if (!response.ok) {
       if (response.status === 409) {
         const conflictData = await response.json();
         return { status: 'conflict', data: conflictData.gameData };
       }
-      throw new Error(`Failed to sync game data: ${response.statusText}`);
+      throw new Error(`Render sync failed: ${response.statusText}`);
     }
 
     const data = await response.json();
-    console.log('Game data synced to backend successfully:', data);
+    console.log('[Render] Game data synced ✓');
     return data;
   } catch (error) {
-    console.error('Error syncing game data to backend:', error);
-    // Return a dummy object if Firestore succeeded but backend failed
-    return { success: true };
+    console.warn('[Render] Sync error (Firestore save already succeeded):', error);
+    return { gameData: { updatedAt } };
   }
 }
 
 /**
- * Fetch game data from MongoDB backend
- * Called on app startup to load saved data
+ * Fetch game data from Render API backend with timeout.
  */
 export async function fetchGameDataFromBackend(authToken: string): Promise<any> {
   try {
-    const response = await fetch(`${API_URL}/game-data`, {
+    const fetchPromise = fetch(`${API_URL}/game-data`, {
       method: 'GET',
       headers: {
         'Content-Type': 'application/json',
@@ -146,103 +175,102 @@ export async function fetchGameDataFromBackend(authToken: string): Promise<any> 
       }
     });
 
-    if (!response.ok) {
-      if (response.status === 404) {
-        // Game data doesn't exist yet (new user)
-        return null;
-      }
-      throw new Error(`Failed to fetch game data: ${response.statusText}`);
+    const response = await withTimeout(fetchPromise, BACKEND_TIMEOUT_MS);
+    if (!response) {
+      console.warn('[Render] Fetch timed out');
+      return null;
     }
 
-    const data = await response.json();
-    return data;
+    if (!response.ok) {
+      if (response.status === 404) return null; // new user
+      throw new Error(`Render fetch failed: ${response.statusText}`);
+    }
+
+    return await response.json();
   } catch (error) {
-    console.error('Error fetching game data from backend:', error);
-    throw error;
+    console.warn('[Render] Fetch error:', error);
+    return null;
   }
 }
 
+// ─────────────────────────────────────────────────────────────
+// UNIFIED FETCH (Firestore-first, with Render as fallback)
+// ─────────────────────────────────────────────────────────────
+
 /**
- * Unified Game Data Fetch - Queries BOTH Firestore and Render, selecting the newest copy.
+ * Unified fetch: tries Firestore first (fast & reliable), then
+ * Render backend as fallback.  Always picks the newest copy by updatedAt.
  */
 export async function fetchGameData(authToken: string): Promise<any> {
   const userId = auth.currentUser?.uid;
-  
-  let backendData: any = null;
-  let firestoreData: any = null;
 
-  // Fetch in parallel
-  const backendPromise = fetchGameDataFromBackend(authToken)
-    .then(data => {
-      backendData = data;
-    })
-    .catch(err => {
-      console.warn('Failed to fetch from Render backend:', err);
-    });
+  // Run both in parallel; backend has its own timeout inside
+  const [firestoreData, backendData] = await Promise.all([
+    userId ? fetchGameDataFromFirestore(userId) : Promise.resolve(null),
+    fetchGameDataFromBackend(authToken)
+  ]);
 
-  const firestorePromise = userId 
-    ? fetchGameDataFromFirestore(userId)
-        .then(data => {
-          firestoreData = data;
-        })
-        .catch(err => {
-          console.warn('Failed to fetch from Firestore:', err);
-        })
-    : Promise.resolve();
-
-  await Promise.allSettled([backendPromise, firestorePromise]);
-
-  if (backendData && firestoreData) {
-    const backendTime = new Date(backendData.updatedAt || backendData.gameData?.updatedAt || 0).getTime();
-    const firestoreTime = new Date(firestoreData.updatedAt || 0).getTime();
-
-    console.log(`Sync timestamps compared - Backend: ${backendTime}, Firestore: ${firestoreTime}`);
-
-    if (firestoreTime > backendTime) {
-      console.log('Using Firestore data (newer)');
-      return {
-        profile: firestoreData.profile,
-        creatures: firestoreData.creatures,
-        activeCreature: { creatureId: firestoreData.activeCreatureId },
-        auraBalance: firestoreData.auraPoints,
-        dailyActivity: firestoreData.dailyActivity,
-        reviewQueue: firestoreData.reviewQueue,
-        userTeam: firestoreData.userTeam,
-        tutorialState: firestoreData.tutorialState,
-        updatedAt: firestoreData.updatedAt
-      };
-    } else {
-      console.log('Using Render Backend data (newer or equal)');
-      return backendData;
-    }
-  }
-
-  if (firestoreData) {
-    console.log('Using Firestore data (Render was offline/empty)');
+  // Helper to normalise the Render backend response shape
+  const normaliseBackend = (d: any) => {
+    if (!d) return null;
+    // Render wraps data under d.gameData or d.profile directly
+    const g = d.gameData || d;
+    if (!g.profile) return null;
     return {
-      profile: firestoreData.profile,
-      creatures: firestoreData.creatures,
-      activeCreature: { creatureId: firestoreData.activeCreatureId },
-      auraBalance: firestoreData.auraPoints,
-      dailyActivity: firestoreData.dailyActivity,
-      reviewQueue: firestoreData.reviewQueue,
-      userTeam: firestoreData.userTeam,
-      tutorialState: firestoreData.tutorialState,
-      updatedAt: firestoreData.updatedAt
+      profile: g.profile,
+      creatures: g.creatures,
+      activeCreature: { creatureId: g.activeCreatureId },
+      auraBalance: g.auraPoints ?? g.auraBalance,
+      dailyActivity: g.dailyActivity,
+      reviewQueue: g.reviewQueue,
+      userTeam: g.userTeam,
+      tutorialState: g.tutorialState,
+      updatedAt: g.updatedAt
     };
+  };
+
+  const normaliseFirestore = (d: any) => {
+    if (!d || !d.profile) return null;
+    return {
+      profile: d.profile,
+      creatures: d.creatures,
+      activeCreature: { creatureId: d.activeCreatureId },
+      auraBalance: d.auraPoints,
+      dailyActivity: d.dailyActivity,
+      reviewQueue: d.reviewQueue,
+      userTeam: d.userTeam,
+      tutorialState: d.tutorialState,
+      updatedAt: d.updatedAt
+    };
+  };
+
+  const fs = normaliseFirestore(firestoreData);
+  const be = normaliseBackend(backendData);
+
+  if (fs && be) {
+    const fsTime = new Date(fs.updatedAt || 0).getTime();
+    const beTime = new Date(be.updatedAt || 0).getTime();
+    console.log(`[Sync] Firestore: ${fs.updatedAt} | Backend: ${be.updatedAt}`);
+    return fsTime >= beTime ? fs : be;
   }
 
-  if (backendData) {
-    console.log('Using Render Backend data (Firestore was empty)');
-    return backendData;
+  if (fs) {
+    console.log('[Sync] Using Firestore data (backend unavailable)');
+    return fs;
+  }
+
+  if (be) {
+    console.log('[Sync] Using Render backend data (Firestore empty)');
+    return be;
   }
 
   return null;
 }
 
-/**
- * Update mission completion status
- */
+// ─────────────────────────────────────────────────────────────
+// MIGRATION & OTHER HELPERS
+// ─────────────────────────────────────────────────────────────
+
 export async function updateMissionCompletion(
   completed: boolean,
   authToken: string
@@ -261,26 +289,20 @@ export async function updateMissionCompletion(
       throw new Error(`Failed to update mission: ${response.statusText}`);
     }
 
-    const data = await response.json();
-    return data;
+    return await response.json();
   } catch (error) {
     console.error('Error updating mission completion:', error);
     throw error;
   }
 }
 
-/**
- * Update email notification preferences
- */
 export async function updateEmailPreferences(
   preferences: Partial<EmailPreferences>,
   timezone?: string,
   authToken?: string
 ): Promise<any> {
   try {
-    if (!authToken) {
-      throw new Error('Auth token required');
-    }
+    if (!authToken) throw new Error('Auth token required');
 
     const response = await fetch(`${API_URL}/game-data/preferences`, {
       method: 'PATCH',
@@ -294,28 +316,20 @@ export async function updateEmailPreferences(
       })
     });
 
-    if (!response.ok) {
-      throw new Error(`Failed to update preferences: ${response.statusText}`);
-    }
+    if (!response.ok) throw new Error(`Failed to update preferences: ${response.statusText}`);
 
-    const data = await response.json();
-    console.log('Preferences updated:', data);
-    return data;
+    return await response.json();
   } catch (error) {
     console.error('Error updating preferences:', error);
     throw error;
   }
 }
 
-/**
- * One-time migration of localStorage data to MongoDB
- */
 export async function migrateLocalStorageToBackend(
   userId: string,
   authToken: string
 ): Promise<boolean> {
   try {
-    // Get all localStorage data
     const userProfile = JSON.parse(localStorage.getItem(`aura_${userId}_userProfile`) || '{}');
     const creatures = JSON.parse(localStorage.getItem(`aura_${userId}_userCreatures`) || '[]');
     const activeCreatureId = JSON.parse(localStorage.getItem(`aura_${userId}_activeCreatureId`) || 'null');
@@ -325,13 +339,12 @@ export async function migrateLocalStorageToBackend(
     const userTeam = JSON.parse(localStorage.getItem(`aura_${userId}_userTeam`) || '[]');
     const tutorialState = JSON.parse(localStorage.getItem(`aura_${userId}_tutorialState`) || 'null');
 
-    // Only migrate if we have data
     if (!userProfile || Object.keys(userProfile).length === 0) {
-      console.log('No localStorage data to migrate');
+      console.log('[Migration] No localStorage data to migrate');
       return false;
     }
 
-    console.log('Migrating localStorage data...');
+    console.log('[Migration] Migrating localStorage data to cloud...');
     await syncGameDataToBackend(
       userProfile,
       creatures,
@@ -344,10 +357,10 @@ export async function migrateLocalStorageToBackend(
       authToken
     );
 
-    console.log('Migration complete!');
+    console.log('[Migration] Complete!');
     return true;
   } catch (error) {
-    console.error('Error during migration:', error);
+    console.error('[Migration] Error:', error);
     return false;
   }
 }

@@ -9,6 +9,25 @@ const router = Router();
 // Middleware to ensure user is authenticated
 router.use(authMiddleware);
 
+// NDA compliance guard - requires signed NDA before accessing game data
+router.use(async (req: AuthenticatedRequest, res: Response, next) => {
+    try {
+        const user = await User.findById(req.user?.id).select('ndaCompliance').lean();
+        if (user?.ndaCompliance?.hasSigned !== true) {
+            res.status(403).json({
+                code: 'NDA_NOT_SIGNED',
+                message: 'NDA acceptance required before accessing game data'
+            });
+            return;
+        }
+        next();
+    } catch (error) {
+        console.error('NDA guard error:', error);
+        res.status(500).json({ error: 'Internal server error' });
+        return;
+    }
+});
+
 /**
  * POST /api/game-data/sync
  * Sync localStorage data to MongoDB (one-time migration or periodic sync)

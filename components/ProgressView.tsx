@@ -955,7 +955,6 @@ const ProgressView: React.FC<ProgressViewProps> = ({ userId, profile, setAuraPoi
                         <span className="text-base">⭐</span>
                         <h2 className="text-[11px] md:text-xs font-bold text-highlight uppercase tracking-widest">Skills of the Day</h2>
                         <span className="text-base">⭐</span>
-                        <span className="ml-auto text-[9px] text-text-dim italic">Resets daily • Your weakest picks</span>
                     </div>
                     <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 md:gap-4">
                         {renderSkillCard(todaysSkills.mathSkill, 0, true)}

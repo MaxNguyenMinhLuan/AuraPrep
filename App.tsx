@@ -16,6 +16,7 @@ import ShopView from './components/ShopView';
 import StreakPopup from './components/StreakPopup';
 import LeaderboardView from './components/LeaderboardView';
 import LoginView from './components/LoginView';
+import NDAModal from './components/NDAModal';
 import ProfileModal from './components/ProfileModal';
 import { generateSatQuestion, loadLocalQuestions } from './services/questionService';
 import { getDifficultyForLevel } from './utils/mastery';
@@ -51,6 +52,13 @@ const App: React.FC = () => {
     const [currentView, setCurrentView] = useState<View>(View.DASHBOARD);
     const [isBossFightActive, setIsBossFightActive] = useState(false);
     const [isCheckingSession, setIsCheckingSession] = useState(true);
+    // True while we are fetching the authoritative cloud copy of the user's
+    // game data.  During this time the UI shows a loading spinner so that
+    // the stale localStorage copy is never rendered instead of cloud data.
+    const [isHydrating, setIsHydrating] = useState(false);
+    // NDA compliance gate
+    const [ndaAccepted, setNdaAccepted] = useState(false);
+    const [isCheckingNda, setIsCheckingNda] = useState(false);
     const [baselineResults, setBaselineResults] = useState<any>(null);
     const [isProfileOpen, setIsProfileOpen] = useState(false);
     const [headerImageError, setHeaderImageError] = useState(false);
@@ -211,46 +219,107 @@ const App: React.FC = () => {
 
     const hasHydratedRef = React.useRef(false);
 
+    // Check NDA compliance status after login
+    useEffect(() => {
+        if (!user || isCheckingSession) {
+            setNdaAccepted(false);
+            return;
+        }
+        const checkNda = async () => {
+            setIsCheckingNda(true);
+            try {
+                const token = await AuthService.getAuthToken();
+                if (!token) { setIsCheckingNda(false); return; }
+                const API_URL = import.meta.env.VITE_API_URL || 'http://localhost:5001/api';
+                const response = await fetch(`${API_URL}/v1/compliance/status`, {
+                    headers: { 'Authorization': `Bearer ${token}` }
+                });
+                if (response.ok) {
+                    const data = await response.json();
+                    setNdaAccepted(data?.data?.ndaCompliance?.hasSigned === true);
+                } else {
+                    setNdaAccepted(false);
+                }
+            } catch (err) {
+                console.error('NDA status check failed:', err);
+                setNdaAccepted(false);
+            } finally {
+                setIsCheckingNda(false);
+            }
+        };
+        checkNda();
+    }, [user?.uid, isCheckingSession]);
+
+    const handleNdaAccept = async (legalName: string, version: string) => {
+        const token = await AuthService.getAuthToken();
+        if (!token) throw new Error('Not authenticated');
+        const API_URL = import.meta.env.VITE_API_URL || 'http://localhost:5001/api';
+        const response = await fetch(`${API_URL}/v1/compliance/sign-nda`, {
+            method: 'POST',
+            headers: {
+                'Authorization': `Bearer ${token}`,
+                'Content-Type': 'application/json'
+            },
+            body: JSON.stringify({ legalName, versionAccepted: version })
+        });
+        if (!response.ok) {
+            const errData = await response.json().catch(() => ({}));
+            throw new Error(errData?.error?.message || 'Failed to submit NDA');
+        }
+        setNdaAccepted(true);
+    };
+
+    const handleNdaDecline = async () => {
+        await AuthService.logout();
+        setUser(null);
+        setNdaAccepted(false);
+    };
+
+    // Reset hydration flag whenever the logged-in user changes
     useEffect(() => {
         if (!user) {
             hasHydratedRef.current = false;
+            setIsHydrating(false);
         }
     }, [user?.uid]);
 
-    // Sync game data to backend on user login
+    // On login: fetch the authoritative cloud copy BEFORE the app renders.
+    // We show a loading spinner during this time so stale localStorage data
+    // is never presented to the user as if it were their real progress.
     useEffect(() => {
         if (!user || isCheckingSession) return;
         if (hasHydratedRef.current) return;
 
-
-
         const syncData = async () => {
+            setIsHydrating(true);
             try {
                 const token = await AuthService.getAuthToken();
-                if (!token) return;
-
-                const backendData = await fetchGameData(token);
-                if (backendData && backendData.profile) {
-                    // Hydrate local state from backend
-                    setProfile(backendData.profile);
-                    if (backendData.creatures) setCreatures(backendData.creatures);
-                    if (backendData.activeCreature?.creatureId !== undefined) setActiveCreatureId(backendData.activeCreature.creatureId);
-                    if (backendData.auraBalance !== undefined) setAuraPoints(backendData.auraBalance);
-                    if (backendData.dailyActivity) setDailyActivity(backendData.dailyActivity);
-                    if (backendData.reviewQueue) setReviewQueue(backendData.reviewQueue);
-                    if (backendData.userTeam) setUserTeam(backendData.userTeam);
-                    if (backendData.tutorialState) setTutorialState(backendData.tutorialState);
-                    
-                    if (backendData.updatedAt) {
-                        lastSyncedAtRef.current = backendData.updatedAt;
-                    }
-                    
+                if (!token) {
                     hasHydratedRef.current = true;
+                    setIsHydrating(false);
+                    return;
+                }
+
+                const cloudData = await fetchGameData(token);
+                if (cloudData && cloudData.profile) {
+                    // ✅ Overwrite local state with authoritative cloud data
+                    setProfile(cloudData.profile);
+                    if (cloudData.creatures) setCreatures(cloudData.creatures);
+                    if (cloudData.activeCreature?.creatureId !== undefined) setActiveCreatureId(cloudData.activeCreature.creatureId);
+                    if (cloudData.auraBalance !== undefined) setAuraPoints(cloudData.auraBalance);
+                    if (cloudData.dailyActivity) setDailyActivity(cloudData.dailyActivity);
+                    if (cloudData.reviewQueue) setReviewQueue(cloudData.reviewQueue);
+                    if (cloudData.userTeam) setUserTeam(cloudData.userTeam);
+                    if (cloudData.tutorialState) setTutorialState(cloudData.tutorialState);
+                    if (cloudData.updatedAt) lastSyncedAtRef.current = cloudData.updatedAt;
+                    console.log('[Hydration] Cloud data loaded successfully ✓');
                 } else {
-                    // Try to migrate localStorage data on first login if backend has no profile
+                    // No cloud data — new user or first-ever login.
+                    // Try to push whatever is in localStorage up to the cloud.
                     const migrated = await migrateLocalStorageToBackend(user.uid, token);
                     if (!migrated) {
-                        // If no localStorage data to migrate, just sync current empty state
+                        // Fresh account: push the blank initial state so the
+                        // cloud record exists for future cross-device loads.
                         const initialSync = await syncGameDataToBackend(
                             profile,
                             creatures,
@@ -266,11 +335,14 @@ const App: React.FC = () => {
                             lastSyncedAtRef.current = initialSync.gameData.updatedAt;
                         }
                     }
-                    hasHydratedRef.current = true;
+                    console.log('[Hydration] No cloud data — using local / fresh state.');
                 }
             } catch (error) {
-                console.error('Failed to sync game data:', error);
-                // Continue app operation even if sync fails
+                console.error('[Hydration] Failed:', error);
+                // Continue app operation even if cloud sync fails
+            } finally {
+                hasHydratedRef.current = true;
+                setIsHydrating(false);
             }
         };
 
@@ -1469,6 +1541,29 @@ const App: React.FC = () => {
 
     if (!user) {
         return <LoginView onLogin={setUser} />;
+    }
+
+    // Show NDA compliance spinner
+    if (isCheckingNda) {
+        return (
+            <div className="min-h-screen w-full flex items-center justify-center bg-background">
+                <div className="text-center space-y-4">
+                    <div className="w-16 h-16 border-4 border-primary border-t-transparent rounded-full animate-spin mx-auto"></div>
+                    <p className="text-sm text-text-dim">Verifying compliance status...</p>
+                </div>
+            </div>
+        );
+    }
+
+    // NDA gate — must sign before accessing the app
+    if (!ndaAccepted) {
+        return (
+            <NDAModal
+                user={user}
+                onAccept={handleNdaAccept}
+                onDecline={handleNdaDecline}
+            />
+        );
     }
 
     return (

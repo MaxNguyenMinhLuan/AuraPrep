@@ -58,6 +58,15 @@ export interface AuthResponseData {
     isNewUser?: boolean;
 }
 
+export interface INdaCompliance {
+    hasSigned: boolean;
+    legalName?: string;
+    signedVersion?: string;
+    timestamp?: Date;
+    ipAddress?: string;
+    clientUserAgent?: string;
+}
+
 export interface IUser {
     _id: mongoose.Types.ObjectId;
     email: string;
@@ -73,6 +82,7 @@ export interface IUser {
     lastLoginAt: Date;
     timezone?: string;
     emailNotificationsEnabled?: boolean;
+    ndaCompliance?: INdaCompliance;
 }
 
 export interface IRefreshToken {

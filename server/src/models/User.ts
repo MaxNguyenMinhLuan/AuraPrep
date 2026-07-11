@@ -54,6 +54,28 @@ const UserSchema = new Schema<UserDocument>({
     emailNotificationsEnabled: {
         type: Boolean,
         default: true
+    },
+    ndaCompliance: {
+        hasSigned: {
+            type: Boolean,
+            default: false
+        },
+        legalName: {
+            type: String,
+            trim: true
+        },
+        signedVersion: {
+            type: String
+        },
+        timestamp: {
+            type: Date
+        },
+        ipAddress: {
+            type: String
+        },
+        clientUserAgent: {
+            type: String
+        }
     }
 }, {
     timestamps: true

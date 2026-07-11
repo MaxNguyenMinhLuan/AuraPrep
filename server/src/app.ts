@@ -9,6 +9,7 @@ import gameDataRoutes from './routes/gameData';
 import analyticsRoutes from './routes/analytics';
 import analyticsApiRoutes from './routes/analytics-api.routes';
 import questionsRoutes from './routes/questions.routes';
+import complianceRoutes from './routes/compliance.routes';
 import { ApiResponse } from './types';
 
 const app: Express = express();
@@ -97,6 +98,9 @@ app.use('/api/analytics', analyticsApiRoutes);
 
 // Analytics routes (email-metrics, etc - requires auth)
 app.use('/api/analytics', analyticsRoutes);
+
+// Compliance routes
+app.use('/api/v1/compliance', complianceRoutes);
 
 // 404 handler
 app.use((_req: Request, res: Response) => {
