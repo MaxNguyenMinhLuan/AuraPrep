@@ -885,6 +885,7 @@ const App: React.FC = () => {
                             consumePowerUp={(type) => setProfile(p => ({...p, inventory: {...p.inventory, [type]: Math.max(0, (p.inventory[type] || 0) - 1)}}))}
                             addToReviewQueue={addToReviewQueue}
                             awardAura={awardAura}
+                            addXpToActiveCreature={addXpToActiveCreature}
                             setIsBossFightActive={setIsBossFightActive}
                         />;
             case View.LEADERBOARD:
@@ -1316,7 +1317,7 @@ const App: React.FC = () => {
             case 'progress-tour':
                 return (
                     <PikachuGuide
-                        message={TUTORIAL_DIALOGUE.progressTour.intro + '\n\n' + TUTORIAL_DIALOGUE.progressTour.tutorialSkill}
+                        message={"Welcome to Progress! Here's how it works:\n\n🏋️ PRACTICE: Pick any skill and drill questions at your level. Every 3 correct answers in a row = +50 Aura. Exiting early? You keep partial streak rewards!\n\n⚔️ BOSS FIGHT: Win a 10-question fight to LEVEL UP the skill — from Easy → Medium → Hard → Master. Beating a boss earns Aura + Guardian XP. You can bring up to 2 power-ups into each fight.\n\n💡 I've added a special Tutorial skill for you to try first!"}
                         onNext={handleProgressTourComplete}
                         buttonText="Start Tutorial Practice"
                         position="top"

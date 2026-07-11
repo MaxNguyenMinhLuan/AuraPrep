@@ -48,6 +48,7 @@ interface ProgressViewProps {
     consumePowerUp: (type: PowerUpType) => void;
     addToReviewQueue: (question: Question) => void;
     awardAura: (amount: number) => void;
+    addXpToActiveCreature: (xp: number) => void;
     setIsBossFightActive?: (isActive: boolean) => void;
 }
 
@@ -59,7 +60,9 @@ const PracticeSession: React.FC<{
     updateProfile: (subtopic: string, isCorrect: boolean) => void;
     onStreakComplete: () => void;
     onExit: () => void;
-}> = ({ subtopic, profile, updateProfile, onStreakComplete, onExit }) => {
+    awardAura: (amount: number) => void;
+    awardXp: (xp: number) => void;
+}> = ({ subtopic, profile, updateProfile, onStreakComplete, onExit, awardAura, awardXp }) => {
     const [currentQuestion, setCurrentQuestion] = useState<Question | null>(null);
     const [nextQuestion, setNextQuestion] = useState<Question | null>(null);
     const [isLoading, setIsLoading] = useState(true);
@@ -148,7 +151,14 @@ const PracticeSession: React.FC<{
                 </div>
             )}
             <div className="mb-3 md:mb-4 flex justify-between items-center">
-                <button onClick={onExit} className="text-text-dim hover:text-highlight active:text-highlight flex items-center gap-2 p-2 -ml-2 touch-target">&larr; Back</button>
+                <button onClick={() => {
+                    // Save partial streak progress on exit
+                    if (streak > 0) {
+                        awardAura(streak * 10);
+                        awardXp(streak * 5);
+                    }
+                    onExit();
+                }} className="text-text-dim hover:text-highlight active:text-highlight flex items-center gap-2 p-2 -ml-2 touch-target">← Back</button>
                  <p className="text-primary font-bold text-sm md:text-base">Streak: {'🔥'.repeat(streak)}{'⚫'.repeat(3 - streak)}</p>
             </div>
  
@@ -678,7 +688,7 @@ const LevelUpAnimation: React.FC<{
 
 //--- MAIN COMPONENT ---//
 
-const ProgressView: React.FC<ProgressViewProps> = ({ profile, setAuraPoints, updateProfile, levelUpSubtopic, consumePowerUp, addToReviewQueue, awardAura, setIsBossFightActive }) => {
+const ProgressView: React.FC<ProgressViewProps> = ({ profile, setAuraPoints, updateProfile, levelUpSubtopic, consumePowerUp, addToReviewQueue, awardAura, addXpToActiveCreature, setIsBossFightActive }) => {
     const [view, setView] = useState<'list' | 'options' | 'practice' | 'prep' | 'bossFight' | 'levelUp'>('list');
     const [selectedSubtopic, setSelectedSubtopic] = useState<string | null>(null);
     const [lastLevelUpInfo, setLastLevelUpInfo] = useState<{ from: SkillLevel, to: SkillLevel } | null>(null);
@@ -744,8 +754,10 @@ const ProgressView: React.FC<ProgressViewProps> = ({ profile, setAuraPoints, upd
             const nextLevel = getNextLevel(currentLevel);
             if (nextLevel) {
                 levelUpSubtopic(selectedSubtopic, nextLevel);
-                const reward = nextLevel === 'Master' ? 1000 : 500;
-                awardAura(reward);
+                const auraReward = nextLevel === 'Master' ? 1000 : 500;
+                const xpReward = nextLevel === 'Master' ? 200 : 150;
+                awardAura(auraReward);
+                addXpToActiveCreature(xpReward);
                 setLastLevelUpInfo({ from: currentLevel, to: nextLevel });
                 setView('levelUp');
             }
@@ -795,6 +807,8 @@ const ProgressView: React.FC<ProgressViewProps> = ({ profile, setAuraPoints, upd
                 updateProfile={updateProfile}
                 onStreakComplete={handleStreakComplete}
                 onExit={() => setView('options')}
+                awardAura={awardAura}
+                awardXp={addXpToActiveCreature}
             />;
     }
 
@@ -816,7 +830,7 @@ const ProgressView: React.FC<ProgressViewProps> = ({ profile, setAuraPoints, upd
                      <button onClick={() => setView('prep')} disabled={!nextLevel} className="w-full text-left p-6 bg-surface hover:bg-secondary border-b-4 border-secondary/50 transition-colors duration-200 disabled:opacity-50 disabled:cursor-not-allowed rounded-lg shadow-md group">
                         <h3 className="text-xl font-bold text-accent mb-2">Boss Fight</h3>
                         {nextLevel ? (
-                             <p className="text-sm text-text-dim">Level up from <span className="font-bold">{currentLevel}</span> to <span className="font-bold">{nextLevel}</span>. Reward: {nextLevel === 'Master' ? 1000 : 500} Aura.</p>
+                             <p className="text-sm text-text-dim">Level up from <span className="font-bold">{currentLevel}</span> to <span className="font-bold">{nextLevel}</span>. Win to earn <span className="font-bold text-primary">{nextLevel === 'Master' ? 1000 : 500} Aura</span> + <span className="font-bold text-success">{nextLevel === 'Master' ? 200 : 150} Guardian XP</span>.</p>
                         ) : (
                              <p className="text-sm text-text-dim">You have mastered this skill!</p>
                         )}
