@@ -1,0 +1,26 @@
+rules_version = '2';
+service cloud.firestore {
+  match /databases/{database}/documents {
+
+    // Allowlist: readable by any authenticated user (for login gate check)
+    match /allowlist/{email} {
+      allow read: if request.auth != null;
+      allow write: if false; // admin only via console
+    }
+
+    // NDA compliance: each user can only read/write their own record
+    match /ndaCompliance/{uid} {
+      allow read, write: if request.auth != null && request.auth.uid == uid;
+    }
+
+    // Game data: each user owns their own document
+    match /userData/{uid} {
+      allow read, write: if request.auth != null && request.auth.uid == uid;
+    }
+
+    // Deny everything else
+    match /{document=**} {
+      allow read, write: if false;
+    }
+  }
+}

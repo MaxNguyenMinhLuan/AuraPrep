@@ -16,7 +16,7 @@ import ShopView from './components/ShopView';
 import StreakPopup from './components/StreakPopup';
 import LeaderboardView from './components/LeaderboardView';
 import LoginView from './components/LoginView';
-import NDAModal, { checkNdaInFirestore } from './components/NDAModal';
+import NDAModal, { checkNdaSigned } from './components/NDAModal';
 import ProfileModal from './components/ProfileModal';
 import { generateSatQuestion, loadLocalQuestions } from './services/questionService';
 import { getDifficultyForLevel } from './utils/mastery';
@@ -219,27 +219,21 @@ const App: React.FC = () => {
 
     const hasHydratedRef = React.useRef(false);
 
-    // Check NDA compliance status after login — reads directly from Firestore, no backend needed
+    // Check NDA compliance status after login — reads from localStorage (instant, no permissions needed)
     useEffect(() => {
         if (!user || isCheckingSession) {
             setNdaAccepted(false);
             return;
         }
-        const checkNda = async () => {
-            setIsCheckingNda(true);
-            try {
-                const uid = user.uid;
-                if (!uid) { setNdaAccepted(false); return; }
-                const signed = await checkNdaInFirestore(uid);
-                setNdaAccepted(signed);
-            } catch (err) {
-                console.error('NDA Firestore check failed:', err);
-                setNdaAccepted(false);
-            } finally {
-                setIsCheckingNda(false);
-            }
-        };
-        checkNda();
+        setIsCheckingNda(true);
+        try {
+            const signed = checkNdaSigned(user.uid);
+            setNdaAccepted(signed);
+        } catch {
+            setNdaAccepted(false);
+        } finally {
+            setIsCheckingNda(false);
+        }
     }, [user?.uid, isCheckingSession]);
 
     // NDA is now stored in Firestore inside NDAModal before this callback fires.
