@@ -16,7 +16,7 @@ import ShopView from './components/ShopView';
 import StreakPopup from './components/StreakPopup';
 import LeaderboardView from './components/LeaderboardView';
 import LoginView from './components/LoginView';
-import NDAModal from './components/NDAModal';
+import NDAModal, { checkNdaInFirestore } from './components/NDAModal';
 import ProfileModal from './components/ProfileModal';
 import { generateSatQuestion, loadLocalQuestions } from './services/questionService';
 import { getDifficultyForLevel } from './utils/mastery';
@@ -219,7 +219,7 @@ const App: React.FC = () => {
 
     const hasHydratedRef = React.useRef(false);
 
-    // Check NDA compliance status after login
+    // Check NDA compliance status after login — reads directly from Firestore, no backend needed
     useEffect(() => {
         if (!user || isCheckingSession) {
             setNdaAccepted(false);
@@ -228,33 +228,12 @@ const App: React.FC = () => {
         const checkNda = async () => {
             setIsCheckingNda(true);
             try {
-                // Try Firebase token first, fall back to stored JWT
-                let token = await AuthService.getAuthToken();
-                if (!token) {
-                    const storedUser = localStorage.getItem('aura_current_user');
-                    if (storedUser) {
-                        try { token = JSON.parse(storedUser)?.accessToken ?? null; } catch {}
-                    }
-                }
-                if (!token) {
-                    // No token available yet — treat as unsigned rather than erroring
-                    setNdaAccepted(false);
-                    setIsCheckingNda(false);
-                    return;
-                }
-                const API_URL = import.meta.env.VITE_API_URL || 'http://localhost:5001/api';
-                const response = await fetch(`${API_URL}/compliance/status`, {
-                    headers: { 'Authorization': `Bearer ${token}` }
-                });
-                if (response.ok) {
-                    const data = await response.json();
-                    setNdaAccepted(data?.data?.ndaCompliance?.hasSigned === true);
-                } else {
-                    console.warn('NDA status check returned', response.status);
-                    setNdaAccepted(false);
-                }
+                const uid = user.uid;
+                if (!uid) { setNdaAccepted(false); return; }
+                const signed = await checkNdaInFirestore(uid);
+                setNdaAccepted(signed);
             } catch (err) {
-                console.error('NDA status check failed:', err);
+                console.error('NDA Firestore check failed:', err);
                 setNdaAccepted(false);
             } finally {
                 setIsCheckingNda(false);
@@ -263,36 +242,9 @@ const App: React.FC = () => {
         checkNda();
     }, [user?.uid, isCheckingSession]);
 
-    const handleNdaAccept = async (legalName: string, version: string) => {
-        // Try Firebase token first, then fall back to stored JWT
-        let token = await AuthService.getAuthToken();
-        if (!token) {
-            try {
-                const storedUser = localStorage.getItem('aura_current_user');
-                if (storedUser) token = JSON.parse(storedUser)?.accessToken ?? null;
-            } catch {}
-        }
-        if (!token) throw new Error('Session expired. Please log in again.');
-        const API_URL = import.meta.env.VITE_API_URL || 'http://localhost:5001/api';
-        let response: Response;
-        try {
-            response = await fetch(`${API_URL}/compliance/sign-nda`, {
-                method: 'POST',
-                headers: {
-                    'Authorization': `Bearer ${token}`,
-                    'Content-Type': 'application/json'
-                },
-                body: JSON.stringify({ legalName, versionAccepted: version })
-            });
-        } catch (networkErr: any) {
-            console.error('NDA sign fetch failed (network):', networkErr);
-            throw new Error('Network error — please check your connection and try again.');
-        }
-        if (!response.ok) {
-            const errData = await response.json().catch(() => ({}));
-            const msg = errData?.error?.message || errData?.message || `Server error ${response.status}`;
-            throw new Error(msg);
-        }
+    // NDA is now stored in Firestore inside NDAModal before this callback fires.
+    // Just update local state here.
+    const handleNdaAccept = async (_legalName: string, _version: string) => {
         setNdaAccepted(true);
     };
 

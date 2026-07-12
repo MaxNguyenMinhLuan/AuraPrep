@@ -157,6 +157,10 @@ class AuthServiceClass {
                 'christina.teng17@gmail.com',
                 'allisonmandreyev@gmail.com',
                 'justin.eunho.joung@gmail.com',
+                'codychen380@gmail.com',
+                'allenchen081116@gmail.com',
+                'mollytranbrinker@gmail.com',
+                'cjarthus239@gmail.com',
                 'maxmakesmusics@gmail.com'
             ];
             if (whitelist.includes(lowercaseEmail)) {
