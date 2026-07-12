@@ -100,7 +100,7 @@ app.use('/api/analytics', analyticsApiRoutes);
 app.use('/api/analytics', analyticsRoutes);
 
 // Compliance routes
-app.use('/api/v1/compliance', complianceRoutes);
+app.use('/api/compliance', complianceRoutes);
 
 // 404 handler
 app.use((_req: Request, res: Response) => {

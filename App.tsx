@@ -228,16 +228,29 @@ const App: React.FC = () => {
         const checkNda = async () => {
             setIsCheckingNda(true);
             try {
-                const token = await AuthService.getAuthToken();
-                if (!token) { setIsCheckingNda(false); return; }
+                // Try Firebase token first, fall back to stored JWT
+                let token = await AuthService.getAuthToken();
+                if (!token) {
+                    const storedUser = localStorage.getItem('aura_current_user');
+                    if (storedUser) {
+                        try { token = JSON.parse(storedUser)?.accessToken ?? null; } catch {}
+                    }
+                }
+                if (!token) {
+                    // No token available yet — treat as unsigned rather than erroring
+                    setNdaAccepted(false);
+                    setIsCheckingNda(false);
+                    return;
+                }
                 const API_URL = import.meta.env.VITE_API_URL || 'http://localhost:5001/api';
-                const response = await fetch(`${API_URL}/v1/compliance/status`, {
+                const response = await fetch(`${API_URL}/compliance/status`, {
                     headers: { 'Authorization': `Bearer ${token}` }
                 });
                 if (response.ok) {
                     const data = await response.json();
                     setNdaAccepted(data?.data?.ndaCompliance?.hasSigned === true);
                 } else {
+                    console.warn('NDA status check returned', response.status);
                     setNdaAccepted(false);
                 }
             } catch (err) {
@@ -251,20 +264,34 @@ const App: React.FC = () => {
     }, [user?.uid, isCheckingSession]);
 
     const handleNdaAccept = async (legalName: string, version: string) => {
-        const token = await AuthService.getAuthToken();
-        if (!token) throw new Error('Not authenticated');
+        // Try Firebase token first, then fall back to stored JWT
+        let token = await AuthService.getAuthToken();
+        if (!token) {
+            try {
+                const storedUser = localStorage.getItem('aura_current_user');
+                if (storedUser) token = JSON.parse(storedUser)?.accessToken ?? null;
+            } catch {}
+        }
+        if (!token) throw new Error('Session expired. Please log in again.');
         const API_URL = import.meta.env.VITE_API_URL || 'http://localhost:5001/api';
-        const response = await fetch(`${API_URL}/v1/compliance/sign-nda`, {
-            method: 'POST',
-            headers: {
-                'Authorization': `Bearer ${token}`,
-                'Content-Type': 'application/json'
-            },
-            body: JSON.stringify({ legalName, versionAccepted: version })
-        });
+        let response: Response;
+        try {
+            response = await fetch(`${API_URL}/compliance/sign-nda`, {
+                method: 'POST',
+                headers: {
+                    'Authorization': `Bearer ${token}`,
+                    'Content-Type': 'application/json'
+                },
+                body: JSON.stringify({ legalName, versionAccepted: version })
+            });
+        } catch (networkErr: any) {
+            console.error('NDA sign fetch failed (network):', networkErr);
+            throw new Error('Network error — please check your connection and try again.');
+        }
         if (!response.ok) {
             const errData = await response.json().catch(() => ({}));
-            throw new Error(errData?.error?.message || 'Failed to submit NDA');
+            const msg = errData?.error?.message || errData?.message || `Server error ${response.status}`;
+            throw new Error(msg);
         }
         setNdaAccepted(true);
     };
