@@ -10,13 +10,18 @@ interface FormattedTextProps {
 }
 
 const FormattedText: React.FC<FormattedTextProps> = ({ text, className = '' }) => {
+    // Standardize all carriage returns, then replace any single newlines that aren't already part of a double newline
+    const doubleSpacedText = text
+        .replace(/\r\n/g, '\n')
+        .replace(/(?<!\n)\n(?!\n)/g, '\n\n');
+
     return (
         <div className={`formatted-text leading-relaxed select-text ${className}`}>
             <ReactMarkdown
                 remarkPlugins={[remarkGfm, remarkMath]}
                 rehypePlugins={[rehypeKatex]}
             >
-                {text}
+                {doubleSpacedText}
             </ReactMarkdown>
         </div>
     );
