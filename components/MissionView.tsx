@@ -57,6 +57,7 @@ const MissionView: React.FC<MissionViewProps> = ({ mission, onAnswer, onExit, in
 
     const handleNext = useCallback(() => {
         if (isCorrect === null) return;
+        setIsResetting(false);
         onAnswer(mission.id, isCorrect);
     }, [isCorrect, mission.id, onAnswer]);
 

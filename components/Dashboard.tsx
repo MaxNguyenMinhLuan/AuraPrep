@@ -125,7 +125,10 @@ const Dashboard: React.FC<DashboardProps> = ({
                             <div className="relative transform lg:scale-125 transition-premium hover:scale-[1.02] lg:hover:scale-[1.28]">
                                  <CreatureCard instance={activeCreatureInstance} isLarge={true} />
                                  {reviewQueueCount > 0 && (
-                                     <div className="absolute -top-4 -right-4 bg-accent text-white rounded-full w-8 h-8 flex items-center justify-center text-sm font-bold animate-gentleBounce shadow-glow-success border-2 border-white">
+                                     <div 
+                                         title={`You have ${reviewQueueCount} incorrect question(s) in your training queue. Click "Training" below to review them and level up your Auramon!`}
+                                         className="absolute -top-4 -right-4 bg-accent text-white rounded-full w-8 h-8 flex items-center justify-center text-sm font-bold animate-gentleBounce shadow-glow-success border-2 border-white cursor-help"
+                                     >
                                          !
                                      </div>
                                   )}

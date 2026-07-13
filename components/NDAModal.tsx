@@ -106,8 +106,8 @@ const NDAModal: React.FC<NDAModalProps> = ({ user, onAccept, onDecline }) => {
     };
 
     return (
-        <div className="fixed inset-0 z-[100] flex items-center justify-center p-2 sm:p-4 bg-black/70 backdrop-blur-md animate-fadeIn">
-            <div className="bg-surface w-full max-w-[95vw] sm:max-w-2xl lg:max-w-3xl rounded-2xl shadow-2xl border-2 border-secondary overflow-hidden animate-reveal flex flex-col max-h-[95vh] sm:max-h-[90vh]">
+        <div className="fixed inset-0 z-[100] flex items-center justify-center p-4 bg-black/60 backdrop-blur-sm animate-fadeIn">
+            <div className="bg-surface w-full max-w-lg rounded-2xl shadow-2xl border-2 border-secondary overflow-hidden animate-reveal flex flex-col max-h-[85vh]">
 
                 {/* ─── Header ─── */}
                 <div className="bg-primary p-4 sm:p-5 text-center flex-shrink-0">
