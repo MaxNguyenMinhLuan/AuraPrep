@@ -10,10 +10,15 @@ interface FormattedTextProps {
 }
 
 const FormattedText: React.FC<FormattedTextProps> = ({ text, className = '' }) => {
-    // Standardize all carriage returns, then replace any single newlines that aren't already part of a double newline
-    const doubleSpacedText = text
-        .replace(/\r\n/g, '\n')
-        .replace(/(?<!\n)\n(?!\n)/g, '\n\n');
+    // Protect LaTeX block math from being double spaced, which breaks remark-math
+    const parts = text.split(/(\$\$[\s\S]*?\$\$)/);
+    const doubleSpacedText = parts.map(part => {
+        if (part.startsWith('$$') && part.endsWith('$$')) {
+            return part; // Leave math blocks exactly as they are
+        }
+        // Standardize carriage returns and replace single newlines with double newlines
+        return part.replace(/\r\n/g, '\n').replace(/(?<!\n)\n(?!\n)/g, '\n\n');
+    }).join('');
 
     return (
         <div className={`formatted-text leading-relaxed select-text font-medium ${className}`}>
