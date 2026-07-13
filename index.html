@@ -15,9 +15,15 @@
     <script src="https://cdn.tailwindcss.com"></script>
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=Playfair+Display:wght@700&family=Press+Start+2P&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=Playfair+Display:wght@700&family=Press+Start+2P&family=VT323&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/katex@0.16.8/dist/katex.min.css">
     <style>
+        @font-face {
+            font-family: 'Terminal Grotesque';
+            src: url('https://fontlibrary.org/face/terminal-grotesque') format('truetype');
+            font-weight: normal;
+            font-style: normal;
+        }
         :root {
             --color-background: #f3f4f6;
             --color-surface: #ffffff;
@@ -50,7 +56,7 @@
                         sans: ['"Press Start 2P"', 'cursive'],
                         serif: ['"Press Start 2P"', 'cursive'],
                         mono: ['"Press Start 2P"', 'cursive'],
-                        clean: ['"Inter"', 'sans-serif'],
+                        clean: ['"Terminal Grotesque"', '"VT323"', '"Inter"', 'sans-serif'],
                     },
                     colors: {
                         'background': 'var(--color-background)',
