@@ -8,6 +8,7 @@ import { INDEXED_QUESTIONS } from '../data/questionBankIndexed';
 import { getStrategyTip } from '../utils/strategyTips';
 import { getSkillsOfTheDay } from '../utils/skillsOfTheDay';
 import LoadingSpinner from './icons/LoadingSpinner';
+import FormattedText from './FormattedText';
 import QuestionGraph from './QuestionGraph';
 import ScissorsIcon from './icons/ScissorsIcon';
 import EyeIcon from './icons/EyeIcon';
