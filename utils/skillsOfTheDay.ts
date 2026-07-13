@@ -46,7 +46,7 @@ export function getSkillsOfTheDay(
     userId: string,
     stats: Record<string, SubtopicStat>
 ): SkillsOfTheDayResult {
-    const today = new Date().toISOString().split('T')[0];
+    const today = new Date().toLocaleDateString('en-CA');
     const storageKey = `sotd_${userId}`;
 
     let stored: {

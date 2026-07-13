@@ -38,7 +38,7 @@ export const generateDailyMissions = (profile: UserProfile): DailyMission[] => {
         const template = missionTemplates[index % missionTemplates.length];
         const safeSubtopicId = subtopic.replace(/[^a-zA-Z0-9]/g, '_');
         return {
-            id: `${safeSubtopicId}_${new Date().toISOString().split('T')[0]}`,
+            id: `${safeSubtopicId}_${new Date().toLocaleDateString('en-CA')}`,
             title: template.title,
             description: `${template.questionCount} ${subtopic} question${template.questionCount > 1 ? 's' : ''}`,
             subtopic: subtopic,

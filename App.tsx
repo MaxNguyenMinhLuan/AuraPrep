@@ -454,7 +454,7 @@ const App: React.FC = () => {
     useEffect(() => {
         if (!user) return;
         const now = new Date();
-        const today = now.toISOString().split('T')[0];
+        const today = now.toLocaleDateString('en-CA');
         
         // Check if user has access to daily missions yet
         const hasDailyMissionsAccess = [
@@ -543,7 +543,7 @@ const App: React.FC = () => {
         } else if (mockCompetitors.length === 0) {
             setMockCompetitors(generateCompetitors(profile.league));
         }
-    }, [dailyActivity.date, profile.lastStreakDate, user, tutorialState.currentPhase]);
+    }, [dailyActivity.date, profile.lastStreakDate, user, tutorialState.currentPhase, currentView]);
 
     // Continuous spawning of missions during onboarding diagnostic phase
     useEffect(() => {
@@ -556,7 +556,7 @@ const App: React.FC = () => {
             
             if (allCompleted) {
                 console.log('Onboarding user completed all missions. Spawning new onboarding/diagnostic missions immediately...');
-                const today = new Date().toISOString().split('T')[0];
+                const today = new Date().toLocaleDateString('en-CA');
                 const newMissions = generateDailyMissions(profile).map(mission => ({
                     ...mission,
                     completed: false,
@@ -746,7 +746,7 @@ const App: React.FC = () => {
         const isNowComplete = !loseAllRewards && newProgress >= mission.questionCount;
         
         if (isNowComplete && !mission.completed) {
-            const today = new Date().toISOString().split('T')[0];
+            const today = new Date().toLocaleDateString('en-CA');
             
             if (profile.lastStreakDate !== today) {
                 const newStreak = profile.dailyStreak + 1;
@@ -1122,7 +1122,7 @@ const App: React.FC = () => {
     // Handle daily missions explainer complete
     const handleDailyMissionsExplained = () => {
         // Generate daily missions and unlock the main flow
-        const today = new Date().toISOString().split('T')[0];
+        const today = new Date().toLocaleDateString('en-CA');
         const newMissions = generateDailyMissions(profile).map(mission => ({
             ...mission,
             completed: false,
