@@ -181,7 +181,7 @@ const PracticeSession: React.FC<{
 
                         {currentQuestion.graphData && <QuestionGraph data={currentQuestion.graphData} />}
 
-                        <p className="text-sm md:text-base mb-6 md:mb-8 whitespace-pre-wrap leading-relaxed">{currentQuestion.question}</p>
+                        <FormattedText className="text-base md:text-lg mb-6 md:mb-8 leading-relaxed font-clean" text={currentQuestion.question} />
                         <div className="space-y-3 md:space-y-4">
                             {currentQuestion.options.map((option, index) => (
                                 <button
@@ -190,7 +190,7 @@ const PracticeSession: React.FC<{
                                     disabled={selectedAnswer !== null}
                                     className={`w-full text-left p-3 md:p-4 transition-all duration-200 rounded-md shadow-sm touch-target text-xs md:text-sm ${getButtonClass(index)}`}
                                 >
-                                    <span className="font-bold mr-2">{String.fromCharCode(65 + index)}.</span> {option}
+                                    <span className="text-xs md:text-sm flex items-start text-left"><span className="font-bold mr-2 text-primary">{String.fromCharCode(65 + index)}.</span> <FormattedText className="inline text-sm md:text-base font-clean" text={option} /></span>
                                 </button>
                             ))}
                         </div>
@@ -528,7 +528,7 @@ const BossFightSession: React.FC<{
                     
                     <div>
                       {currentQuestion.graphData && <QuestionGraph data={currentQuestion.graphData} />}
-                      <p className="text-sm md:text-base mb-8 whitespace-pre-wrap leading-relaxed pt-4">{currentQuestion.question}</p>
+                      <FormattedText className="text-base md:text-lg mb-8 leading-relaxed pt-4 font-clean" text={currentQuestion.question} />
                       {hintVisible && (
                           <div className="mb-6 p-4 bg-highlight/10 border-l-4 border-highlight text-[8px] text-text-main italic rounded-r-md">
                               <span className="font-bold block mb-1">Oracle's Insight:</span> {currentQuestion.explanation.split('.')[0]}...
@@ -554,7 +554,7 @@ const BossFightSession: React.FC<{
                               
                               return (
                                 <button key={index} onClick={() => handleAnswerSelect(index)} disabled={selectedAnswer !== null || disabledOptions.includes(index)} className={btnClass}>
-                                    <span className="mr-2 text-[8px]">{String.fromCharCode(65 + index)}.</span> {option}
+                                    <span className="text-xs md:text-sm flex items-start text-left"><span className="font-bold mr-2 text-primary">{String.fromCharCode(65 + index)}.</span> <FormattedText className="inline text-sm md:text-base font-clean" text={option} /></span>
                                 </button>
                               );
                           })}
