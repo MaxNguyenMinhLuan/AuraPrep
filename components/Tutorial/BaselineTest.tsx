@@ -194,7 +194,7 @@ const BaselineTest: React.FC<BaselineTestProps> = ({ onComplete, onSaveAndExit, 
                         {/* Graph if present */}
                         {currentQuestion.graphData && <QuestionGraph data={currentQuestion.graphData} />}
 
-                        <FormattedText className="text-sm leading-relaxed mb-6" text={currentQuestion.question} />
+                        <FormattedText className="text-sm leading-relaxed mb-6 font-clean" text={currentQuestion.question} />
 
                         {/* Answer Options */}
                         <div className="space-y-3">
@@ -225,7 +225,7 @@ const BaselineTest: React.FC<BaselineTestProps> = ({ onComplete, onSaveAndExit, 
                                     >
                                         <span className="text-xs flex items-start text-left">
                                             <span className="font-bold mr-2">{String.fromCharCode(65 + index)}.</span>
-                                            <FormattedText className="inline" text={option} />
+                                            <FormattedText className="inline font-clean" text={option} />
                                         </span>
                                         {icon && <span className="text-lg ml-2">{icon}</span>}
                                     </button>

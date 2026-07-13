@@ -136,9 +136,10 @@ export const generateSatQuestion = async (subtopic: string, difficulty: Difficul
                 
                 let questionString = q.question.question;
                 if (q.question.paragraph && q.question.paragraph !== 'null') {
-                    questionString = `${q.question.paragraph}\n\n${q.question.question}`;
+                    // Normalize linebreaks and insert double newline before question
+                    questionString = `${q.question.paragraph.trim()}\n\n${q.question.question.trim()}`;
                 }
-                const cleanedQuestion = questionString.replace(/\(Graph shows.*?\)/g, '').trim();
+                let cleanedQuestion = questionString.replace(/\(Graph shows.*?\)/g, '').trim();
                 const legacyGraph = parseLegacyGraphData(questionString);
                 
                 return {
@@ -165,7 +166,12 @@ export const generateSatQuestion = async (subtopic: string, difficulty: Difficul
     if (candidates.length > 0) {
         const randomIndex = Math.floor(Math.random() * candidates.length);
         const dbQuestion = candidates[randomIndex];
-        const cleanedQuestion = dbQuestion.Question.replace(/\(Graph shows.*?\)/g, '').trim();
+        // Ensure "?" and subsequent text have two newlines in database fallback too
+        let cleanedQuestion = dbQuestion.Question.replace(/\(Graph shows.*?\)/g, '').trim();
+        // If there's a question mark followed by text, add a double newline
+        if (cleanedQuestion.includes('?') && !cleanedQuestion.includes('\n')) {
+            cleanedQuestion = cleanedQuestion.replace(/\?\s+([A-Za-z])/, '?\n\n$1');
+        }
         const legacyGraph = parseLegacyGraphData(dbQuestion.Question);
 
         return {
