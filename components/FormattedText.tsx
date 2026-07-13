@@ -16,7 +16,7 @@ const FormattedText: React.FC<FormattedTextProps> = ({ text, className = '' }) =
         .replace(/(?<!\n)\n(?!\n)/g, '\n\n');
 
     return (
-        <div className={`formatted-text leading-relaxed select-text ${className}`}>
+        <div className={`formatted-text leading-relaxed select-text font-medium ${className}`}>
             <ReactMarkdown
                 remarkPlugins={[remarkGfm, remarkMath]}
                 rehypePlugins={[rehypeKatex]}
