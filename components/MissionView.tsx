@@ -167,7 +167,7 @@ const MissionView: React.FC<MissionViewProps> = ({ mission, onAnswer, onExit, in
                   {/* Graphical Content */}
                   {currentQuestion.graphData && <QuestionGraph data={currentQuestion.graphData} />}
 
-                  <FormattedText className="text-sm md:text-base mb-4 md:mb-6 leading-relaxed font-clean" text={currentQuestion.question} />
+                  <FormattedText className="text-base md:text-lg mb-4 md:mb-6 leading-relaxed font-clean" text={currentQuestion.question} />
 
                   <div className="space-y-2 md:space-y-3">
                       {currentQuestion.options.map((option, index) => {
@@ -196,7 +196,7 @@ const MissionView: React.FC<MissionViewProps> = ({ mission, onAnswer, onExit, in
                                 className={buttonClass}
                                 style={{ animationDelay: `${index * 0.05}s` }}
                             >
-                                <span className="text-xs md:text-sm flex items-start text-left"><span className="font-bold mr-2 text-primary">{String.fromCharCode(65 + index)}.</span><FormattedText className="inline font-clean" text={option} /></span>
+                                <span className="text-xs md:text-sm flex items-start text-left"><span className="font-bold mr-2 text-primary">{String.fromCharCode(65 + index)}.</span><FormattedText className="inline text-sm md:text-base font-clean" text={option} /></span>
                                 {icon && <span className="text-base md:text-lg ml-2">{icon}</span>}
                             </button>
                           );

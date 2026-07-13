@@ -102,7 +102,7 @@ const ReviewView: React.FC<ReviewViewProps> = ({ questions, onAnswer, onExit }) 
                   
                   {currentQuestion.graphData && <QuestionGraph data={currentQuestion.graphData} />}
 
-                  <FormattedText className="text-sm md:text-base mb-6 leading-relaxed font-clean" text={currentQuestion.question} />
+                  <FormattedText className="text-base md:text-lg mb-6 leading-relaxed font-clean" text={currentQuestion.question} />
                   <div className="space-y-3">
                       {currentQuestion.options.map((option, index) => {
                           let buttonClass = 'w-full text-left p-3 transition-all duration-200 border-2 flex justify-between items-center rounded-md ';
@@ -129,7 +129,7 @@ const ReviewView: React.FC<ReviewViewProps> = ({ questions, onAnswer, onExit }) 
                                 disabled={selectedAnswer !== null}
                                 className={buttonClass}
                               >
-                                <span className="text-xs md:text-sm flex items-start text-left"><span className="font-bold mr-2">{String.fromCharCode(65 + index)}.</span><FormattedText className="inline font-clean" text={option} /></span>
+                                <span className="text-xs md:text-sm flex items-start text-left"><span className="font-bold mr-2">{String.fromCharCode(65 + index)}.</span><FormattedText className="inline text-sm md:text-base font-clean" text={option} /></span>
                                 {icon && <span className="text-lg ml-2">{icon}</span>}
                             </button>
                           );
