@@ -699,6 +699,14 @@ const ProgressView: React.FC<ProgressViewProps> = ({ userId, profile, setAuraPoi
     const [isLoadingCounts, setIsLoadingCounts] = useState(true);
     const [searchQuery, setSearchQuery] = useState('');
 
+    // Skills of the Day (must be before any early returns)
+    const todaysSkills = useMemo(
+        () => getSkillsOfTheDay(userId, profile.stats),
+        // eslint-disable-next-line react-hooks/exhaustive-deps
+        [userId] // Recompute only when user changes; daily picks are cached in localStorage
+    );
+    const sotdSet = new Set([todaysSkills.mathSkill, todaysSkills.englishSkill]);
+
     useEffect(() => {
         let retryCount = 0;
         const maxRetries = 6;
@@ -851,12 +859,7 @@ const ProgressView: React.FC<ProgressViewProps> = ({ userId, profile, setAuraPoi
     }
 
     // Skills of the Day
-    const todaysSkills = useMemo(
-        () => getSkillsOfTheDay(userId, profile.stats),
-        // eslint-disable-next-line react-hooks/exhaustive-deps
-        [userId] // Recompute only when user changes; daily picks are cached in localStorage
-    );
-    const sotdSet = new Set([todaysSkills.mathSkill, todaysSkills.englishSkill]);
+
 
     const filteredSubtopics = SUBTOPICS.filter(subtopic =>
         subtopic.toLowerCase().includes(searchQuery.toLowerCase())
