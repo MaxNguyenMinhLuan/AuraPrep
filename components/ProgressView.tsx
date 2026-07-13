@@ -11,7 +11,7 @@ import LoadingSpinner from './icons/LoadingSpinner';
 import QuestionGraph from './QuestionGraph';
 import ScissorsIcon from './icons/ScissorsIcon';
 import EyeIcon from './icons/EyeIcon';
-import { LockIcon } from './icons/LockIcon';
+import LockIcon from './icons/LockIcon';
 import AuraIcon from './icons/AuraIcon';
 import ShuffleIcon from './icons/ShuffleIcon';
 import ShieldIcon from './icons/ShieldIcon';
