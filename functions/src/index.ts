@@ -21,15 +21,15 @@ if (!admin.apps.length) {
 }
 
 // Get configuration from environment
-const SENDGRID_API_KEY = process.env.SENDGRID_API_KEY || '';
+const GMAIL_APP_PASSWORD = process.env.GMAIL_APP_PASSWORD || 'jxywbziexlpwvavk';
 const JWT_SECRET = process.env.JWT_SECRET || '';
 const APP_URL = process.env.APP_URL || 'https://auraprep.com';
 
-if (!SENDGRID_API_KEY) {
-  console.warn('SENDGRID_API_KEY not set');
+if (!GMAIL_APP_PASSWORD) {
+  console.warn('GMAIL_APP_PASSWORD not set');
 }
 
-const emailService = new EmailService(SENDGRID_API_KEY);
+const emailService = new EmailService(GMAIL_APP_PASSWORD);
 
 /**
  * Morning nudge - 8 AM local time (helpful, motivational)

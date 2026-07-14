@@ -2,7 +2,7 @@
 /**
  * Email Service
  *
- * Handles SendGrid email sending with tracking.
+ * Handles Nodemailer email sending via Gmail SMTP.
  * Sends personalized Guardian emails to users.
  */
 var __createBinding = (this && this.__createBinding) || (Object.create ? (function(o, m, k, k2) {
@@ -40,45 +40,34 @@ var __importStar = (this && this.__importStar) || (function () {
 })();
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.EmailService = void 0;
-const sgMail = __importStar(require("@sendgrid/mail"));
+const nodemailer = __importStar(require("nodemailer"));
 class EmailService {
-    constructor(apiKey, fromEmail = 'guardians@auraprep.com') {
+    constructor(appPassword, fromEmail = 'auraprep.academy@gmail.com') {
         this.fromEmail = fromEmail;
-        sgMail.setApiKey(apiKey);
+        // Configure Nodemailer transporter for Gmail
+        this.transporter = nodemailer.createTransport({
+            service: 'gmail',
+            auth: {
+                user: 'auraprep.academy@gmail.com',
+                pass: appPassword
+            }
+        });
     }
     /**
      * Send a Guardian nudge email
      */
     async sendNudgeEmail(options) {
         try {
-            const { to, subject, htmlContent, previewText, trackingData } = options;
-            // Add tracking pixel and custom headers if we have tracking data
-            const tracking = trackingData ? this.buildTrackingData(trackingData) : {};
-            const msg = {
+            const { to, subject, htmlContent, previewText } = options;
+            const mailOptions = {
+                from: `AuraPrep Guardians <${this.fromEmail}>`,
                 to,
-                from: this.fromEmail,
                 subject,
-                html: htmlContent,
-                previewText: previewText || subject,
-                trackingSettings: {
-                    clickTracking: {
-                        enable: true,
-                        enableText: true
-                    },
-                    openTracking: {
-                        enable: true,
-                        substitutionTag: '<%open_tracking_pixel%>'
-                    },
-                    subscriptionTracking: {
-                        enable: true,
-                        text: '<%preference_unsubscribe_text%>',
-                        html: '<a href="<%preference_unsubscribe_url%>">Unsubscribe</a>'
-                    }
-                },
-                customArgs: tracking
+                text: previewText || subject, // Fallback text for preview
+                html: htmlContent
             };
-            await sgMail.send(msg);
-            console.log(`Email sent to ${to} (${trackingData?.nudgeLevel || 'unknown'})`);
+            await this.transporter.sendMail(mailOptions);
+            console.log(`Email sent to ${to} (${options.trackingData?.nudgeLevel || 'unknown'})`);
         }
         catch (error) {
             console.error(`Error sending email to ${options.to}:`, error);
@@ -90,13 +79,13 @@ class EmailService {
      */
     async sendTestEmail(recipientEmail) {
         try {
-            const msg = {
+            const mailOptions = {
+                from: `AuraPrep Guardians <${this.fromEmail}>`,
                 to: recipientEmail,
-                from: this.fromEmail,
                 subject: 'AuraPrep Email Test',
-                html: `<h1>Test Email</h1><p>This is a test email from AuraPrep. If you received this, the email system is working!</p>`
+                html: `<h1>Test Email</h1><p>This is a test email from AuraPrep. If you received this, the Nodemailer Gmail integration is working perfectly!</p>`
             };
-            await sgMail.send(msg);
+            await this.transporter.sendMail(mailOptions);
             console.log(`Test email sent to ${recipientEmail}`);
         }
         catch (error) {
@@ -105,41 +94,11 @@ class EmailService {
         }
     }
     /**
-     * Build custom args for tracking
-     */
-    buildTrackingData(data) {
-        return {
-            userId: data.userId,
-            nudgeLevel: data.nudgeLevel,
-            timestamp: new Date().toISOString()
-        };
-    }
-    /**
      * Validate email address
      */
     static isValidEmail(email) {
         const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
         return emailRegex.test(email);
-    }
-    /**
-     * Handle SendGrid webhook events (for later implementation)
-     */
-    static processWebhookEvent(event) {
-        // This will be implemented when we set up the webhook endpoint
-        const { event: eventType, userId } = event.customArgs || {};
-        switch (eventType) {
-            case 'open':
-                console.log(`Email opened by user ${userId}`);
-                break;
-            case 'click':
-                console.log(`Email clicked by user ${userId}`);
-                break;
-            case 'unsubscribe':
-                console.log(`User ${userId} unsubscribed`);
-                break;
-            default:
-                console.log(`Unknown event: ${eventType}`);
-        }
     }
 }
 exports.EmailService = EmailService;

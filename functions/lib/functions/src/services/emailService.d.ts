@@ -1,7 +1,7 @@
 /**
  * Email Service
  *
- * Handles SendGrid email sending with tracking.
+ * Handles Nodemailer email sending via Gmail SMTP.
  * Sends personalized Guardian emails to users.
  */
 interface EmailOptions {
@@ -15,8 +15,9 @@ interface EmailOptions {
     };
 }
 export declare class EmailService {
+    private transporter;
     private fromEmail;
-    constructor(apiKey: string, fromEmail?: string);
+    constructor(appPassword: string, fromEmail?: string);
     /**
      * Send a Guardian nudge email
      */
@@ -26,17 +27,9 @@ export declare class EmailService {
      */
     sendTestEmail(recipientEmail: string): Promise<void>;
     /**
-     * Build custom args for tracking
-     */
-    private buildTrackingData;
-    /**
      * Validate email address
      */
     static isValidEmail(email: string): boolean;
-    /**
-     * Handle SendGrid webhook events (for later implementation)
-     */
-    static processWebhookEvent(event: any): void;
 }
 export {};
 //# sourceMappingURL=emailService.d.ts.map
