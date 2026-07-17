@@ -141,7 +141,7 @@ const ReviewView: React.FC<ReviewViewProps> = ({ questions, onAnswer, onExit }) 
                         <h3 className={`text-lg font-bold ${isCorrect ? 'text-success' : 'text-accent'}`}>
                             {isCorrect ? 'Recovered!' : 'Still Needs Practice'}
                         </h3>
-                        <FormattedText className="text-text-main mt-2 text-xs md:text-sm leading-relaxed" text={currentQuestion.explanation} />
+                        <FormattedText className="text-xs md:text-sm text-text-main mt-2 leading-relaxed italic" text={currentQuestion.explanation} />
                         
                         {/* Strategy Tip Box */}
                         {strategyTip && (

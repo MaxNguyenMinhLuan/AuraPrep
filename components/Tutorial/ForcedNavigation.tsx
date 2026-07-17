@@ -10,7 +10,7 @@ import { TutorialPhase, View } from '../../types';
 import { PixelCreature } from '../CreatureCard';
 import { INITIAL_CREATURES } from '../../constants';
 
-const pikachu = INITIAL_CREATURES.find(c => c.id === 'pikachu');
+const pikachu = INITIAL_CREATURES.find(c => c.id === 20);
 
 interface ForcedNavigationProps {
     phase: TutorialPhase;

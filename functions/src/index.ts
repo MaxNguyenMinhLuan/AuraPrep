@@ -357,3 +357,69 @@ export const dailyReset = functions
 export const health = functions.https.onRequest((req, res) => {
   res.json({ status: 'ok', timestamp: new Date().toISOString() });
 });
+
+/**
+ * Test intro email endpoint - Sends an intro email to all users
+ */
+export const testIntroEmail = functions.https.onRequest(async (req, res) => {
+  try {
+    const db = admin.firestore();
+    const snapshot = await db.collection('userGameData').get();
+    let sentCount = 0;
+
+    for (const doc of snapshot.docs) {
+      const user = doc.data();
+      if (!user.email || !user.activeCreature) continue;
+
+      const guardianType = user.activeCreature.type as any;
+      const guardianName = user.activeCreature.name || guardianType;
+      const userName = user.email.split('@')[0];
+
+      // Custom copy for introduction based on the guardian type
+      let subject = `Meet your new partner, ${guardianName}!`;
+      let body = '';
+      const introBase = `Hi ${userName}!<br><br>I'm ${guardianName}, your ${guardianType} Auramon partner!<br><br>`;
+
+      if (guardianType === 'Fire') {
+        subject = `🔥 FIRED UP to meet you! - ${guardianName}`;
+        body = introBase + `I'm energetic, hot-headed, and dramatic when I'm disappointed. I'm going to motivate you by turning up the heat when you slack off! If you ignore your daily practice, I will literally BURN OUT. So let's keep the streak blazing! Let's get to work! 🔥`;
+      } else if (guardianType === 'Water') {
+        subject = `🌊 Flowing into your inbox - ${guardianName}`;
+        body = introBase + `I'm calm and flowing, but I can get very emotional. I'll motivate you by riding the wave of learning with you! But be careful—if you abandon me, I will drown in my own disappointment. Let's build a beautiful oasis of knowledge together! 💧`;
+      } else if (guardianType === 'Leaf') {
+        subject = `🌱 Ready to grow together! - ${guardianName}`;
+        body = introBase + `I'm growth-focused and nurturing. I'll motivate you by helping you plant seeds of victory every day! Just remember to water me with your consistency—if you leave me in the dark, I will wither away. Let's blossom! 🌿`;
+      } else if (guardianType === 'Electric') {
+        subject = `⚡ BUZZING to meet you! - ${guardianName}`;
+        body = introBase + `I'M BUZZING WITH EXCITEMENT! I'm high-energy and ready to shock you with knowledge! I'll motivate you by keeping you fully charged. Just don't let my battery drain to 0% by missing practice, or I will flatline! ⚡`;
+      } else if (guardianType === 'Wind') {
+        subject = `🌬️ Let's soar together! - ${guardianName}`;
+        body = introBase + `I'm a free spirit here to lift you up! I'll motivate you by carrying you on the winds of success. But if you stop trying, a storm of despair will rage inside me! Let's catch the updraft and soar to new heights! 🪁`;
+      } else if (guardianType === 'Metal') {
+        subject = `⚙️ Forging our partnership - ${guardianName}`;
+        body = introBase + `I'm solid and reliable, built to help you lay a strong foundation! I'll motivate you by reminding you of our structural integrity. Just don't let me rust from inactivity, or I might just collapse! Let's build something unbreakable! 🏗️`;
+      } else if (guardianType === 'Light') {
+        subject = `✨ Illuminating your path! - ${guardianName}`;
+        body = introBase + `I'm bright and hopeful! I'll motivate you by glowing with pride when you succeed. But if you forget me, my light will fade into absolute darkness. Let's shine bright and conquer the SAT! 🔆`;
+      } else if (guardianType === 'Dark') {
+        subject = `🌙 Sneaking into your inbox - ${guardianName}`;
+        body = introBase + `I'm sly, cunning, and maybe just a little manipulative... 😏 I'll motivate you by plotting our success from the shadows. Just don't leave me alone in the dark, or I'll make sure you feel the guilt! Let's go steal some high scores! 🖤`;
+      } else {
+        subject = `Your partner Auramon, ${guardianName}!`;
+        body = introBase + `I'm here to motivate you and make sure you conquer your daily SAT missions. Let's do this!`;
+      }
+
+      await emailService.sendNudgeEmail({
+        to: user.email,
+        subject: subject,
+        htmlContent: body,
+        previewText: `Meet your new partner, ${guardianName}!`
+      });
+      sentCount++;
+    }
+    res.json({ status: 'ok', sentCount, message: `Sent intro emails to ${sentCount} users.` });
+  } catch (error) {
+    console.error('Test intro email error:', error);
+    res.status(500).json({ error: 'Internal server error' });
+  }
+});

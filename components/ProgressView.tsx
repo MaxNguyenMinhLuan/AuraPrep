@@ -199,7 +199,7 @@ const PracticeSession: React.FC<{
                     {selectedAnswer !== null && (
                         <div className="mt-6 md:mt-8 p-4 md:p-6 bg-background animate-fadeIn border-2 border-secondary rounded-lg shadow-md">
                             <h3 className={`text-lg md:text-xl font-bold ${isCorrect ? 'text-success' : 'text-accent'}`}>{isCorrect ? 'Correct!' : 'Incorrect'}</h3>
-                            <p className="text-text-main mt-2 text-xs md:text-sm leading-relaxed">{currentQuestion.explanation}</p>
+                            <FormattedText className="text-xs md:text-sm text-text-main mt-2 leading-relaxed italic" text={currentQuestion.explanation} />
                             
                             {/* Strategy Tip Box */}
                             {strategyTip && (
@@ -586,7 +586,7 @@ const BossFightSession: React.FC<{
 
                     {selectedAnswer !== null && (
                         <div className="mt-8 p-6 bg-background animate-fadeIn rounded-lg border border-secondary">
-                            <p className="text-text-main text-xs md:text-sm leading-relaxed">{currentQuestion.explanation}</p>
+                            <FormattedText className="text-xs md:text-sm text-text-main leading-relaxed italic" text={currentQuestion.explanation} />
                             {strategyTip && (
                                 <div className="mt-4 p-3 bg-yellow-500/10 border-l-4 border-yellow-500 rounded-r-xl text-left animate-fadeIn">
                                     <p className="text-[10px] font-bold text-yellow-600 flex items-center gap-1.5 uppercase tracking-wider">

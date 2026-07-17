@@ -14,7 +14,7 @@ service cloud.firestore {
     }
 
     // Game data: each user owns their own document
-    match /userData/{uid} {
+    match /users_game_data/{uid} {
       allow read, write: if request.auth != null && request.auth.uid == uid;
     }
 

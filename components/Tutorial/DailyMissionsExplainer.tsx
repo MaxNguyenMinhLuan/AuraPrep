@@ -10,7 +10,7 @@ import { TUTORIAL_DIALOGUE } from '../../utils/tutorialSteps';
 import { PixelCreature } from '../CreatureCard';
 import { INITIAL_CREATURES } from '../../constants';
 
-const pikachu = INITIAL_CREATURES.find(c => c.id === 'pikachu');
+const pikachu = INITIAL_CREATURES.find(c => c.id === 20);
 
 interface DailyMissionsExplainerProps {
     onComplete: () => void;

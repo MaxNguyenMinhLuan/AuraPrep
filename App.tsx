@@ -724,6 +724,8 @@ const App: React.FC = () => {
         if (shouldRegenerateQuestions) {
             const subtopicLevel = profile.stats[mission.subtopic]?.level || 'Easy';
             const difficulty = getDifficultyForLevel(subtopicLevel);
+            setPreparingMissionId(missionId);
+            setCurrentView(View.DASHBOARD);
             (async () => {
                 try {
                     const generatedQuestions = await Promise.all(
@@ -738,6 +740,8 @@ const App: React.FC = () => {
                     }));
                 } catch (error) {
                     console.error("Failed to regenerate questions on streak break:", error);
+                } finally {
+                    setPreparingMissionId(null);
                 }
             })();
         }
@@ -791,7 +795,7 @@ const App: React.FC = () => {
                 const evolveLevel2 = creatureData?.evolveLevel2;
 
                 // Calculate new level from XP (level = floor(xp / XP_PER_LEVEL), min 5)
-                const XP_PER_LEVEL = 15;
+                const XP_PER_LEVEL = 30;
                 const MIN_LEVEL = 5;
                 const MAX_LEVEL = 100;
                 const newLevel = Math.min(MAX_LEVEL, Math.max(MIN_LEVEL, Math.floor(newXp / XP_PER_LEVEL)));
@@ -1613,7 +1617,6 @@ const App: React.FC = () => {
                 <ProfileModal
                     user={user}
                     onClose={() => setIsProfileOpen(false)}
-                    profile={profile}
                     onUpdateUser={handleUpdateUser}
                     onLogout={handleLogout}
                 />

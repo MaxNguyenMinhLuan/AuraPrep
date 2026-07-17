@@ -2,7 +2,7 @@ import React from 'react';
 import { PixelCreature } from '../CreatureCard';
 import { INITIAL_CREATURES } from '../../constants';
 
-const pikachu = INITIAL_CREATURES.find(c => c.id === 'pikachu');
+const pikachu = INITIAL_CREATURES.find(c => c.id === 20);
 
 interface PikachuGuideProps {
     message: string;

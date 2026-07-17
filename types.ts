@@ -101,7 +101,7 @@ export interface BossDef {
 
 // XP required for each level (level 5-100)
 // Formula: XP_for_level = level * 15 (so level 10 needs 150 XP, level 50 needs 750 XP, etc.)
-export const XP_PER_LEVEL = 15;
+export const XP_PER_LEVEL = 30;
 export const MIN_LEVEL = 5;
 export const MAX_LEVEL = 100;
 

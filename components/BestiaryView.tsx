@@ -142,7 +142,7 @@ const BestiaryView: React.FC<BestiaryViewProps> = ({ userCreatures, userTeam, on
                                     type="text"
                                     value={tempName}
                                     onChange={(e) => setTempName(e.target.value)}
-                                    className="font-sans text-lg md:text-xl border-2 border-primary/30 rounded px-2 py-1 focus:outline-none focus:border-primary text-text-main font-bold w-40 sm:w-auto min-w-0"
+                                    className="font-sans text-lg md:text-xl border-2 border-primary/30 rounded px-2 py-1 focus:outline-none focus:border-primary text-text-main bg-background font-bold w-40 sm:w-auto min-w-0"
                                     maxLength={15}
                                     placeholder="Enter nickname..."
                                     autoFocus
