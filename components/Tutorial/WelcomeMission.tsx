@@ -224,7 +224,7 @@ const WelcomeMission: React.FC<WelcomeMissionProps> = ({ uid, onComplete, onExit
                                     buttonClass += 'bg-success/10 border-success text-success font-bold shadow-glow-success animate-successPop';
                                     icon = '✅';
                                 } else if (index === selectedAnswer && !isCorrect) {
-                                    buttonClass += 'bg-accent/10 border-accent text-accent font-bold animate-shake';
+                                    buttonClass += 'bg-accent/10 border-accent text-accent font-bold';
                                     icon = '❌';
                                 } else {
                                     buttonClass += 'bg-surface opacity-50 border-text-dark/20';
@@ -254,7 +254,7 @@ const WelcomeMission: React.FC<WelcomeMissionProps> = ({ uid, onComplete, onExit
                             <h3 className={`text-base font-bold mb-2 ${isCorrect ? 'text-success' : 'text-accent'}`}>
                                 {isCorrect ? '✓ Correct!' : '✗ Not quite'}
                             </h3>
-                            <FormattedText className="text-text-dim text-xs leading-relaxed italic mb-4" text={currentQuestion.explanation} />
+                            <FormattedText className="text-text-dim text-xs leading-relaxed italic mb-4 font-clean" text={currentQuestion.explanation} />
                             <button
                                 onClick={handleNext}
                                 className={`w-full font-bold py-3 rounded-xl border-b-4 transition-all shadow-card ${

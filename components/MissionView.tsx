@@ -152,7 +152,7 @@ const MissionView: React.FC<MissionViewProps> = ({ mission, onAnswer, onExit, in
             </div>
 
             <div className={`p-3 md:p-4 border-2 flex flex-col justify-between rounded-xl shadow-card transition-all duration-300 ${
-                isCorrect === false ? 'bg-accent/5 border-accent shadow-[0_0_20px_rgba(220,38,38,0.25)] shake-once red-flash' : 'bg-surface border-secondary/30'
+                isCorrect === false ? 'bg-accent/5 border-accent shadow-[0_0_20px_rgba(220,38,38,0.25)] red-flash' : 'bg-surface border-secondary/30'
             }`}>
                 <div className="pb-4">
                   <div className="flex justify-between items-center mb-2 flex-wrap gap-2">
@@ -181,7 +181,7 @@ const MissionView: React.FC<MissionViewProps> = ({ mission, onAnswer, onExit, in
                                   buttonClass += 'bg-success/10 border-success text-success font-bold shadow-glow-success animate-successPop';
                                   icon = '✅';
                               } else if (index === selectedAnswer && !isCorrect) {
-                                  buttonClass += 'bg-accent/10 border-accent text-accent font-bold animate-shake';
+                                  buttonClass += 'bg-accent/10 border-accent text-accent font-bold';
                                   icon = '❌';
                               } else {
                                   buttonClass += 'bg-surface opacity-50 border-text-dark/20';
@@ -211,7 +211,7 @@ const MissionView: React.FC<MissionViewProps> = ({ mission, onAnswer, onExit, in
                         {!isCorrect && (
                             <p className="text-[9px] md:text-[10px] font-bold text-accent uppercase tracking-widest mb-2 animate-subtlePulse">Progress Resetting to 0...</p>
                         )}
-                        <FormattedText className="text-xs md:text-sm text-text-main mt-2 leading-relaxed italic" text={currentQuestion.explanation} />
+                        <FormattedText className="text-xs md:text-sm text-text-main mt-2 leading-relaxed italic font-clean" text={currentQuestion.explanation} />
                         
                         {/* Strategy Tip Box */}
                         {strategyTip && (

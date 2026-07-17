@@ -94,7 +94,7 @@ const ReviewView: React.FC<ReviewViewProps> = ({ questions, onAnswer, onExit }) 
             </div>
 
             <div className={`p-4 border-2 flex flex-col justify-between relative rounded-lg shadow-md transition-all duration-300 ${
-                isCorrect === false ? 'bg-accent/5 border-accent shadow-[0_0_20px_rgba(220,38,38,0.25)] shake-once red-flash' : 'bg-surface border-accent/50'
+                isCorrect === false ? 'bg-accent/5 border-accent shadow-[0_0_20px_rgba(220,38,38,0.25)] red-flash' : 'bg-surface border-accent/50'
             }`}>
                 <div className="absolute top-0 right-0 bg-accent text-white text-[8px] px-2 py-1 font-bold rounded-bl-md">REVIEW</div>
                 <div>
@@ -141,7 +141,7 @@ const ReviewView: React.FC<ReviewViewProps> = ({ questions, onAnswer, onExit }) 
                         <h3 className={`text-lg font-bold ${isCorrect ? 'text-success' : 'text-accent'}`}>
                             {isCorrect ? 'Recovered!' : 'Still Needs Practice'}
                         </h3>
-                        <FormattedText className="text-xs md:text-sm text-text-main mt-2 leading-relaxed italic" text={currentQuestion.explanation} />
+                        <FormattedText className="text-xs md:text-sm text-text-main mt-2 leading-relaxed italic font-clean" text={currentQuestion.explanation} />
                         
                         {/* Strategy Tip Box */}
                         {strategyTip && (
