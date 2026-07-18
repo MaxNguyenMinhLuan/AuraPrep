@@ -137,15 +137,6 @@ const PracticeSession: React.FC<{
         window.addEventListener('keydown', handleKeyDown);
         return () => window.removeEventListener('keydown', handleKeyDown);
     }, [selectedAnswer, handleNextQuestion]);
-
-    const getButtonClass = (index: number) => {
-        if (!currentQuestion) return "";
-        if (selectedAnswer === null) return "bg-surface hover:bg-secondary border-b-4 border-secondary/50";
-        if (index === currentQuestion.answerIndex) return "bg-success text-light border-b-4 border-success-dark";
-        if (index === selectedAnswer && !isCorrect) return "bg-accent text-light border-b-4 border-accent-dark";
-        return "bg-surface opacity-50 border-b-4 border-text-dark";
-    };
-
     return (
         <div className="flex flex-col h-auto animate-fadeIn max-w-3xl mx-auto pr-1">
             {showStreakToast && (
@@ -183,17 +174,41 @@ const PracticeSession: React.FC<{
                         {currentQuestion.graphData && <QuestionGraph data={currentQuestion.graphData} />}
 
                         <FormattedText className="text-base md:text-lg mb-6 md:mb-8 leading-relaxed font-clean" text={currentQuestion.question} />
-                        <div className="space-y-3 md:space-y-4">
-                            {currentQuestion.options.map((option, index) => (
-                                <button
-                                    key={index}
-                                    onClick={() => handleAnswerSelect(index)}
-                                    disabled={selectedAnswer !== null}
-                                    className={`w-full text-left p-3 md:p-4 transition-all duration-200 rounded-md shadow-sm touch-target text-xs md:text-sm ${getButtonClass(index)}`}
-                                >
-                                    <span className="text-xs md:text-sm flex items-start text-left"><span className="font-bold mr-2 text-primary">{String.fromCharCode(65 + index)}.</span> <FormattedText className="inline text-sm md:text-base font-clean" text={option} /></span>
-                                </button>
-                            ))}
+
+                        <div className="space-y-2 md:space-y-3">
+                            {currentQuestion.options.map((option, index) => {
+                                let buttonClass = 'w-full text-left p-3 md:p-4 transition-premium border-2 flex justify-between items-center rounded-xl touch-target press-effect ';
+                                let icon = null;
+
+                                if (selectedAnswer === null) {
+                                    buttonClass += 'bg-surface hover:bg-secondary/30 active:bg-secondary/30 border-secondary/30 shadow-card hover:shadow-card-hover';
+                                } else {
+                                    if (index === currentQuestion.answerIndex) {
+                                        buttonClass += 'bg-success/10 border-success text-success font-bold shadow-glow-success animate-successPop';
+                                        icon = '✅';
+                                    } else if (index === selectedAnswer && !isCorrect) {
+                                        buttonClass += 'bg-accent/10 border-accent text-accent font-bold';
+                                        icon = '❌';
+                                    } else {
+                                        buttonClass += 'bg-surface opacity-50 border-text-dark/20';
+                                    }
+                                }
+
+                                return (
+                                    <button
+                                        key={index}
+                                        onClick={() => handleAnswerSelect(index)}
+                                        disabled={selectedAnswer !== null}
+                                        className={buttonClass}
+                                    >
+                                        <span className="text-xs md:text-sm flex items-start text-left">
+                                            <span className="font-bold mr-2 text-primary">{String.fromCharCode(65 + index)}.</span>
+                                            <FormattedText className="inline text-sm md:text-base font-clean" text={option} />
+                                        </span>
+                                        {icon && <span className="text-base md:text-lg ml-2">{icon}</span>}
+                                    </button>
+                                );
+                            })}
                         </div>
                     </div>
                     {selectedAnswer !== null && (
