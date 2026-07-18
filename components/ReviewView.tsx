@@ -5,18 +5,23 @@ import { getStrategyTip } from '../utils/strategyTips';
 import LoadingSpinner from './icons/LoadingSpinner';
 import QuestionGraph from './QuestionGraph';
 import FormattedText from './FormattedText';
+import ReportQuestionModal from './ReportQuestionModal';
+import { reportQuestion } from '../services/reportService';
 
 interface ReviewViewProps {
     questions: Question[];
     onAnswer: (question: Question, isCorrect: boolean) => void;
     onExit: () => void;
+    userId?: string;
+    userEmail?: string;
 }
 
-const ReviewView: React.FC<ReviewViewProps> = ({ questions, onAnswer, onExit }) => {
+const ReviewView: React.FC<ReviewViewProps> = ({ questions, onAnswer, onExit, userId, userEmail }) => {
     const [currentQIndex, setCurrentQIndex] = useState(0);
     const [selectedAnswer, setSelectedAnswer] = useState<number | null>(null);
     const [isCorrect, setIsCorrect] = useState<boolean | null>(null);
     const [completedCount, setCompletedCount] = useState(0);
+    const [showReportModal, setShowReportModal] = useState(false);
 
     // If queue is empty
     if (questions.length === 0) {
@@ -40,14 +45,26 @@ const ReviewView: React.FC<ReviewViewProps> = ({ questions, onAnswer, onExit }) 
         setIsCorrect(correct);
     };
 
+    const handleReportSubmit = (reason: string) => {
+        if (!currentQuestion) return;
+        reportQuestion({
+            reason,
+            questionText: currentQuestion.question,
+            subtopic: currentQuestion.subtopic,
+            userId,
+            userEmail
+        });
+    };
+
     const handleNext = useCallback(() => {
         if (isCorrect === null) return;
-        
+
         onAnswer(currentQuestion, isCorrect);
 
         setSelectedAnswer(null);
         setIsCorrect(null);
-        
+        setShowReportModal(false);
+
         if (isCorrect) {
             setCompletedCount(prev => prev + 1);
              if (currentQIndex >= questions.length - 1) {
@@ -153,13 +170,27 @@ const ReviewView: React.FC<ReviewViewProps> = ({ questions, onAnswer, onExit }) 
                             </div>
                         )}
 
-                        <button 
-                            onClick={handleNext} 
+                        <button
+                            onClick={handleNext}
                             className="mt-4 w-full bg-primary text-light font-bold py-3 border-b-4 border-primary/70 hover:bg-primary/90 transition-all rounded-md"
                         >
                            {isCorrect ? 'Claim & Continue' : 'Next'}
                         </button>
+
+                        <button
+                            onClick={() => setShowReportModal(true)}
+                            className="mt-2 w-full text-center text-[10px] text-text-dim hover:text-accent transition-all"
+                        >
+                            🚩 Report This Question
+                        </button>
                     </div>
+                )}
+
+                {showReportModal && (
+                    <ReportQuestionModal
+                        onClose={() => setShowReportModal(false)}
+                        onSubmit={handleReportSubmit}
+                    />
                 )}
             </div>
         </div>

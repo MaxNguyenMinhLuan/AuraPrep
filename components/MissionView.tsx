@@ -5,6 +5,8 @@ import QuestionGraph from './QuestionGraph';
 import { getStrategyTip } from '../utils/strategyTips';
 import FormattedText from './FormattedText';
 import AuraIcon from './icons/AuraIcon';
+import ReportQuestionModal from './ReportQuestionModal';
+import { reportQuestion } from '../services/reportService';
 
 interface MissionViewProps {
     mission: MissionInstance;
@@ -12,13 +14,16 @@ interface MissionViewProps {
     onExit: () => void;
     inventory: { [key in PowerUpType]?: number };
     consumePowerUp: (type: PowerUpType) => void;
+    userId?: string;
+    userEmail?: string;
 }
 
-const MissionView: React.FC<MissionViewProps> = ({ mission, onAnswer, onExit, inventory, consumePowerUp }) => {
+const MissionView: React.FC<MissionViewProps> = ({ mission, onAnswer, onExit, inventory, consumePowerUp, userId, userEmail }) => {
     const [selectedAnswer, setSelectedAnswer] = useState<number | null>(null);
     const [isCorrect, setIsCorrect] = useState<boolean | null>(null);
     const [showJeopardyModal, setShowJeopardyModal] = useState(false);
     const [isResetting, setIsResetting] = useState(false);
+    const [showReportModal, setShowReportModal] = useState(false);
 
     const currentQuestionIndex = mission.progress;
     const hasDoubleJeopardy = (inventory['DOUBLE_JEOPARDY'] || 0) > 0;
@@ -32,7 +37,19 @@ const MissionView: React.FC<MissionViewProps> = ({ mission, onAnswer, onExit, in
         setIsCorrect(null);
         setShowJeopardyModal(false);
         setIsResetting(false);
+        setShowReportModal(false);
     }, [currentQuestionIndex]);
+
+    const handleReportSubmit = (reason: string) => {
+        if (!currentQuestion) return;
+        reportQuestion({
+            reason,
+            questionText: currentQuestion.question,
+            subtopic: currentQuestion.subtopic || mission.subtopic,
+            userId,
+            userEmail
+        });
+    };
     
     const handleAnswerSelect = (index: number) => {
         if (selectedAnswer !== null || isResetting) return;
@@ -139,6 +156,13 @@ const MissionView: React.FC<MissionViewProps> = ({ mission, onAnswer, onExit, in
                 </div>
             )}
 
+            {showReportModal && (
+                <ReportQuestionModal
+                    onClose={() => setShowReportModal(false)}
+                    onSubmit={handleReportSubmit}
+                />
+            )}
+
             <div className="text-center mb-3 md:mb-4">
                  <button onClick={onExit} className="text-text-dim hover:text-highlight float-left p-2 -ml-2 touch-target">&larr; Back</button>
                 <h1 className="font-serif text-xl md:text-2xl text-highlight leading-tight">{mission.title}</h1>
@@ -228,6 +252,13 @@ const MissionView: React.FC<MissionViewProps> = ({ mission, onAnswer, onExit, in
                             className={`mt-3 md:mt-4 w-full text-white font-bold py-3 md:py-4 border-b-4 transition-premium rounded-xl shadow-card hover:shadow-card-hover touch-target press-effect ${isCorrect ? 'bg-primary border-primary/70 hover:bg-primary/90 active:bg-primary/90' : 'bg-accent border-accent-dark hover:bg-accent/90 active:bg-accent/90'}`}
                         >
                            {isCorrect ? 'Next Challenge' : 'Try Again From Start'}
+                        </button>
+
+                        <button
+                            onClick={() => setShowReportModal(true)}
+                            className="mt-2 w-full text-center text-[10px] text-text-dim hover:text-accent transition-premium py-1"
+                        >
+                            🚩 Report This Question
                         </button>
                     </div>
                 )}

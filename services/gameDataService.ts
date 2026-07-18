@@ -44,20 +44,56 @@ function withTimeout<T>(promise: Promise<T>, ms: number): Promise<T | null> {
 // ─────────────────────────────────────────────────────────────
 
 /**
+ * True if `serverUpdatedAt` is newer than `expectedLastUpdatedAt` by more than
+ * `toleranceMs` — i.e. some other device/tab wrote a version we don't know
+ * about since our last sync point. A pure function so the conflict rule can
+ * be unit-tested without touching Firestore.
+ */
+export function isStaleWrite(
+  serverUpdatedAt: string | undefined,
+  expectedLastUpdatedAt: string,
+  toleranceMs = 1500
+): boolean {
+  const serverTime = serverUpdatedAt ? new Date(serverUpdatedAt).getTime() : 0;
+  const knownTime = new Date(expectedLastUpdatedAt).getTime();
+  return serverTime > knownTime + toleranceMs;
+}
+
+/**
  * Write game data to Firestore.  Always awaited so callers know if it failed.
+ *
+ * If `expectedLastUpdatedAt` is provided, this first checks the existing doc's
+ * `updatedAt`. If another device/tab has written a newer version since our
+ * last known sync point, the write is rejected (conflict) instead of blindly
+ * overwriting it — this is the only thing standing between a stale tab and
+ * silently clobbering another device's progress, since there is no realtime
+ * listener keeping every open tab in sync.
  */
 export async function syncGameDataToFirestore(
   userId: string,
-  payload: Omit<GameDataSyncPayload, 'lastSyncedAt'> & { updatedAt: string }
-): Promise<boolean> {
+  payload: Omit<GameDataSyncPayload, 'lastSyncedAt'> & { updatedAt: string },
+  expectedLastUpdatedAt?: string
+): Promise<{ ok: boolean; conflict?: boolean; serverData?: any }> {
   try {
     const docRef = doc(db, 'users_game_data', userId);
+
+    if (expectedLastUpdatedAt) {
+      const existingSnap = await getDoc(docRef);
+      if (existingSnap.exists()) {
+        const serverData = existingSnap.data();
+        if (isStaleWrite(serverData?.updatedAt, expectedLastUpdatedAt)) {
+          console.warn('[Firestore] Conflict detected — server has newer data than this device knows about, aborting write');
+          return { ok: false, conflict: true, serverData };
+        }
+      }
+    }
+
     await setDoc(docRef, payload, { merge: true });
     console.log('[Firestore] Game data saved ✓');
-    return true;
+    return { ok: true };
   } catch (error) {
     console.error('[Firestore] Error saving game data:', error);
-    return false;
+    return { ok: false };
   }
 }
 
@@ -115,7 +151,7 @@ export async function syncGameDataToBackend(
 
   // 1. Firestore — primary, always awaited
   if (userId) {
-    await syncGameDataToFirestore(userId, {
+    const fsResult = await syncGameDataToFirestore(userId, {
       profile: userProfile,
       creatures,
       activeCreatureId,
@@ -125,7 +161,14 @@ export async function syncGameDataToBackend(
       userTeam,
       tutorialState,
       updatedAt
-    });
+    }, lastSyncedAt);
+
+    // Another device/tab wrote newer data since our last known sync point —
+    // surface it the same way a backend 409 does, so the caller pulls the
+    // fresher copy instead of this (stale) local state clobbering it.
+    if (fsResult.conflict && fsResult.serverData) {
+      return { status: 'conflict', data: normaliseFirestoreDoc(fsResult.serverData) };
+    }
   }
 
   // 2. Render backend — secondary, with timeout
@@ -198,6 +241,26 @@ export async function fetchGameDataFromBackend(authToken: string): Promise<any> 
 // ─────────────────────────────────────────────────────────────
 
 /**
+ * Normalise a raw Firestore `users_game_data` doc into the shape the app's
+ * hydration/conflict handlers expect. Shared by fetchGameData (initial load)
+ * and syncGameDataToBackend (conflict payload on a rejected stale write).
+ */
+function normaliseFirestoreDoc(d: any): any {
+  if (!d || !d.profile) return null;
+  return {
+    profile: d.profile,
+    creatures: d.creatures,
+    activeCreature: { creatureId: d.activeCreatureId },
+    auraBalance: d.auraPoints,
+    dailyActivity: d.dailyActivity,
+    reviewQueue: d.reviewQueue,
+    userTeam: d.userTeam,
+    tutorialState: d.tutorialState,
+    updatedAt: d.updatedAt
+  };
+}
+
+/**
  * Unified fetch: tries Firestore first (fast & reliable), then
  * Render backend as fallback.  Always picks the newest copy by updatedAt.
  */
@@ -229,22 +292,7 @@ export async function fetchGameData(authToken: string): Promise<any> {
     };
   };
 
-  const normaliseFirestore = (d: any) => {
-    if (!d || !d.profile) return null;
-    return {
-      profile: d.profile,
-      creatures: d.creatures,
-      activeCreature: { creatureId: d.activeCreatureId },
-      auraBalance: d.auraPoints,
-      dailyActivity: d.dailyActivity,
-      reviewQueue: d.reviewQueue,
-      userTeam: d.userTeam,
-      tutorialState: d.tutorialState,
-      updatedAt: d.updatedAt
-    };
-  };
-
-  const fs = normaliseFirestore(firestoreData);
+  const fs = normaliseFirestoreDoc(firestoreData);
   const be = normaliseBackend(backendData);
 
   if (fs && be) {

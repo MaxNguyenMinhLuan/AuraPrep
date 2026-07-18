@@ -894,15 +894,17 @@ const App: React.FC = () => {
                         />;
             case View.MISSION:
                 if (!activeMission || !activeMission.questions) { return null; }
-                return <MissionView 
+                return <MissionView
                             mission={activeMission}
                             onAnswer={handleMissionAnswer}
                             onExit={() => { setActiveMissionId(null); setCurrentView(View.DASHBOARD); }}
                             inventory={profile.inventory}
                             consumePowerUp={(type) => setProfile(p => ({...p, inventory: {...p.inventory, [type]: Math.max(0, (p.inventory[type] || 0) - 1)}}))}
+                            userId={user?.uid}
+                            userEmail={user?.email}
                         />;
             case View.REVIEW:
-                return <ReviewView 
+                return <ReviewView
                             questions={reviewQueue}
                             onAnswer={(q, correct) => {
                                 if (correct) {
@@ -912,6 +914,8 @@ const App: React.FC = () => {
                                 }
                             }}
                             onExit={() => setCurrentView(View.DASHBOARD)}
+                            userId={user?.uid}
+                            userEmail={user?.email}
                         />;
             case View.SHOP:
                 return <ShopView 
