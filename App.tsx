@@ -450,6 +450,39 @@ const App: React.FC = () => {
         }));
     };
 
+    // Fix legacy creature evolution stages (retroactive fix for doubled XP requirements)
+    useEffect(() => {
+        if (creatures.length > 0) {
+            setCreatures(prev => {
+                let needsUpdate = false;
+                const updated = prev.map(c => {
+                    const creatureData = INITIAL_CREATURES.find(ic => ic.id === c.creatureId);
+                    if (!creatureData) return c;
+                    
+                    const XP_PER_LEVEL = 30;
+                    const MIN_LEVEL = 5;
+                    const MAX_LEVEL = 100;
+                    const correctLevel = Math.min(MAX_LEVEL, Math.max(MIN_LEVEL, Math.floor(c.xp / XP_PER_LEVEL)));
+                    
+                    let correctStage = 1;
+                    if (creatureData.maxEvolutionStage >= 2 && creatureData.evolveLevel1 && correctLevel >= creatureData.evolveLevel1) {
+                        correctStage = 2;
+                    }
+                    if (creatureData.maxEvolutionStage >= 3 && creatureData.evolveLevel2 && correctLevel >= creatureData.evolveLevel2) {
+                        correctStage = 3;
+                    }
+                    
+                    if (c.level !== correctLevel || c.evolutionStage !== correctStage) {
+                        needsUpdate = true;
+                        return { ...c, level: correctLevel, evolutionStage: correctStage as 1|2|3 };
+                    }
+                    return c;
+                });
+                return needsUpdate ? updated : prev;
+            });
+        }
+    }, []); // Run once on mount
+
     // Daily reset and streak check logic + Weekly Reset
     useEffect(() => {
         if (!user) return;
@@ -800,12 +833,12 @@ const App: React.FC = () => {
                 const MAX_LEVEL = 100;
                 const newLevel = Math.min(MAX_LEVEL, Math.max(MIN_LEVEL, Math.floor(newXp / XP_PER_LEVEL)));
 
-                let newStage = c.evolutionStage;
+                let newStage = 1;
                 // Only evolve if the creature has that evolution stage available and reached the level
-                if (c.evolutionStage === 1 && maxStage >= 2 && evolveLevel1 && newLevel >= evolveLevel1) {
+                if (maxStage >= 2 && evolveLevel1 && newLevel >= evolveLevel1) {
                     newStage = 2;
                 }
-                if (newStage === 2 && maxStage >= 3 && evolveLevel2 && newLevel >= evolveLevel2) {
+                if (maxStage >= 3 && evolveLevel2 && newLevel >= evolveLevel2) {
                     newStage = 3;
                 }
                 return { ...c, xp: newXp, level: newLevel, evolutionStage: newStage as 1|2|3 };
