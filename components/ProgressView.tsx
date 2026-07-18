@@ -171,7 +171,7 @@ const PracticeSession: React.FC<{
                     <p className="text-text-dim mt-2 text-[10px]">Loading {difficulty} question...</p>
                 </div>
             ) : (
-                <div className={`p-4 md:p-6 border-2 flex flex-col justify-between rounded-lg shadow-sm transition-all duration-300 ${
+                <div className={`p-4 md:p-6 border-2 flex flex-col justify-between rounded-xl shadow-card transition-all duration-300 ${
                     isCorrect === false ? 'bg-accent/5 border-accent shadow-[0_0_20px_rgba(220,38,38,0.25)] red-flash' : 'bg-surface border-secondary/30'
                 }`}>
                     <div>
@@ -519,7 +519,7 @@ const BossFightSession: React.FC<{
                     : doubleJeopardyActive ? 'bg-surface border-rose-500 shadow-[0_0_15px_rgba(244,63,94,0.5)]' 
                     : secondChanceActive ? 'bg-surface border-highlight shadow-[0_0_15px_rgba(202,138,4,0.5)]' 
                     : 'bg-surface border-accent/50'
-                } flex-grow flex flex-col justify-between relative rounded-lg shadow-lg`}>
+                } flex-grow flex flex-col justify-between relative rounded-xl shadow-card`}>
                     {secondChanceActive && <div className="absolute top-0 left-0 w-full bg-highlight text-white text-[8px] font-bold text-center py-1 rounded-t-sm">SECOND WIND ACTIVE</div>}
                     {doubleJeopardyActive && (
                         <div className="absolute top-0 left-0 w-full bg-rose-500 text-white text-[8px] font-bold text-center py-1 rounded-t-sm animate-pulse shadow-[0_0_10px_rgba(244,63,94,0.8)]">
