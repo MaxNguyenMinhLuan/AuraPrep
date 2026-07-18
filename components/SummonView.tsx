@@ -1,5 +1,5 @@
 
-import React, { useState, useMemo } from 'react';
+import React, { useState, useMemo, useRef, useEffect } from 'react';
 import { Creature, Rarity, CreatureInstance } from '../types';
 import { INITIAL_CREATURES, SUMMON_COST } from '../constants';
 import { PixelCreature } from './CreatureCard';
@@ -19,75 +19,69 @@ interface SummonViewProps {
     onSummonComplete?: () => void;  // Optional callback when summon animation completes
 }
 
-// Shooting stars that fly across screen (Genshin meteor effect)
-const ShootingStars: React.FC<{ color: string; secondaryColor: string; count?: number }> = ({ color, secondaryColor, count = 5 }) => {
+// Night-sky star field for the comet flight
+const StarField: React.FC<{ count?: number; dim?: boolean }> = ({ count = 50, dim = false }) => {
     const stars = useMemo(() => Array.from({ length: count }).map((_, i) => ({
         id: i,
-        delay: i * 0.15,
-        top: `${10 + Math.random() * 30}%`,
-        size: 3 + Math.random() * 4,
+        left: `${Math.random() * 100}%`,
+        top: `${Math.random() * 100}%`,
+        size: 1 + Math.random() * 1.8,
+        duration: `${2 + Math.random() * 3}s`,
+        delay: `${Math.random() * 3}s`,
     })), [count]);
 
     return (
         <div className="absolute inset-0 pointer-events-none overflow-hidden">
-            {stars.map((star) => (
+            {stars.map((s) => (
                 <div
-                    key={star.id}
-                    className="absolute animate-meteorShoot"
+                    key={s.id}
+                    className="absolute rounded-full bg-white animate-starTwinkle"
                     style={{
-                        top: star.top,
-                        left: '-10%',
-                        animationDelay: `${star.delay}s`,
-                    }}
-                >
-                    {/* Star head */}
-                    <div
-                        className="rounded-full"
-                        style={{
-                            width: star.size * 2,
-                            height: star.size * 2,
-                            backgroundColor: color,
-                            boxShadow: `0 0 ${star.size * 4}px ${star.size * 2}px ${color}, 0 0 ${star.size * 8}px ${star.size * 4}px ${secondaryColor}`,
-                        }}
-                    />
-                    {/* Star trail */}
-                    <div
-                        className="absolute top-1/2 -translate-y-1/2"
-                        style={{
-                            right: star.size * 2,
-                            width: star.size * 30,
-                            height: star.size,
-                            background: `linear-gradient(90deg, transparent, ${color}, ${secondaryColor})`,
-                            filter: `blur(${star.size / 2}px)`,
-                        }}
-                    />
-                </div>
-            ))}
-        </div>
-    );
-};
-
-// Expanding rings like Genshin wish animation
-const WishRings: React.FC<{ color: string }> = ({ color }) => {
-    const rings = [0, 0.2, 0.4, 0.6, 0.8];
-    return (
-        <div className="absolute inset-0 flex items-center justify-center pointer-events-none" style={{ perspective: '1000px' }}>
-            {rings.map((delay, i) => (
-                <div
-                    key={i}
-                    className="absolute rounded-full border-4 animate-wishRing"
-                    style={{
-                        width: 100 + i * 20,
-                        height: 100 + i * 20,
-                        borderColor: color,
-                        animationDelay: `${delay}s`,
-                        opacity: 0,
-                    }}
+                        left: s.left,
+                        top: s.top,
+                        width: s.size,
+                        height: s.size,
+                        opacity: dim ? 0.3 : undefined,
+                        '--twinkle-duration': s.duration,
+                        '--twinkle-delay': s.delay,
+                    } as React.CSSProperties}
                 />
             ))}
         </div>
     );
 };
+
+// The comet: arcs across the sky, hangs at the crest, dives into center.
+// Trail color = the batch's best-pull rarity (the Genshin tell).
+const Comet: React.FC<{ color: string; secondaryColor: string }> = ({ color, secondaryColor }) => (
+    <div className="absolute inset-0 flex items-center justify-center pointer-events-none overflow-hidden">
+        <div className="absolute animate-cometFlight">
+            {/* Tail — rotates to trail behind the motion direction */}
+            <div
+                className="absolute top-1/2 animate-cometTail"
+                style={{
+                    right: 6,
+                    width: '36vw',
+                    height: 9,
+                    transformOrigin: '100% 50%',
+                    background: `linear-gradient(90deg, transparent, ${secondaryColor}90, ${color})`,
+                    filter: 'blur(5px)',
+                    borderRadius: 999,
+                }}
+            />
+            {/* Head */}
+            <div
+                className="rounded-full"
+                style={{
+                    width: 18,
+                    height: 18,
+                    backgroundColor: '#ffffff',
+                    boxShadow: `0 0 12px 6px ${color}, 0 0 40px 18px ${secondaryColor}80, 0 0 80px 40px ${color}40`,
+                }}
+            />
+        </div>
+    </div>
+);
 
 // Vertical light beam
 const LightBeam: React.FC<{ color: string; secondaryColor: string }> = ({ color, secondaryColor }) => (
@@ -180,26 +174,6 @@ const GlitterParticles: React.FC<{ color: string; secondaryColor: string }> = ({
     );
 };
 
-// Star burst effect at reveal
-const StarBurst: React.FC<{ color: string; secondaryColor: string }> = ({ color, secondaryColor }) => {
-    const rays = 12;
-    return (
-        <div className="absolute inset-0 flex items-center justify-center pointer-events-none">
-            {Array.from({ length: rays }).map((_, i) => (
-                <div
-                    key={i}
-                    className="absolute w-1 h-32 origin-bottom animate-starBurst"
-                    style={{
-                        background: `linear-gradient(to top, ${color}, ${secondaryColor}, transparent)`,
-                        transform: `rotate(${(360 / rays) * i}deg)`,
-                        animationDelay: `${i * 0.02}s`,
-                    }}
-                />
-            ))}
-        </div>
-    );
-};
-
 // Atmospheric background particles
 const AtmosphericParticles: React.FC = () => {
     const particles = useMemo(() => Array.from({ length: 15 }).map((_, i) => ({
@@ -229,12 +203,32 @@ const AtmosphericParticles: React.FC = () => {
     );
 };
 
-// Animation phases
-type SummonPhase = 'idle' | 'charging' | 'shooting' | 'reveal' | 'display';
+// Comet Rite phases:
+// idle → charging (portal draws energy) → flight (comet arcs, trail = best-pull color)
+// → impact (dive + flash) → card ×N (one-by-one tap-through; bigPull interstitial
+// before Ultra Rare / Legendary / Shiny) → summary (grid, multi only)
+type SummonPhase = 'idle' | 'charging' | 'flight' | 'impact' | 'bigPull' | 'card' | 'summary';
 
 const SummonView: React.FC<SummonViewProps> = ({ auraPoints, setAuraPoints, userCreatures, addCreature, onSummonComplete }) => {
     const [phase, setPhase] = useState<SummonPhase>('idle');
     const [summonedResults, setSummonedResults] = useState<SummonResult[]>([]);
+    const [revealIndex, setRevealIndex] = useState(0);
+
+    const timeoutsRef = useRef<number[]>([]);
+    const completedRef = useRef(false);
+    const prefersReducedMotion = useMemo(
+        () => window.matchMedia?.('(prefers-reduced-motion: reduce)').matches ?? false,
+        []
+    );
+
+    const queue = (fn: () => void, ms: number) => {
+        timeoutsRef.current.push(window.setTimeout(fn, ms));
+    };
+    const clearQueue = () => {
+        timeoutsRef.current.forEach(clearTimeout);
+        timeoutsRef.current = [];
+    };
+    useEffect(() => clearQueue, []);
 
     const getRarityColor = (rarity: Rarity) => {
         switch (rarity) {
@@ -244,6 +238,17 @@ const SummonView: React.FC<SummonViewProps> = ({ auraPoints, setAuraPoints, user
             case Rarity.UltraRare: return '#a855f7';
             case Rarity.Legendary: return '#ca8a04';
             default: return '#6b7280';
+        }
+    };
+
+    const getSecondaryColor = (rarity: Rarity) => {
+        switch (rarity) {
+            case Rarity.Common: return '#9ca3af';
+            case Rarity.Uncommon: return '#06b6d4';
+            case Rarity.Rare: return '#d946ef';
+            case Rarity.UltraRare: return '#ec4899';
+            case Rarity.Legendary: return '#f97316';
+            default: return '#9ca3af';
         }
     };
 
@@ -258,15 +263,59 @@ const SummonView: React.FC<SummonViewProps> = ({ auraPoints, setAuraPoints, user
         }
     };
 
+    const isBigPull = (r: SummonResult) =>
+        r.isShiny || r.rarity === Rarity.UltraRare || r.rarity === Rarity.Legendary;
+
+    const fireComplete = () => {
+        if (!completedRef.current) {
+            completedRef.current = true;
+            onSummonComplete?.();
+        }
+    };
+
+    const startCardReveal = (i: number, results: SummonResult[]) => {
+        clearQueue();
+        setRevealIndex(i);
+        if (!prefersReducedMotion && isBigPull(results[i])) {
+            setPhase('bigPull');
+            queue(() => setPhase('card'), 1500);
+        } else {
+            setPhase('card');
+        }
+    };
+
+    const finishReveals = () => {
+        clearQueue();
+        if (summonedResults.length === 1) {
+            setPhase('idle');
+            setSummonedResults([]);
+        } else {
+            setPhase('summary');
+        }
+        fireComplete();
+    };
+
+    const advanceCard = () => {
+        const next = revealIndex + 1;
+        if (next < summonedResults.length) {
+            startCardReveal(next, summonedResults);
+        } else {
+            finishReveals();
+        }
+    };
+
     const performSummon = (count: number) => {
         const totalCost = SUMMON_COST * count;
         if (auraPoints < totalCost) return;
 
-        // Allow summoning from idle or display phase (not during animation)
-        if (phase !== 'idle' && phase !== 'display') return;
+        // Allow summoning from idle or summary phase (not during animation)
+        if (phase !== 'idle' && phase !== 'summary') return;
 
         setAuraPoints(prev => prev - totalCost);
         setSummonedResults([]);
+        setRevealIndex(0);
+        completedRef.current = false;
+        clearQueue();
 
         // Generate results
         const results: SummonResult[] = [];
@@ -298,12 +347,12 @@ const SummonView: React.FC<SummonViewProps> = ({ auraPoints, setAuraPoints, user
                 else if (rand < 99.5) chosenRarity = Rarity.Rare;
                 else chosenRarity = Rarity.UltraRare;
 
-                let possibleCreatures = INITIAL_CREATURES.filter(c => 
+                let possibleCreatures = INITIAL_CREATURES.filter(c =>
                     c.rarity === chosenRarity && !currentOwnedAndBatchIds.has(c.id)
                 );
 
                 if (possibleCreatures.length === 0) {
-                    possibleCreatures = INITIAL_CREATURES.filter(c => 
+                    possibleCreatures = INITIAL_CREATURES.filter(c =>
                         !currentOwnedAndBatchIds.has(c.id)
                     );
                 }
@@ -341,46 +390,52 @@ const SummonView: React.FC<SummonViewProps> = ({ auraPoints, setAuraPoints, user
             addCreature(creature.id, { isShiny });
         }
 
-        // Sort results by rarity (commons first, UltraRare last)
+        // Sort by rarity ascending so the tap-through builds to the best pull
         const sorted = [...results].sort((a, b) => {
-            const rarityOrder = { 
-                [Rarity.Common]: 0, 
-                [Rarity.Uncommon]: 1, 
-                [Rarity.Rare]: 2, 
+            const rarityOrder = {
+                [Rarity.Common]: 0,
+                [Rarity.Uncommon]: 1,
+                [Rarity.Rare]: 2,
                 [Rarity.UltraRare]: 3,
-                [Rarity.Legendary]: 4 
+                [Rarity.Legendary]: 4
             };
             return rarityOrder[a.rarity] - rarityOrder[b.rarity];
         });
         setSummonedResults(sorted);
 
-        // Phase 1: Charging (particles gather)
         setPhase('charging');
-
-        // Phase 2: Shooting stars (after 1.2s)
-        setTimeout(() => setPhase('shooting'), 1200);
-
-        // Phase 3: Reveal (after 3.2s)
-        setTimeout(() => setPhase('reveal'), 3200);
-
-        // Phase 4: Display (after 5.2s)
-        setTimeout(() => {
-            setPhase('display');
-            // Notify parent that summon is complete
-            onSummonComplete?.();
-        }, 5200);
-    };
-
-    const handleSkip = () => {
-        if (phase === 'display') {
-            setPhase('idle');
-            setSummonedResults([]);
-        } else if (phase !== 'idle') {
-            setPhase('display');
+        if (prefersReducedMotion) {
+            queue(() => startCardReveal(0, sorted), 600);
+        } else {
+            queue(() => setPhase('flight'), 1300);      // portal charges
+            queue(() => setPhase('impact'), 3350);      // comet lands
+            queue(() => startCardReveal(0, sorted), 3950);
         }
     };
 
-    // Get the highest rarity from results for color theming
+    const handleTap = () => {
+        switch (phase) {
+            case 'charging':
+            case 'flight':
+            case 'impact':
+                // Skip the cinematics straight to the first card
+                startCardReveal(0, summonedResults);
+                break;
+            case 'bigPull':
+                clearQueue();
+                setPhase('card');
+                break;
+            case 'card':
+                advanceCard();
+                break;
+            case 'summary':
+                setPhase('idle');
+                setSummonedResults([]);
+                break;
+        }
+    };
+
+    // Best rarity in the batch — drives the comet's color tell
     const highestRarity = useMemo(() => {
         if (summonedResults.length === 0) return Rarity.Common;
         const hasLegendary = summonedResults.some(r => r.rarity === Rarity.Legendary);
@@ -394,20 +449,17 @@ const SummonView: React.FC<SummonViewProps> = ({ auraPoints, setAuraPoints, user
         return Rarity.Common;
     }, [summonedResults]);
 
-    const getSecondaryColor = (rarity: Rarity) => {
-        switch (rarity) {
-            case Rarity.Common: return '#9ca3af';
-            case Rarity.Uncommon: return '#06b6d4';
-            case Rarity.Rare: return '#d946ef';
-            case Rarity.UltraRare: return '#ec4899';
-            case Rarity.Legendary: return '#f97316';
-            default: return '#9ca3af';
-        }
-    };
-
     const themeColor = getRarityColor(highestRarity);
     const secondaryColor = getSecondaryColor(highestRarity);
-    const isAnimating = phase === 'charging' || phase === 'shooting' || phase === 'reveal';
+    const isAnimating = phase !== 'idle' && phase !== 'summary';
+    const isMulti = summonedResults.length > 1;
+
+    const currentCard = phase === 'card' || phase === 'bigPull' ? summonedResults[revealIndex] : null;
+    const cardColor = currentCard ? getRarityColor(currentCard.rarity) : themeColor;
+    const cardSecondary = currentCard ? getSecondaryColor(currentCard.rarity) : secondaryColor;
+    // Big-pull interstitial color: gold for Legendary/Shiny, purple for Ultra Rare
+    const bigPullColor = currentCard && (currentCard.rarity === Rarity.Legendary || currentCard.isShiny) ? '#ca8a04' : '#a855f7';
+    const bigPullSecondary = currentCard && (currentCard.rarity === Rarity.Legendary || currentCard.isShiny) ? '#f97316' : '#ec4899';
 
     return (
         <div className={`flex flex-col items-center justify-center min-h-[75vh] lg:min-h-0 w-full text-center p-2 md:p-4 pb-12 max-w-4xl mx-auto ${
@@ -423,18 +475,14 @@ const SummonView: React.FC<SummonViewProps> = ({ auraPoints, setAuraPoints, user
             <div className="w-full flex items-center justify-center max-w-lg md:max-w-2xl lg:max-w-3xl mx-auto my-3 md:my-6">
                 <div
                     className={`w-full bg-slate-900 flex items-center justify-center relative overflow-hidden transition-all duration-700 shadow-[0_20px_50px_rgba(0,0,0,0.3)] ${
-                        phase === 'charging' ? 'animate-shake' : ''
+                        phase === 'charging' || phase === 'impact' ? 'animate-shake' : ''
                     } ${
-                        isAnimating 
-                            ? 'w-full h-full min-h-screen rounded-none border-none lg:min-h-[500px] lg:rounded-3xl lg:border-4 lg:border-slate-800 animate-bgFlicker' 
+                        isAnimating
+                            ? 'w-full h-full min-h-screen rounded-none border-none lg:min-h-[500px] lg:rounded-3xl lg:border-4 lg:border-slate-800'
                             : 'min-h-[300px] md:min-h-[400px] lg:min-h-[500px] border-4 border-slate-800 rounded-2xl md:rounded-3xl'
                     }`}
-                    onClick={phase !== 'idle' ? handleSkip : undefined}
-                    style={{ 
-                        cursor: phase !== 'idle' ? 'pointer' : 'default',
-                        '--flicker-color-1': `${themeColor}20`,
-                        '--flicker-color-2': `${secondaryColor}15`
-                    } as React.CSSProperties}
+                    onClick={phase !== 'idle' ? handleTap : undefined}
+                    style={{ cursor: phase !== 'idle' ? 'pointer' : 'default' }}
                 >
                     <AtmosphericParticles />
 
@@ -446,7 +494,7 @@ const SummonView: React.FC<SummonViewProps> = ({ auraPoints, setAuraPoints, user
                         style={{ backgroundColor: phase !== 'idle' ? `${themeColor}40` : '#ca8a0410' }}
                     />
 
-                    {/* Phase: Charging - Particles gathering */}
+                    {/* Phase: Charging — the portal draws in energy */}
                     {phase === 'charging' && (
                         <>
                             <GatheringParticles color={themeColor} />
@@ -455,114 +503,181 @@ const SummonView: React.FC<SummonViewProps> = ({ auraPoints, setAuraPoints, user
                                 <div className="absolute w-64 h-64 border-l-4 border-r-4 rounded-full animate-spinSlowReverse" style={{ borderColor: `${themeColor}40` }} />
                                 <div className="absolute w-24 h-24 rounded-full filter blur-xl animate-pulse" style={{ backgroundColor: themeColor }} />
                             </div>
-                            <p className="absolute bottom-8 text-slate-400 text-xs animate-pulse">Summoning...</p>
+                            <p className="absolute bottom-8 text-slate-400 text-xs animate-pulse">The portal stirs...</p>
                         </>
                     )}
 
-                    {/* Phase: Shooting stars */}
-                    {phase === 'shooting' && (
+                    {/* Phase: Flight — the comet crosses the night sky */}
+                    {phase === 'flight' && (
                         <>
-                            <ShootingStars color={themeColor} secondaryColor={secondaryColor} count={7} />
-                            <WishRings color={themeColor} />
-                            <div
-                                className="absolute w-40 h-40 rounded-full filter blur-3xl animate-pulse"
-                                style={{ backgroundColor: themeColor, opacity: 0.5 }}
+                            <div className="absolute inset-0 bg-slate-950" />
+                            <video 
+                                src="/summon-star.mp4" 
+                                autoPlay 
+                                muted 
+                                playsInline 
+                                className="absolute inset-0 w-full h-full object-cover mix-blend-screen"
+                                style={{
+                                    filter: highestRarity === Rarity.Legendary ? 'sepia(1) saturate(5) hue-rotate(15deg) brightness(1.3)' :
+                                            highestRarity === Rarity.UltraRare ? 'sepia(1) saturate(4) hue-rotate(260deg) brightness(1.2)' :
+                                            highestRarity === Rarity.Rare ? 'sepia(1) saturate(5) hue-rotate(220deg) brightness(1.2)' :
+                                            highestRarity === Rarity.Uncommon ? 'sepia(1) saturate(4) hue-rotate(120deg) brightness(1.1)' :
+                                            'grayscale(1) brightness(1.2)'
+                                }}
                             />
+                            {/* Legendary washes the whole sky gold */}
+                            {highestRarity === Rarity.Legendary && (
+                                <div className="absolute inset-0 animate-skyWash pointer-events-none mix-blend-screen" style={{ backgroundColor: '#ca8a0440' }} />
+                            )}
                         </>
                     )}
 
-                    {/* Phase: Reveal - Light beam and burst */}
-                    {phase === 'reveal' && (
+                    {/* Phase: Impact — the comet lands */}
+                    {phase === 'impact' && (
                         <>
-                            <LightBeam color={themeColor} secondaryColor={secondaryColor} />
-                            <StarBurst color={themeColor} secondaryColor={secondaryColor} />
+                            <div className="absolute inset-0 bg-slate-950" />
+                            <StarField dim />
+                            <div className="absolute inset-0 flex items-center justify-center pointer-events-none">
+                                <div className="absolute w-24 h-24 rounded-full border-4 animate-shockwave" style={{ borderColor: themeColor }} />
+                                <div className="absolute w-24 h-24 rounded-full border-2 animate-shockwave" style={{ borderColor: secondaryColor, animationDelay: '0.12s' }} />
+                                <div className="absolute w-32 h-32 rounded-full filter blur-2xl" style={{ backgroundColor: themeColor, opacity: 0.7 }} />
+                            </div>
                             <GlitterParticles color={themeColor} secondaryColor={secondaryColor} />
-                            {/* White flash */}
                             <div className="absolute inset-0 bg-white animate-flash pointer-events-none" />
                         </>
                     )}
 
-                    {/* Phase: Display results */}
-                    {phase === 'display' && summonedResults.length > 0 && (
-                        <div className="w-full h-full p-2 md:p-4 overflow-y-auto max-h-[50vh] md:max-h-[60vh] lg:max-h-full flex items-center justify-center scroll-smooth">
-                            <GlitterParticles color={themeColor} secondaryColor={secondaryColor} />
+                    {/* Phase: Big-pull interstitial — a second comet falls just for them */}
+                    {phase === 'bigPull' && currentCard && (
+                        <div key={`big-${revealIndex}`} className="absolute inset-0">
+                            <div className="absolute inset-0 bg-black/85" />
+                            <video 
+                                src="/summon-star.mp4" 
+                                autoPlay 
+                                muted 
+                                playsInline 
+                                className="absolute inset-0 w-full h-full object-cover mix-blend-screen"
+                                style={{
+                                    filter: (currentCard.rarity === Rarity.Legendary || currentCard.isShiny)
+                                        ? 'sepia(1) saturate(5) hue-rotate(15deg) brightness(1.3)' 
+                                        : 'sepia(1) saturate(4) hue-rotate(260deg) brightness(1.2)'
+                                }}
+                            />
+                            <div className="absolute inset-0 bg-white animate-tripleFlash pointer-events-none" />
+                            <p className="absolute bottom-8 left-0 right-0 text-center text-xs uppercase tracking-[0.4em] animate-pulse font-bold" style={{ color: bigPullColor }}>
+                                A powerful presence approaches
+                            </p>
+                        </div>
+                    )}
 
-                            {summonedResults.length === 1 ? (
-                                // Single summon - big reveal
-                                <div className="text-center py-12 relative animate-creatureReveal">
-                                    {/* Rarity aura */}
-                                    <div
-                                        className={`absolute inset-0 rounded-full ${
-                                            summonedResults[0].rarity === Rarity.Legendary ? 'animate-legendaryAura' :
-                                            summonedResults[0].rarity === Rarity.Rare ? 'animate-rareAura' : ''
-                                        }`}
-                                        style={{ transform: 'scale(0.5)' }}
-                                    />
+                    {/* Phase: Card — one-by-one reveal, tap to advance */}
+                    {phase === 'card' && currentCard && (
+                        <div key={`card-${revealIndex}`} className="absolute inset-0 flex flex-col items-center justify-center overflow-hidden">
+                            <div className="absolute inset-0 bg-slate-950" />
+                            <StarField dim />
+                            {/* Rarity radial glow */}
+                            <div
+                                className="absolute inset-0 pointer-events-none"
+                                style={{ background: `radial-gradient(circle at 50% 45%, ${cardColor}2e 0%, transparent 60%)` }}
+                            />
+                            <LightBeam color={cardColor} secondaryColor={cardSecondary} />
+                            <GlitterParticles color={cardColor} secondaryColor={cardSecondary} />
+                            {/* Entry flash from the previous beat */}
+                            <div className="absolute inset-0 bg-white animate-flash pointer-events-none" />
 
-                                    {/* Background radial */}
-                                    <div
-                                        className="absolute inset-0 animate-pulse"
-                                        style={{
-                                            background: `radial-gradient(circle, ${getRarityColor(summonedResults[0].rarity)}30 0%, transparent 70%)`,
-                                        }}
-                                    />
-
-                                    <div className="relative z-10 drop-shadow-[0_0_30px_rgba(255,255,255,0.4)]">
-                                        <PixelCreature creature={summonedResults[0]} evolutionStage={1} pixelSize={14} isShiny={summonedResults[0].isShiny} />
-                                        {summonedResults[0].isNew ? (
-                                            <div className="absolute -top-4 -right-4 bg-accent text-white font-black text-xs px-3 py-1.5 rounded-sm border-2 border-white shadow-lg animate-bounce uppercase tracking-tighter">NEW</div>
-                                        ) : (
-                                            <div className="absolute -bottom-4 -right-4 bg-primary text-white font-black text-sm px-2 py-1 rounded-sm border-2 border-white shadow-lg uppercase tracking-tighter">x{summonedResults[0].multiplier}</div>
-                                        )}
-                                    </div>
-
-                                    <h2 className="text-3xl font-bold mt-8 text-white tracking-tighter drop-shadow-md">
-                                        {summonedResults[0].isShiny ? `✨ Shiny ${summonedResults[0].name} ✨` : summonedResults[0].name}
-                                    </h2>
-                                    <p className={`text-xl font-black uppercase tracking-[0.3em] mt-2 ${getRarityTextClass(summonedResults[0].rarity)} animate-textGlow`}>
-                                        {summonedResults[0].rarity}
-                                    </p>
-                                </div>
-                            ) : (
-                                // Multi summon - grid display
-                                <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-5 gap-3 md:gap-6 w-full max-w-3xl">
-                                    {summonedResults.map((result, idx) => (
-                                        <div
-                                            key={idx}
-                                            className={`bg-slate-800/50 border-2 p-4 rounded-xl relative flex flex-col items-center justify-center transition-all shadow-xl animate-creatureReveal hover:scale-105 ${
-                                                result.isShiny ? 'border-amber-400' :
-                                                result.rarity === Rarity.Legendary ? 'border-legendary' :
-                                                result.rarity === Rarity.Rare ? 'border-rare' : 'border-slate-700'
-                                            }`}
-                                            style={{
-                                                animationDelay: `${idx * 100}ms`,
-                                                boxShadow: result.isShiny
-                                                    ? '0 0 20px rgba(251, 191, 36, 0.7)'
-                                                    : result.rarity === Rarity.Legendary
-                                                        ? '0 0 20px rgba(202, 138, 4, 0.5)'
-                                                        : result.rarity === Rarity.Rare
-                                                            ? '0 0 15px rgba(67, 56, 202, 0.4)'
-                                                            : undefined
-                                            }}
-                                        >
-                                            <div className="drop-shadow-lg relative">
-                                                <PixelCreature creature={result} evolutionStage={1} pixelSize={4} isShiny={result.isShiny} />
-                                                {result.isNew ? (
-                                                    <div className="absolute -top-4 -right-4 bg-accent text-white font-black text-[8px] px-1.5 py-0.5 rounded-sm border border-white shadow-md animate-pulse uppercase">NEW</div>
-                                                ) : (
-                                                    <div className="absolute -bottom-2 -right-2 bg-primary text-white font-black text-[10px] px-1 rounded-sm border border-white shadow-md">x{result.multiplier}</div>
-                                                )}
-                                                {result.isShiny && (
-                                                    <div className="absolute -top-4 -left-4 bg-amber-400 text-white font-black text-[7px] px-1 py-0.5 rounded-sm border border-white shadow-sm animate-pulse">✨</div>
-                                                )}
-                                            </div>
-                                            <p className="text-[9px] mt-4 font-bold truncate w-full text-slate-300 uppercase">{result.name}</p>
-                                            <p className={`text-[8px] font-black tracking-widest ${getRarityTextClass(result.rarity)}`}>{result.rarity}</p>
-                                        </div>
-                                    ))}
-                                </div>
+                            {/* Reveal counter (multi only) */}
+                            {isMulti && (
+                                <p className="absolute top-6 right-6 text-slate-400 text-xs font-mono tracking-widest z-20">
+                                    {revealIndex + 1} / {summonedResults.length}
+                                </p>
                             )}
 
+                            <div className="relative z-10 flex flex-col items-center">
+                                {/* Burst ring behind the creature, fires as color lands */}
+                                <div className="absolute top-1/3 w-32 h-32 rounded-full border-4 summon-burst-ring pointer-events-none" style={{ borderColor: cardColor }} />
+
+                                {/* Creature: rises as silhouette, bursts into color */}
+                                <div className="summon-silhouette relative">
+                                    <div className={currentCard.isShiny ? 'drop-shadow-[0_0_30px_rgba(251,191,36,0.8)]' : 'drop-shadow-[0_0_30px_rgba(255,255,255,0.35)]'}>
+                                        <PixelCreature creature={currentCard} evolutionStage={1} pixelSize={12} isShiny={currentCard.isShiny} />
+                                    </div>
+                                </div>
+
+                                <h2 className="summon-rise text-2xl md:text-3xl font-bold mt-6 text-white tracking-tighter drop-shadow-md" style={{ animationDelay: '0.8s' }}>
+                                    {currentCard.isShiny ? `✨ Shiny ${currentCard.name} ✨` : currentCard.name}
+                                </h2>
+                                <p className={`summon-stamp text-lg md:text-xl font-black uppercase tracking-[0.3em] mt-2 ${getRarityTextClass(currentCard.rarity)} animate-textGlow`}>
+                                    {currentCard.rarity}
+                                </p>
+
+                                <div className="summon-rise flex items-center gap-2 mt-4" style={{ animationDelay: '1.1s' }}>
+                                    {currentCard.isNew ? (
+                                        <span className="bg-accent text-white font-black text-[10px] px-3 py-1 rounded-sm border-2 border-white shadow-lg uppercase tracking-tighter">NEW</span>
+                                    ) : (
+                                        <span className="bg-primary text-white font-black text-[10px] px-3 py-1 rounded-sm border-2 border-white shadow-lg uppercase tracking-tighter">x{currentCard.multiplier}</span>
+                                    )}
+                                    {currentCard.isShiny && (
+                                        <span className="bg-amber-400 text-white font-black text-[10px] px-3 py-1 rounded-sm border-2 border-white shadow-lg uppercase tracking-tighter">SHINY</span>
+                                    )}
+                                </div>
+                            </div>
+
+                            <p className="summon-rise absolute bottom-6 left-0 right-0 text-center text-slate-500 text-[10px] animate-pulse" style={{ animationDelay: '1.2s' }}>
+                                Tap to continue ▸
+                            </p>
+                        </div>
+                    )}
+
+                    {/* Skip All — jump straight to the summary grid */}
+                    {isMulti && (phase === 'card' || phase === 'bigPull') && (
+                        <button
+                            onClick={(e) => { e.stopPropagation(); finishReveals(); }}
+                            className="absolute bottom-5 right-5 z-30 text-slate-400 hover:text-white text-[10px] uppercase tracking-widest font-bold border border-slate-600 hover:border-slate-400 rounded-full px-3 py-1.5 transition-colors bg-slate-900/60"
+                        >
+                            Skip All ≫
+                        </button>
+                    )}
+
+                    {/* Phase: Summary — the full batch (multi only) */}
+                    {phase === 'summary' && summonedResults.length > 0 && (
+                        <div className="w-full h-full p-2 md:p-4 overflow-y-auto max-h-[50vh] md:max-h-[60vh] lg:max-h-full flex items-center justify-center scroll-smooth">
+                            <GlitterParticles color={themeColor} secondaryColor={secondaryColor} />
+                            <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-5 gap-3 md:gap-6 w-full max-w-3xl">
+                                {summonedResults.map((result, idx) => (
+                                    <div
+                                        key={idx}
+                                        className={`bg-slate-800/50 border-2 p-4 rounded-xl relative flex flex-col items-center justify-center transition-all shadow-xl animate-creatureReveal hover:scale-105 ${
+                                            result.isShiny ? 'border-amber-400' :
+                                            result.rarity === Rarity.Legendary ? 'border-legendary' :
+                                            result.rarity === Rarity.Rare ? 'border-rare' : 'border-slate-700'
+                                        }`}
+                                        style={{
+                                            animationDelay: `${idx * 100}ms`,
+                                            boxShadow: result.isShiny
+                                                ? '0 0 20px rgba(251, 191, 36, 0.7)'
+                                                : result.rarity === Rarity.Legendary
+                                                    ? '0 0 20px rgba(202, 138, 4, 0.5)'
+                                                    : result.rarity === Rarity.Rare
+                                                        ? '0 0 15px rgba(67, 56, 202, 0.4)'
+                                                        : undefined
+                                        }}
+                                    >
+                                        <div className="drop-shadow-lg relative">
+                                            <PixelCreature creature={result} evolutionStage={1} pixelSize={4} isShiny={result.isShiny} />
+                                            {result.isNew ? (
+                                                <div className="absolute -top-4 -right-4 bg-accent text-white font-black text-[8px] px-1.5 py-0.5 rounded-sm border border-white shadow-md animate-pulse uppercase">NEW</div>
+                                            ) : (
+                                                <div className="absolute -bottom-2 -right-2 bg-primary text-white font-black text-[10px] px-1 rounded-sm border border-white shadow-md">x{result.multiplier}</div>
+                                            )}
+                                            {result.isShiny && (
+                                                <div className="absolute -top-4 -left-4 bg-amber-400 text-white font-black text-[7px] px-1 py-0.5 rounded-sm border border-white shadow-sm animate-pulse">✨</div>
+                                            )}
+                                        </div>
+                                        <p className="text-[9px] mt-4 font-bold truncate w-full text-slate-300 uppercase">{result.name}</p>
+                                        <p className={`text-[8px] font-black tracking-widest ${getRarityTextClass(result.rarity)}`}>{result.rarity}</p>
+                                    </div>
+                                ))}
+                            </div>
                         </div>
                     )}
 
@@ -574,9 +689,9 @@ const SummonView: React.FC<SummonViewProps> = ({ auraPoints, setAuraPoints, user
                         </div>
                     )}
 
-                    {/* Skip hint */}
-                    {phase !== 'idle' && phase !== 'display' && (
-                        <p className="absolute bottom-4 text-slate-500 text-[10px] animate-pulse">Tap to skip</p>
+                    {/* Skip hint during cinematics */}
+                    {(phase === 'charging' || phase === 'flight' || phase === 'impact') && (
+                        <p className="absolute bottom-4 right-5 text-slate-500 text-[10px] animate-pulse">Tap to skip</p>
                     )}
                 </div>
             </div>
@@ -586,7 +701,7 @@ const SummonView: React.FC<SummonViewProps> = ({ auraPoints, setAuraPoints, user
                 <div className="flex flex-col sm:flex-row gap-3 md:gap-4 max-w-2xl mx-auto">
                     <button
                         onClick={() => performSummon(1)}
-                        disabled={(auraPoints < SUMMON_COST) || (phase !== 'idle' && phase !== 'display')}
+                        disabled={(auraPoints < SUMMON_COST) || (phase !== 'idle' && phase !== 'summary')}
                         className="flex-1 bg-surface hover:bg-secondary/20 active:bg-secondary/20 text-text-main font-bold py-3 md:py-4 px-4 md:px-6 shadow-card hover:shadow-card-hover transition-premium border-2 border-secondary/50 disabled:opacity-40 disabled:cursor-not-allowed border-b-4 active:border-b-0 active:translate-y-0.5 rounded-xl flex items-center justify-center gap-2 md:gap-3 uppercase tracking-tighter text-[9px] md:text-[10px] touch-target press-effect"
                     >
                         <span>Summon x1</span>
@@ -594,7 +709,7 @@ const SummonView: React.FC<SummonViewProps> = ({ auraPoints, setAuraPoints, user
                     </button>
                     <button
                         onClick={() => performSummon(10)}
-                        disabled={(auraPoints < SUMMON_COST * 10) || (phase !== 'idle' && phase !== 'display')}
+                        disabled={(auraPoints < SUMMON_COST * 10) || (phase !== 'idle' && phase !== 'summary')}
                         className="flex-1 bg-highlight hover:brightness-110 active:brightness-110 text-white font-bold py-3 md:py-4 px-4 md:px-6 shadow-card hover:shadow-glow-highlight transition-premium border-2 border-yellow-800 disabled:opacity-40 disabled:cursor-not-allowed border-b-4 border-yellow-900 active:border-b-0 active:translate-y-0.5 rounded-xl flex items-center justify-center gap-2 md:gap-3 uppercase tracking-tighter text-[9px] md:text-[10px] touch-target press-effect"
                     >
                         <span>Summon x10</span>
