@@ -153,7 +153,22 @@ const PracticeSession: React.FC<{
                     }
                     onExit();
                 }} className="text-text-dim hover:text-highlight active:text-highlight flex items-center gap-2 p-2 -ml-2 touch-target">← Back</button>
-                 <p className="text-primary font-bold text-sm md:text-base">Streak: {'🔥'.repeat(streak)}{'⚫'.repeat(3 - streak)}</p>
+                 <div className="flex items-center gap-2">
+                     <span className="text-primary font-bold text-xs md:text-sm">Streak:</span>
+                     <div className="w-16 md:w-20 flex gap-[2px] h-3.5 md:h-4 z-10 relative">
+                         {Array.from({ length: 3 }).map((_, i) => (
+                             <div key={i} className="flex-1 rounded-[2px] bg-surface/30 border border-text-dark/40 overflow-hidden relative -skew-x-12 shadow-sm">
+                                 <div 
+                                     className={`absolute top-0 h-full bg-gradient-to-r from-orange-600 via-amber-500 to-yellow-400 transition-opacity duration-300 ${i >= streak ? 'opacity-0' : 'opacity-100'}`}
+                                     style={{
+                                         width: `calc(300% + 4px)`,
+                                         left: `calc(-${i * 100}% - ${i * 2}px)`
+                                     }}
+                                 />
+                             </div>
+                         ))}
+                     </div>
+                 </div>
             </div>
  
             {isLoading || !currentQuestion ? (
