@@ -172,7 +172,7 @@ const PracticeSession: React.FC<{
                 </div>
             ) : (
                 <div className={`p-4 md:p-6 border-2 flex flex-col justify-between rounded-lg shadow-sm transition-all duration-300 ${
-                    isCorrect === false ? 'bg-accent/5 border-accent shadow-[0_0_20px_rgba(220,38,38,0.25)] shake-once red-flash' : 'bg-background/50 border-text-dark'
+                    isCorrect === false ? 'bg-accent/5 border-accent shadow-[0_0_20px_rgba(220,38,38,0.25)] red-flash' : 'bg-surface border-secondary/30'
                 }`}>
                     <div>
                         <div className="flex justify-between items-start mb-3 md:mb-4">
@@ -199,7 +199,7 @@ const PracticeSession: React.FC<{
                     {selectedAnswer !== null && (
                         <div className="mt-6 md:mt-8 p-4 md:p-6 bg-background animate-fadeIn border-2 border-secondary rounded-lg shadow-md">
                             <h3 className={`text-lg md:text-xl font-bold ${isCorrect ? 'text-success' : 'text-accent'}`}>{isCorrect ? 'Correct!' : 'Incorrect'}</h3>
-                            <FormattedText className="text-xs md:text-sm text-text-main mt-2 leading-relaxed italic" text={currentQuestion.explanation} />
+                            <FormattedText className="text-xs md:text-sm text-text-main mt-2 leading-relaxed italic font-clean" text={currentQuestion.explanation} />
                             
                             {/* Strategy Tip Box */}
                             {strategyTip && (
@@ -207,7 +207,7 @@ const PracticeSession: React.FC<{
                                     <p className="text-[10px] font-bold text-yellow-600 dark:text-yellow-400 flex items-center gap-1.5 uppercase tracking-wider">
                                         <span>{strategyTip.icon}</span> {strategyTip.title}
                                     </p>
-                                    <p className="text-[11px] text-text-main mt-1 leading-normal font-sans">{strategyTip.tip}</p>
+                                    <p className="text-[11px] text-text-main mt-1 leading-normal font-clean">{strategyTip.tip}</p>
                                 </div>
                             )}
 
@@ -515,7 +515,7 @@ const BossFightSession: React.FC<{
                 </div>
                 
                 <div className={`p-6 ${selectedAnswer === null && availablePowerUps.length > 0 ? 'pb-20 lg:pb-6' : ''} border-2 ${
-                    isCorrect === false ? 'bg-accent/5 border-accent shadow-[0_0_20px_rgba(220,38,38,0.25)] shake-once red-flash' 
+                    isCorrect === false ? 'bg-accent/5 border-accent shadow-[0_0_20px_rgba(220,38,38,0.25)] red-flash' 
                     : doubleJeopardyActive ? 'bg-surface border-rose-500 shadow-[0_0_15px_rgba(244,63,94,0.5)]' 
                     : secondChanceActive ? 'bg-surface border-highlight shadow-[0_0_15px_rgba(202,138,4,0.5)]' 
                     : 'bg-surface border-accent/50'
@@ -531,8 +531,8 @@ const BossFightSession: React.FC<{
                       {currentQuestion.graphData && <QuestionGraph data={currentQuestion.graphData} />}
                       <FormattedText className="text-base md:text-lg mb-8 leading-relaxed pt-4 font-clean" text={currentQuestion.question} />
                       {hintVisible && (
-                          <div className="mb-6 p-4 bg-highlight/10 border-l-4 border-highlight text-[8px] text-text-main italic rounded-r-md">
-                              <span className="font-bold block mb-1">Oracle's Insight:</span> {currentQuestion.explanation.split('.')[0]}...
+                          <div className="mb-6 p-4 bg-highlight/10 border-l-4 border-highlight text-[8px] text-text-main italic rounded-r-md font-clean">
+                              <span className="font-bold block mb-1 font-sans">Oracle's Insight:</span> {currentQuestion.explanation.split('.')[0]}...
                           </div>
                       )}
 
@@ -586,13 +586,13 @@ const BossFightSession: React.FC<{
 
                     {selectedAnswer !== null && (
                         <div className="mt-8 p-6 bg-background animate-fadeIn rounded-lg border border-secondary">
-                            <FormattedText className="text-xs md:text-sm text-text-main leading-relaxed italic" text={currentQuestion.explanation} />
+                            <FormattedText className="text-xs md:text-sm text-text-main leading-relaxed italic font-clean" text={currentQuestion.explanation} />
                             {strategyTip && (
                                 <div className="mt-4 p-3 bg-yellow-500/10 border-l-4 border-yellow-500 rounded-r-xl text-left animate-fadeIn">
                                     <p className="text-[10px] font-bold text-yellow-600 flex items-center gap-1.5 uppercase tracking-wider">
                                         <span>{strategyTip.icon}</span> {strategyTip.title}
                                     </p>
-                                    <p className="text-[11px] text-text-main mt-1 leading-normal font-sans">{strategyTip.tip}</p>
+                                    <p className="text-[11px] text-text-main mt-1 leading-normal font-clean">{strategyTip.tip}</p>
                                 </div>
                             )}
                             <button onClick={handleNext} className="mt-6 w-full bg-primary text-light font-bold py-4 border-b-4 border-primary/70 rounded-md hover:bg-primary/90 transition-colors">
