@@ -673,32 +673,36 @@ const SummonView: React.FC<SummonViewProps> = ({ auraPoints, setAuraPoints, user
                 </div>
             </div>
 
-            {/* Summon buttons */}
-            <div className="w-full mt-3 md:mt-6 space-y-3 max-w-lg md:max-w-2xl lg:max-w-3xl mx-auto">
-                <div className="flex flex-col sm:flex-row gap-3 md:gap-4 max-w-2xl mx-auto">
-                    <button
-                        onClick={() => performSummon(1)}
-                        disabled={(auraPoints < SUMMON_COST) || (phase !== 'idle' && phase !== 'summary')}
-                        className="flex-1 bg-surface hover:bg-secondary/20 active:bg-secondary/20 text-text-main font-bold py-3 md:py-4 px-4 md:px-6 shadow-card hover:shadow-card-hover transition-premium border-2 border-secondary/50 disabled:opacity-40 disabled:cursor-not-allowed border-b-4 active:border-b-0 active:translate-y-0.5 rounded-xl flex items-center justify-center gap-2 md:gap-3 uppercase tracking-tighter text-[9px] md:text-[10px] touch-target press-effect"
-                    >
-                        <span>Summon x1</span>
-                        <span className="bg-primary/10 text-primary px-2.5 py-1 rounded-full font-mono flex items-center gap-1">{SUMMON_COST} <AuraIcon className="w-3.5 h-3.5 text-primary" /></span>
-                    </button>
-                    <button
-                        onClick={() => performSummon(10)}
-                        disabled={(auraPoints < SUMMON_COST * 10) || (phase !== 'idle' && phase !== 'summary')}
-                        className="flex-1 bg-highlight hover:brightness-110 active:brightness-110 text-white font-bold py-3 md:py-4 px-4 md:px-6 shadow-card hover:shadow-glow-highlight transition-premium border-2 border-yellow-800 disabled:opacity-40 disabled:cursor-not-allowed border-b-4 border-yellow-900 active:border-b-0 active:translate-y-0.5 rounded-xl flex items-center justify-center gap-2 md:gap-3 uppercase tracking-tighter text-[9px] md:text-[10px] touch-target press-effect"
-                    >
-                        <span>Summon x10</span>
-                        <span className="bg-white/20 px-2.5 py-1 rounded-full font-mono flex items-center gap-1">{SUMMON_COST * 10} <AuraIcon className="w-3.5 h-3.5 text-white" /></span>
-                    </button>
-                </div>
-            </div>
+            {/* Summon buttons and Aura Points - only show when not animating */}
+            {!isAnimating && (
+                <>
+                    <div className="w-full mt-3 md:mt-6 space-y-3 max-w-lg md:max-w-2xl lg:max-w-3xl mx-auto">
+                        <div className="flex flex-col sm:flex-row gap-3 md:gap-4 max-w-2xl mx-auto">
+                            <button
+                                onClick={() => performSummon(1)}
+                                disabled={auraPoints < SUMMON_COST}
+                                className="flex-1 bg-surface hover:bg-secondary/20 active:bg-secondary/20 text-text-main font-bold py-3 md:py-4 px-4 md:px-6 shadow-card hover:shadow-card-hover transition-premium border-2 border-secondary/50 disabled:opacity-40 disabled:cursor-not-allowed border-b-4 active:border-b-0 active:translate-y-0.5 rounded-xl flex items-center justify-center gap-2 md:gap-3 uppercase tracking-tighter text-[9px] md:text-[10px] touch-target press-effect"
+                            >
+                                <span>Summon x1</span>
+                                <span className="bg-primary/10 text-primary px-2.5 py-1 rounded-full font-mono flex items-center gap-1">{SUMMON_COST} <AuraIcon className="w-3.5 h-3.5 text-primary" /></span>
+                            </button>
+                            <button
+                                onClick={() => performSummon(10)}
+                                disabled={auraPoints < SUMMON_COST * 10}
+                                className="flex-1 bg-highlight hover:brightness-110 active:brightness-110 text-white font-bold py-3 md:py-4 px-4 md:px-6 shadow-card hover:shadow-glow-highlight transition-premium border-2 border-yellow-800 disabled:opacity-40 disabled:cursor-not-allowed border-b-4 border-yellow-900 active:border-b-0 active:translate-y-0.5 rounded-xl flex items-center justify-center gap-2 md:gap-3 uppercase tracking-tighter text-[9px] md:text-[10px] touch-target press-effect"
+                            >
+                                <span>Summon x10</span>
+                                <span className="bg-white/20 px-2.5 py-1 rounded-full font-mono flex items-center gap-1">{SUMMON_COST * 10} <AuraIcon className="w-3.5 h-3.5 text-white" /></span>
+                            </button>
+                        </div>
+                    </div>
 
-            <div className="mt-4 glass px-4 md:px-8 py-2 md:py-3 rounded-xl border-2 border-secondary/30 shadow-card animate-fadeIn flex items-center gap-2 md:gap-3 hover-lift">
-                <AuraIcon className="w-4 h-4 md:w-5 md:h-5 text-primary animate-gentleBounce" />
-                <p className="text-[10px] md:text-xs tracking-widest uppercase font-bold text-primary flex items-center gap-1">Your Aura: <span className="text-highlight font-black ml-1 flex items-center gap-1">{auraPoints.toLocaleString()} <AuraIcon className="w-3.5 h-3.5 text-highlight" /></span></p>
-            </div>
+                    <div className="mt-4 glass px-4 md:px-8 py-2 md:py-3 rounded-xl border-2 border-secondary/30 shadow-card animate-fadeIn flex items-center gap-2 md:gap-3 hover-lift">
+                        <AuraIcon className="w-4 h-4 md:w-5 md:h-5 text-primary animate-gentleBounce" />
+                        <p className="text-[10px] md:text-xs tracking-widest uppercase font-bold text-primary flex items-center gap-1">Your Aura: <span className="text-highlight font-black ml-1 flex items-center gap-1">{auraPoints.toLocaleString()} <AuraIcon className="w-3.5 h-3.5 text-highlight" /></span></p>
+                    </div>
+                </>
+            )}
         </div>
     );
 };
