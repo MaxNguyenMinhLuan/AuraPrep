@@ -487,13 +487,13 @@ const SummonView: React.FC<SummonViewProps> = ({ auraPoints, setAuraPoints, user
                 </>
             )}
 
-            <div className="w-full flex items-center justify-center max-w-lg md:max-w-2xl lg:max-w-3xl mx-auto my-3 md:my-6">
+            <div className={`w-full flex items-center justify-center mx-auto ${isAnimating ? 'max-w-none h-full my-0' : 'max-w-lg md:max-w-2xl lg:max-w-3xl my-3 md:my-6'}`}>
                 <div
                     className={`w-full bg-slate-900 flex items-center justify-center relative overflow-hidden transition-all duration-700 shadow-[0_20px_50px_rgba(0,0,0,0.3)] ${
                         phase === 'charging' || phase === 'impact' ? 'animate-shake' : ''
                     } ${
                         isAnimating
-                            ? 'w-full h-full min-h-screen rounded-none border-none lg:min-h-[500px] lg:rounded-3xl lg:border-4 lg:border-slate-800'
+                            ? 'w-full h-full min-h-screen rounded-none border-none'
                             : 'min-h-[300px] md:min-h-[400px] lg:min-h-[500px] border-4 border-slate-800 rounded-2xl md:rounded-3xl'
                     }`}
                     onClick={phase !== 'idle' ? handleTap : undefined}
