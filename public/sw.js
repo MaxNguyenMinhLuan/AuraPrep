@@ -7,7 +7,6 @@ self.addEventListener('push', (event) => {
     body: 'You have a new notification!',
     icon: '/app-icon.png',
     badge: '/app-icon.png',
-    vibrate: [100, 50, 100],
     data: { url: '/' },
   };
 
@@ -26,6 +25,11 @@ self.addEventListener('push', (event) => {
   event.waitUntil(self.registration.showNotification(title, options));
 });
 
+// Activate updates promptly so the push handler stays current after a deploy.
+self.addEventListener('install', (event) => {
+  event.waitUntil(self.skipWaiting());
+});
+
 self.addEventListener('notificationclick', (event) => {
   event.notification.close();
 
@@ -36,9 +40,7 @@ self.addEventListener('notificationclick', (event) => {
       // If the app is already open, focus it and navigate
       for (const client of windowClients) {
         if ('focus' in client) {
-          client.focus();
-          client.navigate(targetUrl);
-          return;
+          return client.navigate(targetUrl).then(() => client.focus());
         }
       }
       // Otherwise open a new window

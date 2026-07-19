@@ -5,6 +5,7 @@ import UserGameData from '../models/UserGameData';
 import { User } from '../models/User';
 import { generateGuardianCopy } from '../shared/generateGuardianCopy';
 import { CreatureType, NudgeLevel } from '../shared/guardianPersonalities';
+import { sendNotificationToUser } from './push.service';
 
 if (config.sendgrid.apiKey) {
     sgMail.setApiKey(config.sendgrid.apiKey);
@@ -83,9 +84,10 @@ export class NudgeService {
     static async processHourlyNudges(): Promise<void> {
         console.log(`[${new Date().toISOString()}] Starting hourly nudge sweep...`);
         try {
-            // Find all game records where email notifications are enabled
+            // These are the user's chosen reminder windows. A Web Push
+            // subscription is its own opt-in and is sent in addition to email.
             const records = await UserGameData.find({ 'emailNotifications.enabled': true });
-            console.log(`Found ${records.length} users with email notifications enabled.`);
+            console.log(`Found ${records.length} users with reminders enabled.`);
 
             let nudgesSentCount = 0;
 
@@ -179,7 +181,6 @@ export class NudgeService {
                         console.log(`✉️ Email nudge (${level}) sent to ${user.email} from ${gameData.activeCreature.name} (${gameData.activeCreature.type})`);
                     } catch (error) {
                         console.error(`Failed to send email nudge to ${user.email} via SendGrid:`, error);
-                        continue;
                     }
                 } else {
                     console.log(`[MOCK EMAIL NUDGE]
@@ -190,6 +191,21 @@ Body:
 ---------------------------------------------
 ${emailText}
 ---------------------------------------------`);
+                }
+
+                // Web Push wakes the service worker and displays a native
+                // notification, so it reaches installed iOS PWAs even when
+                // AuraPrep has no open window.
+                const pushResult = await sendNotificationToUser(user._id.toString(), {
+                    title: copy.subject,
+                    body: copy.preview,
+                    url: deepLink,
+                });
+
+                if (pushResult.sent > 0) {
+                    console.log(`🔔 Push nudge (${level}) sent to ${user.email} on ${pushResult.sent} device(s).`);
+                } else if (pushResult.failed > 0) {
+                    console.warn(`Push nudge (${level}) could not be delivered to ${user.email}.`);
                 }
 
                 // 9. Update Database stats
