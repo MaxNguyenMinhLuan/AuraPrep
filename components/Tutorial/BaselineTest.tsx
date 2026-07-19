@@ -158,12 +158,12 @@ const BaselineTest: React.FC<BaselineTestProps> = ({ onComplete, onSaveAndExit, 
                 {/* Header with Save & Exit button */}
                 <div className="mb-6">
                     <div className="flex justify-between items-center mb-2">
-                        <h1 className="text-2xl font-serif text-highlight">📋 Baseline Assessment</h1>
+                        <h1 className="text-2xl font-serif text-highlight">Baseline Assessment</h1>
                         <button
                             onClick={handleSaveAndExit}
                             className="px-4 py-2 text-xs font-bold border-2 border-text-dim text-text-dim hover:border-primary hover:text-primary rounded-lg transition-all"
                         >
-                            💾 Save & Exit
+                            Save & Exit
                         </button>
                     </div>
                     <p className="text-center text-xs text-text-dim mb-4">

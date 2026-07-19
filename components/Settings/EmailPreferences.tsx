@@ -191,7 +191,7 @@ const EmailPreferences: React.FC<EmailPreferencesProps> = ({ onClose, onSave }) 
           <>
             {/* Nudge Time Preferences */}
             <div className="mb-8 p-4 bg-background rounded-xl">
-              <h2 className="text-lg font-bold text-text-main mb-4">📧 Email Times</h2>
+              <h2 className="text-lg font-bold text-text-main mb-4">Email Times</h2>
               <p className="text-sm text-text-dim mb-4">Choose which nudges to receive:</p>
 
               <div className="space-y-3">
