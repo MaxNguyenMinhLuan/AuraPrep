@@ -514,7 +514,7 @@ const SummonView: React.FC<SummonViewProps> = ({ auraPoints, setAuraPoints, user
                         <>
                             <div className="absolute inset-0 bg-slate-950" />
                             <video
-                                src={highestRarity === Rarity.Legendary || highestRarity === Rarity.UltraRare ? "/portal-resists.mp4" : "/portal-shatter.mp4"}
+                                src="/portal-shatter.mp4"
                                 autoPlay
                                 muted
                                 playsInline
