@@ -2,292 +2,220 @@ import { useState, useEffect, useCallback } from 'react';
 import { auth } from '../services/firebase';
 
 const API_URL = import.meta.env.VITE_API_URL || 'http://localhost:5001/api';
+const VAPID_PUBLIC_KEY = import.meta.env.VITE_VAPID_PUBLIC_KEY || '';
 
-type PushPermission = NotificationPermission | 'unsupported';
-
-export interface EnableNotificationsResult {
-    enabled: boolean;
-    testSent: boolean;
-}
-
-export interface PushNotificationState {
-    /** True when this browser can create a Web Push subscription right now. */
-    isSupported: boolean;
-    /** True when the app is running from an installed PWA window. */
-    isInstalled: boolean;
-    /** iOS/iPadOS only: the user must add AuraPrep to the Home Screen first. */
-    requiresInstallation: boolean;
-    /** Null while checking the server configuration. */
-    isConfigured: boolean | null;
-    /** True if there is already an active push subscription on this device. */
-    isSubscribed: boolean;
-    /** True while subscribing, unsubscribing, or sending a test notification. */
-    isLoading: boolean;
-    /** The current Notification.permission value. */
-    permission: PushPermission;
-    /** A user-safe explanation when setup cannot continue. */
-    error: string | null;
-    /** Call directly from a button tap. It invokes the native system permission prompt. */
-    enableNotifications: () => Promise<EnableNotificationsResult>;
-    /** Send an authenticated test notification through the Web Push service. */
-    sendTestNotification: () => Promise<boolean>;
-    /** Unsubscribe this device from push notifications. */
-    disableNotifications: () => Promise<void>;
-}
-
-interface PushConfigurationResponse {
-    success: boolean;
-    data?: {
-        enabled?: boolean;
-        publicKey?: string | null;
-    };
-}
-
-function isAppleMobileDevice(): boolean {
-    const userAgent = navigator.userAgent;
-    const isIOS = /iPad|iPhone|iPod/.test(userAgent);
-    const isIPadOS = navigator.platform === 'MacIntel' && navigator.maxTouchPoints > 1;
-    return isIOS || isIPadOS;
-}
-
-function isInstalledWebApp(): boolean {
-    return window.matchMedia('(display-mode: standalone)').matches ||
-        (navigator as Navigator & { standalone?: boolean }).standalone === true;
-}
-
-/** Convert a base64url VAPID public key to the format PushManager expects. */
+/**
+ * Convert a base64url-encoded VAPID public key to the Uint8Array
+ * that PushManager.subscribe() expects.
+ */
 function urlBase64ToUint8Array(base64String: string): Uint8Array {
     const padding = '='.repeat((4 - (base64String.length % 4)) % 4);
     const base64 = (base64String + padding).replace(/-/g, '+').replace(/_/g, '/');
     const rawData = window.atob(base64);
     const outputArray = new Uint8Array(rawData.length);
-
-    for (let index = 0; index < rawData.length; index += 1) {
-        outputArray[index] = rawData.charCodeAt(index);
+    for (let i = 0; i < rawData.length; i++) {
+        outputArray[i] = rawData.charCodeAt(i);
     }
-
     return outputArray;
 }
 
-async function getAuthHeaders(): Promise<HeadersInit | null> {
-    const token = await auth.currentUser?.getIdToken();
-    return token ? { Authorization: `Bearer ${token}` } : null;
+export interface PushNotificationState {
+    /** True if the current browser supports service workers + PushManager */
+    isSupported: boolean;
+    /** True if there is already an active push subscription */
+    isSubscribed: boolean;
+    /** True while a subscribe/unsubscribe operation is in progress */
+    isLoading: boolean;
+    /** The current Notification.permission value */
+    permission: NotificationPermission | 'unsupported';
+    /** True if the user is on an iOS device (iPhone/iPad) */
+    isIOS: boolean;
+    /** True if the web app is running in Standalone mode (added to Home Screen) */
+    isStandalone: boolean;
+    /** Call this from a user-gesture handler (button tap) to request permission + subscribe */
+    enableNotifications: () => Promise<boolean>;
+    /** Unsubscribe from push notifications */
+    disableNotifications: () => Promise<void>;
 }
 
 export function usePushNotifications(): PushNotificationState {
     const [isSupported, setIsSupported] = useState(false);
-    const [isInstalled, setIsInstalled] = useState(false);
-    const [requiresInstallation, setRequiresInstallation] = useState(false);
-    const [isConfigured, setIsConfigured] = useState<boolean | null>(null);
-    const [vapidPublicKey, setVapidPublicKey] = useState('');
     const [isSubscribed, setIsSubscribed] = useState(false);
     const [isLoading, setIsLoading] = useState(false);
-    const [permission, setPermission] = useState<PushPermission>('unsupported');
-    const [error, setError] = useState<string | null>(null);
+    const [permission, setPermission] = useState<NotificationPermission | 'unsupported'>('unsupported');
+    const [isIOS, setIsIOS] = useState(false);
+    const [isStandalone, setIsStandalone] = useState(false);
 
-    const getRegistration = useCallback(async (): Promise<ServiceWorkerRegistration> => {
-        const existingRegistration = await navigator.serviceWorker.getRegistration('/');
-        if (existingRegistration) return existingRegistration;
+    // Check browser support, iOS PWA mode, and existing subscription on mount
+    useEffect(() => {
+        const checkSupport = async () => {
+            const ios = /iPad|iPhone|iPod/.test(navigator.userAgent) && !(window as any).MSStream;
+            const standalone = window.matchMedia('(display-mode: standalone)').matches || (navigator as any).standalone === true;
 
-        const registration = await navigator.serviceWorker.register('/sw.js', { scope: '/' });
-        return registration;
-    }, []);
+            setIsIOS(ios);
+            setIsStandalone(standalone);
 
-    const syncSubscription = useCallback(async (subscription: PushSubscription): Promise<boolean> => {
-        const headers = await getAuthHeaders();
-        if (!headers) {
-            setError('Please sign in again before enabling notifications.');
-            return false;
-        }
-
-        const subscriptionJSON = subscription.toJSON();
-        const response = await fetch(`${API_URL}/push/subscribe`, {
-            method: 'POST',
-            headers: {
-                ...headers,
-                'Content-Type': 'application/json',
-            },
-            body: JSON.stringify({
-                subscription: {
-                    endpoint: subscriptionJSON.endpoint,
-                    keys: {
-                        p256dh: subscriptionJSON.keys?.p256dh,
-                        auth: subscriptionJSON.keys?.auth,
-                    },
-                },
-            }),
-        });
-
-        if (!response.ok) {
-            setError('AuraPrep could not save this device for notifications. Please try again.');
-            return false;
-        }
-
-        return true;
-    }, []);
-
-    const sendTestNotification = useCallback(async (): Promise<boolean> => {
-        const headers = await getAuthHeaders();
-        if (!headers) {
-            setError('Please sign in again before sending a test notification.');
-            return false;
-        }
-
-        try {
-            const response = await fetch(`${API_URL}/push/test`, {
-                method: 'POST',
-                headers: {
-                    ...headers,
-                    'Content-Type': 'application/json',
-                },
-            });
-
-            if (!response.ok) {
-                setError('Notifications are enabled, but the test notification could not be delivered. Please try again later.');
-                return false;
+            // Register SW eagerly on page load so it's ready before permission requests
+            if ('serviceWorker' in navigator) {
+                try {
+                    await navigator.serviceWorker.register('/sw.js', { scope: '/' });
+                } catch (e) {
+                    console.warn('[Push] Early SW registration failed:', e);
+                }
             }
 
-            return true;
-        } catch {
-            setError('Notifications are enabled, but the test notification could not be delivered. Please check your connection.');
-            return false;
-        }
-    }, []);
-
-    useEffect(() => {
-        let cancelled = false;
-
-        const checkAvailability = async () => {
-            const appleMobile = isAppleMobileDevice();
-            const installed = isInstalledWebApp();
-            const supportsPush = window.isSecureContext &&
+            const supported =
                 'serviceWorker' in navigator &&
                 'PushManager' in window &&
                 'Notification' in window;
 
-            if (cancelled) return;
+            setIsSupported(supported);
 
-            setIsInstalled(installed);
-            setRequiresInstallation(appleMobile && !installed);
-            setIsSupported(supportsPush && (!appleMobile || installed));
-            setPermission('Notification' in window ? Notification.permission : 'unsupported');
-
-            try {
-                const response = await fetch(`${API_URL}/push/config`);
-                const payload: PushConfigurationResponse = await response.json();
-                const publicKey = payload.data?.publicKey || '';
-                const configured = response.ok && payload.data?.enabled === true && Boolean(publicKey);
-
-                if (!cancelled) {
-                    setVapidPublicKey(publicKey);
-                    setIsConfigured(configured);
-                }
-            } catch {
-                if (!cancelled) setIsConfigured(false);
+            if (!supported) {
+                setPermission('unsupported');
+                return;
             }
 
-            if (!supportsPush || (appleMobile && !installed)) return;
+            setPermission(Notification.permission);
 
+            // Check for existing subscription
             try {
-                const registration = await getRegistration();
-                const subscription = await registration.pushManager.getSubscription();
-                if (!cancelled) setIsSubscribed(Boolean(subscription));
-            } catch {
-                if (!cancelled) setError('AuraPrep could not prepare notifications in this browser.');
+                const registration = await navigator.serviceWorker.getRegistration('/sw.js');
+                if (registration) {
+                    const subscription = await registration.pushManager.getSubscription();
+                    setIsSubscribed(!!subscription);
+                }
+            } catch (err) {
+                console.warn('[Push] Error checking existing subscription:', err);
             }
         };
 
-        void checkAvailability();
-        return () => { cancelled = true; };
-    }, [getRegistration]);
+        checkSupport();
+    }, []);
 
-    const enableNotifications = useCallback(async (): Promise<EnableNotificationsResult> => {
-        setError(null);
-
-        if (requiresInstallation) {
-            setError('On iPhone and iPad, add AuraPrep to your Home Screen and open it from there before allowing notifications.');
-            return { enabled: false, testSent: false };
+    const enableNotifications = useCallback(async (): Promise<boolean> => {
+        if (!('Notification' in window)) {
+            console.warn('[Push] Notification API missing in window');
+            return false;
         }
-
-        if (!isSupported) {
-            setError('This browser does not support web push notifications.');
-            return { enabled: false, testSent: false };
-        }
-
-        if (!isConfigured || !vapidPublicKey) {
-            setError('Notifications are temporarily unavailable. Please try again later.');
-            return { enabled: false, testSent: false };
-        }
-
-        if (Notification.permission === 'denied') {
-            setPermission('denied');
-            setError('Notifications are blocked for AuraPrep. Re-enable them in your device or browser settings.');
-            return { enabled: false, testSent: false };
-        }
-
-        setIsLoading(true);
 
         try {
-            // This must be the first asynchronous browser operation after the tap.
-            // iOS only displays its native Allow / Don’t Allow prompt from a user gesture.
-            const grantedPermission = Notification.permission === 'default'
-                ? await Notification.requestPermission()
-                : Notification.permission;
-
-            setPermission(grantedPermission);
-            if (grantedPermission !== 'granted') {
-                return { enabled: false, testSent: false };
-            }
-
-            const registration = await getRegistration();
-            await navigator.serviceWorker.ready;
-
-            const existingSubscription = await registration.pushManager.getSubscription();
-            const subscription = existingSubscription || await registration.pushManager.subscribe({
-                userVisibleOnly: true,
-                applicationServerKey: urlBase64ToUint8Array(vapidPublicKey),
-            });
-
-            const saved = await syncSubscription(subscription);
-            if (!saved) return { enabled: false, testSent: false };
-
-            setIsSubscribed(true);
-            const testSent = await sendTestNotification();
-            return { enabled: true, testSent };
-        } catch (cause) {
-            console.error('[Push] Error enabling notifications:', cause);
-            setError('AuraPrep could not enable notifications. Please try again.');
-            return { enabled: false, testSent: false };
-        } finally {
-            setIsLoading(false);
-        }
-    }, [getRegistration, isConfigured, isSupported, requiresInstallation, sendTestNotification, syncSubscription, vapidPublicKey]);
-
-    const disableNotifications = useCallback(async () => {
-        setIsLoading(true);
-        setError(null);
-
-        try {
-            const registration = await navigator.serviceWorker.getRegistration('/');
-            const subscription = await registration?.pushManager.getSubscription();
-
-            if (subscription) {
-                const headers = await getAuthHeaders();
-                await subscription.unsubscribe();
-
-                if (headers) {
-                    await fetch(`${API_URL}/push/unsubscribe`, {
-                        method: 'DELETE',
-                        headers: { ...headers, 'Content-Type': 'application/json' },
-                        body: JSON.stringify({ endpoint: subscription.endpoint }),
-                    });
+            // 1. Request notification permission IMMEDIATELY on user gesture for iOS WebKit
+            // Support both Promise syntax and legacy callback syntax
+            let perm: NotificationPermission = Notification.permission;
+            if (perm === 'default') {
+                try {
+                    const reqResult = Notification.requestPermission();
+                    if (reqResult && typeof reqResult.then === 'function') {
+                        perm = await reqResult;
+                    } else {
+                        perm = await new Promise((resolve) => Notification.requestPermission(resolve));
+                    }
+                } catch (_err) {
+                    perm = await new Promise((resolve) => Notification.requestPermission(resolve));
                 }
             }
 
+            setPermission(perm);
+
+            if (perm !== 'granted') {
+                console.warn('[Push] Notification permission not granted:', perm);
+                return false;
+            }
+
+            if (!VAPID_PUBLIC_KEY) {
+                console.warn('[Push] VAPID public key missing');
+                return false;
+            }
+
+            setIsLoading(true);
+
+            // 2. Ensure service worker is registered and active
+            let registration = await navigator.serviceWorker.getRegistration('/sw.js');
+            if (!registration) {
+                registration = await navigator.serviceWorker.register('/sw.js', { scope: '/' });
+            }
+            await navigator.serviceWorker.ready;
+
+            // 3. Subscribe to push with VAPID key
+            const applicationServerKey = urlBase64ToUint8Array(VAPID_PUBLIC_KEY);
+            const subscription = await registration.pushManager.subscribe({
+                userVisibleOnly: true,
+                applicationServerKey,
+            });
+
+            // 4. Extract the subscription keys
+            const subscriptionJSON = subscription.toJSON();
+            const subData = {
+                endpoint: subscriptionJSON.endpoint!,
+                keys: {
+                    p256dh: subscriptionJSON.keys!.p256dh!,
+                    auth: subscriptionJSON.keys!.auth!,
+                },
+            };
+
+            // 5. Send to backend
+            const authToken = await auth.currentUser?.getIdToken();
+            if (!authToken) {
+                console.warn('[Push] No auth token — cannot register subscription on server');
+                setIsLoading(false);
+                return false;
+            }
+
+            const response = await fetch(`${API_URL}/push/subscribe`, {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                    Authorization: `Bearer ${authToken}`,
+                },
+                body: JSON.stringify({ subscription: subData }),
+            });
+
+            if (!response.ok) {
+                console.error('[Push] Server rejected subscription:', await response.text());
+                setIsLoading(false);
+                return false;
+            }
+
+            setIsSubscribed(true);
+            setIsLoading(false);
+            return true;
+        } catch (err) {
+            console.error('[Push] Error enabling notifications:', err);
+            setIsLoading(false);
+            return false;
+        }
+    }, [isSupported]);
+
+    const disableNotifications = useCallback(async () => {
+        setIsLoading(true);
+        try {
+            const registration = await navigator.serviceWorker.getRegistration('/sw.js');
+            if (registration) {
+                const subscription = await registration.pushManager.getSubscription();
+                if (subscription) {
+                    const endpoint = subscription.endpoint;
+
+                    // Unsubscribe from browser
+                    await subscription.unsubscribe();
+
+                    // Remove from backend
+                    const authToken = await auth.currentUser?.getIdToken();
+                    if (authToken) {
+                        await fetch(`${API_URL}/push/unsubscribe`, {
+                            method: 'DELETE',
+                            headers: {
+                                'Content-Type': 'application/json',
+                                Authorization: `Bearer ${authToken}`,
+                            },
+                            body: JSON.stringify({ endpoint }),
+                        });
+                    }
+                }
+            }
             setIsSubscribed(false);
-        } catch (cause) {
-            console.error('[Push] Error disabling notifications:', cause);
-            setError('AuraPrep could not turn off notifications on this device.');
+        } catch (err) {
+            console.error('[Push] Error disabling notifications:', err);
         } finally {
             setIsLoading(false);
         }
@@ -295,15 +223,12 @@ export function usePushNotifications(): PushNotificationState {
 
     return {
         isSupported,
-        isInstalled,
-        requiresInstallation,
-        isConfigured,
         isSubscribed,
         isLoading,
         permission,
-        error,
+        isIOS,
+        isStandalone,
         enableNotifications,
-        sendTestNotification,
         disableNotifications,
     };
 }
