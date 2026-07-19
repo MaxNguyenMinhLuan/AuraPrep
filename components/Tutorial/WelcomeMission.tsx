@@ -120,7 +120,9 @@ const WelcomeMission: React.FC<WelcomeMissionProps> = ({ uid, onComplete, onExit
         return (
             <div className="fixed inset-0 z-[100] bg-background flex items-center justify-center p-4">
                 <div className="max-w-md w-full text-center animate-scaleIn">
-                    <div className="text-6xl mb-6 animate-gentleBounce">🎉</div>
+                    <svg className="w-16 h-16 text-highlight mx-auto mb-6 animate-gentleBounce" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
+                        <path strokeLinecap="round" strokeLinejoin="round" d="M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm10-10V7a4 4 0 00-8 0v4h8z" />
+                    </svg>
                     <h1 className="text-3xl font-serif text-highlight mb-4">Welcome Mission Complete!</h1>
                     <p className="text-text-dim mb-8">Great job! You've completed your first mission.</p>
 
@@ -215,17 +217,25 @@ const WelcomeMission: React.FC<WelcomeMissionProps> = ({ uid, onComplete, onExit
                     <div className="space-y-3">
                         {currentQuestion.options.map((option, index) => {
                             let buttonClass = 'w-full text-left p-4 transition-all border-2 flex justify-between items-center rounded-xl ';
-                            let icon = null;
+                            let icon: React.ReactNode = null;
 
                             if (selectedAnswer === null) {
                                 buttonClass += 'bg-surface hover:bg-secondary/30 active:bg-secondary/30 border-secondary/30 shadow-card hover:shadow-card-hover';
                             } else {
                                 if (index === currentQuestion.answerIndex) {
                                     buttonClass += 'bg-success/10 border-success text-success font-bold shadow-glow-success animate-successPop';
-                                    icon = '✅';
+                                    icon = (
+                                        <svg className="w-5 h-5 text-success" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={3}>
+                                            <path strokeLinecap="round" strokeLinejoin="round" d="M5 13l4 4L19 7" />
+                                        </svg>
+                                    );
                                 } else if (index === selectedAnswer && !isCorrect) {
                                     buttonClass += 'bg-accent/10 border-accent text-accent font-bold';
-                                    icon = '❌';
+                                    icon = (
+                                        <svg className="w-5 h-5 text-accent animate-shake" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={3}>
+                                            <path strokeLinecap="round" strokeLinejoin="round" d="M6 18L18 6M6 6l12 12" />
+                                        </svg>
+                                    );
                                 } else {
                                     buttonClass += 'bg-surface opacity-50 border-text-dark/20';
                                 }
@@ -242,7 +252,7 @@ const WelcomeMission: React.FC<WelcomeMissionProps> = ({ uid, onComplete, onExit
                                         <span className="font-bold mr-2 text-primary">{String.fromCharCode(65 + index)}.</span>
                                         <FormattedText className="inline" text={option} />
                                     </span>
-                                    {icon && <span className="text-lg ml-2">{icon}</span>}
+                                    {icon && <span className="ml-2 flex-shrink-0">{icon}</span>}
                                 </button>
                             );
                         })}
@@ -272,7 +282,7 @@ const WelcomeMission: React.FC<WelcomeMissionProps> = ({ uid, onComplete, onExit
                 {/* Motivational footer */}
                 <div className="mt-6 text-center">
                     <p className="text-xs text-text-dim">
-                        {correctCount > 0 && `🔥 ${correctCount} correct so far!`}
+                        {correctCount > 0 && `Current progress: ${correctCount} correct so far!`}
                         {correctCount === 0 && currentIndex > 0 && "Keep going! Every question helps us understand your skills."}
                         {currentIndex === 0 && "Good luck! Just do your best."}
                     </p>

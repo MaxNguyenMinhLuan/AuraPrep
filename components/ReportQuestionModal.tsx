@@ -29,7 +29,11 @@ const ReportQuestionModal: React.FC<ReportQuestionModalProps> = ({ onClose, onSu
             >
                 {submitted ? (
                     <div className="text-center py-4 animate-fadeIn">
-                        <div className="text-4xl mb-2">✅</div>
+                        <div className="w-12 h-12 mx-auto mb-2 rounded-full bg-emerald-500/10 flex items-center justify-center">
+                            <svg className="w-6 h-6 text-emerald-500" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={3}>
+                                <path strokeLinecap="round" strokeLinejoin="round" d="M5 13l4 4L19 7" />
+                            </svg>
+                        </div>
                         <p className="font-bold text-success">Thanks — your report was sent!</p>
                     </div>
                 ) : (

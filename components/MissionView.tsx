@@ -105,7 +105,9 @@ const MissionView: React.FC<MissionViewProps> = ({ mission, onAnswer, onExit, in
     if (currentQuestionIndex >= mission.questionCount || mission.completed) {
         return (
             <div className="flex flex-col items-center justify-center h-full text-center animate-scaleIn">
-                <div className="text-5xl mb-4 animate-successPop">🎉</div>
+                <svg className="w-16 h-16 text-highlight mx-auto mb-4 animate-successPop" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
+                    <path strokeLinecap="round" strokeLinejoin="round" d="M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm10-10V7a4 4 0 00-8 0v4h8z" />
+                </svg>
                 <h2 className="text-2xl font-serif text-highlight mb-4 animate-slideUp">{mission.title} Complete!</h2>
                 <p className="text-lg mb-2 animate-fadeIn" style={{ animationDelay: '0.2s' }}>You maintained a streak of <span className="font-bold text-text-main">{mission.questionCount}</span> correct answers!</p>
                 <div className="my-6 p-6 border-2 border-secondary bg-surface rounded-xl shadow-card animate-popIn" style={{ animationDelay: '0.3s' }}>
@@ -196,17 +198,25 @@ const MissionView: React.FC<MissionViewProps> = ({ mission, onAnswer, onExit, in
                   <div className="space-y-2 md:space-y-3">
                       {currentQuestion.options.map((option, index) => {
                           let buttonClass = 'w-full text-left p-3 md:p-4 transition-premium border-2 flex justify-between items-center rounded-xl touch-target press-effect ';
-                          let icon = null;
+                          let icon: React.ReactNode = null;
 
                           if (selectedAnswer === null) {
                               buttonClass += 'bg-surface hover:bg-secondary/30 active:bg-secondary/30 border-secondary/30 shadow-card hover:shadow-card-hover';
                           } else {
                               if (index === currentQuestion.answerIndex) {
                                   buttonClass += 'bg-success/10 border-success text-success font-bold shadow-glow-success animate-successPop';
-                                  icon = '✅';
+                                  icon = (
+                                      <svg className="w-5 h-5 text-success" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={3}>
+                                          <path strokeLinecap="round" strokeLinejoin="round" d="M5 13l4 4L19 7" />
+                                      </svg>
+                                  );
                               } else if (index === selectedAnswer && !isCorrect) {
                                   buttonClass += 'bg-accent/10 border-accent text-accent font-bold';
-                                  icon = '❌';
+                                  icon = (
+                                      <svg className="w-5 h-5 text-accent animate-shake" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={3}>
+                                          <path strokeLinecap="round" strokeLinejoin="round" d="M6 18L18 6M6 6l12 12" />
+                                      </svg>
+                                  );
                               } else {
                                   buttonClass += 'bg-surface opacity-50 border-text-dark/20';
                               }
@@ -221,7 +231,7 @@ const MissionView: React.FC<MissionViewProps> = ({ mission, onAnswer, onExit, in
                                 style={{ animationDelay: `${index * 0.05}s` }}
                             >
                                 <span className="text-xs md:text-sm flex items-start text-left"><span className="font-bold mr-2 text-primary">{String.fromCharCode(65 + index)}.</span><FormattedText className="inline text-sm md:text-base font-clean" text={option} /></span>
-                                {icon && <span className="text-base md:text-lg ml-2">{icon}</span>}
+                                {icon && <span className="ml-2 flex-shrink-0">{icon}</span>}
                             </button>
                           );
                       })}
@@ -241,7 +251,10 @@ const MissionView: React.FC<MissionViewProps> = ({ mission, onAnswer, onExit, in
                         {strategyTip && (
                             <div className="mt-4 p-3 bg-yellow-500/10 border-l-4 border-yellow-500 rounded-r-xl text-left animate-fadeIn">
                                 <p className="text-[10px] font-bold text-yellow-600 dark:text-yellow-400 flex items-center gap-1.5 uppercase tracking-wider">
-                                    <span>{strategyTip.icon}</span> {strategyTip.title}
+                                    <svg className="w-3.5 h-3.5 text-yellow-600 dark:text-yellow-400" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2.5}>
+                                        <path strokeLinecap="round" strokeLinejoin="round" d="M9.663 17h4.673M12 3v1m6.364 1.636l-.707.707M21 12h-1M4 12H3m3.343-5.657l-.707-.707m2.828 9.9a5 5 0 117.072 0l-.548.547A3.374 3.374 0 0014 18.469V19a2 2 0 11-4 0v-.531c0-.895-.356-1.754-.988-2.386l-.548-.547z" />
+                                    </svg>
+                                    {strategyTip.title}
                                 </p>
                                 <p className="text-[11px] text-text-main mt-1 leading-normal font-sans">{strategyTip.tip}</p>
                             </div>

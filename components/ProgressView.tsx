@@ -211,17 +211,25 @@ const PracticeSession: React.FC<{
                         <div className="space-y-2 md:space-y-3">
                             {currentQuestion.options.map((option, index) => {
                                 let buttonClass = 'w-full text-left p-3 md:p-4 transition-premium border-2 flex justify-between items-center rounded-xl touch-target press-effect ';
-                                let icon = null;
+                                let icon: React.ReactNode = null;
 
                                 if (selectedAnswer === null) {
                                     buttonClass += 'bg-surface hover:bg-secondary/30 active:bg-secondary/30 border-secondary/30 shadow-card hover:shadow-card-hover';
                                 } else {
                                     if (index === currentQuestion.answerIndex) {
                                         buttonClass += 'bg-success/10 border-success text-success font-bold shadow-glow-success animate-successPop';
-                                        icon = '✅';
+                                        icon = (
+                                            <svg className="w-5 h-5 text-success" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={3}>
+                                                <path strokeLinecap="round" strokeLinejoin="round" d="M5 13l4 4L19 7" />
+                                            </svg>
+                                        );
                                     } else if (index === selectedAnswer && !isCorrect) {
                                         buttonClass += 'bg-accent/10 border-accent text-accent font-bold';
-                                        icon = '❌';
+                                        icon = (
+                                            <svg className="w-5 h-5 text-accent animate-shake" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={3}>
+                                                <path strokeLinecap="round" strokeLinejoin="round" d="M6 18L18 6M6 6l12 12" />
+                                            </svg>
+                                        );
                                     } else {
                                         buttonClass += 'bg-surface opacity-50 border-text-dark/20';
                                     }
@@ -238,7 +246,7 @@ const PracticeSession: React.FC<{
                                             <span className="font-bold mr-2 text-primary">{String.fromCharCode(65 + index)}.</span>
                                             <FormattedText className="inline text-sm md:text-base font-clean" text={option} />
                                         </span>
-                                        {icon && <span className="text-base md:text-lg ml-2">{icon}</span>}
+                                        {icon && <span className="ml-2 flex-shrink-0">{icon}</span>}
                                     </button>
                                 );
                             })}
@@ -1045,10 +1053,12 @@ const ProgressView: React.FC<ProgressViewProps> = ({ userId, userEmail, profile,
                     onChange={(e) => setSearchQuery(e.target.value)}
                     className="w-full px-4 py-2 pl-10 bg-surface text-text-main border-2 border-secondary/30 rounded-xl focus:outline-none focus:border-primary/50 text-xs md:text-sm font-bold shadow-card transition-all font-sans placeholder-text-dim/50"
                 />
-                <span className="absolute left-3.5 top-1/2 -translate-y-1/2 text-text-dim text-sm">🔍</span>
+                <svg className="absolute left-3.5 top-1/2 -translate-y-1/2 text-text-dim w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2.5}>
+                    <path strokeLinecap="round" strokeLinejoin="round" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
+                </svg>
             </div>
 
-            {/* ✨ Skills of the Day — shown only when not searching */}
+            {/* Skills of the Day — shown only when not searching */}
             {!searchQuery && (
                 <div className="mb-8 animate-fadeIn">
                     <div className="flex items-center gap-2 mb-3">

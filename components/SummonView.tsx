@@ -573,7 +573,7 @@ const SummonView: React.FC<SummonViewProps> = ({ auraPoints, setAuraPoints, user
                                 </div>
 
                                 <h2 className="summon-rise text-2xl md:text-3xl font-bold mt-6 text-white tracking-tighter drop-shadow-md" style={{ animationDelay: '0.8s' }}>
-                                    {currentCard.isShiny ? `✨ Shiny ${currentCard.name} ✨` : currentCard.name}
+                                    {currentCard.isShiny ? `Shiny ${currentCard.name}` : currentCard.name}
                                 </h2>
                                 <p className={`summon-stamp text-lg md:text-xl font-black uppercase tracking-[0.3em] mt-2 ${getRarityTextClass(currentCard.rarity)} animate-textGlow`}>
                                     {currentCard.rarity}
@@ -639,7 +639,7 @@ const SummonView: React.FC<SummonViewProps> = ({ auraPoints, setAuraPoints, user
                                                 <div className="absolute -bottom-2 -right-2 bg-primary text-white font-black text-[10px] px-1 rounded-sm border border-white shadow-md">x{result.multiplier}</div>
                                             )}
                                             {result.isShiny && (
-                                                <div className="absolute -top-4 -left-4 bg-amber-400 text-white font-black text-[7px] px-1 py-0.5 rounded-sm border border-white shadow-sm animate-pulse">✨</div>
+                                                <div className="absolute -top-4 -left-4 bg-amber-400 text-white font-black text-[7px] px-1 py-0.5 rounded-sm border border-white shadow-sm animate-pulse">S</div>
                                             )}
                                         </div>
                                         <p className="text-[9px] mt-4 font-bold truncate w-full text-slate-300 uppercase">{result.name}</p>

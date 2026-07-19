@@ -183,7 +183,7 @@ const BestiaryView: React.FC<BestiaryViewProps> = ({ userCreatures, userTeam, on
                         </span>
                         {currentInstance.isShiny && (
                             <span className="text-xs px-2 py-1 rounded border font-bold bg-amber-400 text-white border-amber-500 shadow-glow animate-pulse">
-                                ✨ SHINY ✨
+                                SHINY
                             </span>
                         )}
                     </div>
@@ -347,7 +347,9 @@ const BestiaryView: React.FC<BestiaryViewProps> = ({ userCreatures, userTeam, on
                                     onChange={(e) => setSearchQuery(e.target.value)}
                                     className="w-full px-3 py-1.5 pl-8 bg-surface text-text-main border border-secondary/30 rounded-lg focus:outline-none focus:border-primary/50 text-[11px] font-bold shadow-sm transition-all font-sans placeholder-text-dim/50"
                                 />
-                                <span className="absolute left-2.5 top-1/2 -translate-y-1/2 text-text-dim text-xs">🔍</span>
+                                <svg className="absolute left-2.5 top-1/2 -translate-y-1/2 text-text-dim w-3.5 h-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2.5}>
+                                    <path strokeLinecap="round" strokeLinejoin="round" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
+                                </svg>
                             </div>
                         </div>
                         {userCreatures.length === 0 ? (

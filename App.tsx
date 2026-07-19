@@ -278,7 +278,7 @@ const App: React.FC = () => {
 
                 const cloudData = await fetchGameData(token);
                 if (cloudData && cloudData.profile) {
-                    // ✅ Overwrite local state with authoritative cloud data
+                    // Overwrite local state with authoritative cloud data
                     setProfile(cloudData.profile);
                     if (cloudData.creatures) setCreatures(cloudData.creatures);
                     if (cloudData.activeCreature?.creatureId !== undefined) setActiveCreatureId(cloudData.activeCreature.creatureId);
@@ -1411,7 +1411,7 @@ const App: React.FC = () => {
             case 'progress-tour':
                 return (
                     <PikachuGuide
-                        message={"Welcome to Progress! Here's how it works:\n\n🏋️ PRACTICE: Pick any skill and drill questions at your level. Every 3 correct answers in a row = +50 Aura. Exiting early? You keep partial streak rewards!\n\n⚔️ BOSS FIGHT: Win a 10-question fight to LEVEL UP the skill — from Easy → Medium → Hard → Master. Beating a boss earns Aura + Guardian XP. You can bring up to 2 power-ups into each fight.\n\n💡 I've added a special Tutorial skill for you to try first!"}
+                        message={"Welcome to Progress! Here's how it works:\n\nPRACTICE: Pick any skill and drill questions at your level. Every 3 correct answers in a row = +50 Aura. Exiting early? You keep partial streak rewards!\n\nBOSS FIGHT: Win a 10-question fight to LEVEL UP the skill — from Easy → Medium → Hard → Master. Beating a boss earns Aura + Guardian XP. You can bring up to 2 power-ups into each fight.\n\nI've added a special Tutorial skill for you to try first!"}
                         onNext={handleProgressTourComplete}
                         buttonText="Start Tutorial Practice"
                         position="top"

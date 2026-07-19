@@ -270,10 +270,9 @@ const EmailPreferences: React.FC<EmailPreferencesProps> = ({ onClose, onSave }) 
           </div>
         </div>
 
-        {/* Info Box */}
         <div className="mb-8 p-4 bg-primary/10 border border-primary rounded-lg">
           <p className="text-sm text-text-main">
-            💡 <strong>Tip:</strong> Your Guardian will get increasingly desperate if you miss your daily missions! The evening nudge is the most aggressive.
+            <strong>Tip:</strong> Your Guardian will get increasingly desperate if you miss your daily missions! The evening nudge is the most aggressive.
           </p>
         </div>
 

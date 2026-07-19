@@ -212,17 +212,25 @@ const BaselineTest: React.FC<BaselineTestProps> = ({ onComplete, onSaveAndExit, 
                         <div className="space-y-3">
                             {currentQuestion.options.map((option, index) => {
                                 let buttonClass = 'w-full text-left p-3 transition-all duration-200 border-2 flex justify-between items-center rounded-md ';
-                                let icon = null;
+                                let icon: React.ReactNode = null;
 
                                 if (selectedAnswer === null) {
                                     buttonClass += 'bg-surface hover:bg-secondary border-primary/20 shadow-sm';
                                 } else {
                                     if (index === currentQuestion.answerIndex) {
                                         buttonClass += 'bg-success/10 border-success text-success font-bold';
-                                        icon = '✅';
+                                        icon = (
+                                            <svg className="w-5 h-5 text-success animate-successPop" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={3}>
+                                                <path strokeLinecap="round" strokeLinejoin="round" d="M5 13l4 4L19 7" />
+                                            </svg>
+                                        );
                                     } else if (index === selectedAnswer) {
                                         buttonClass += 'bg-accent/10 border-accent text-accent font-bold';
-                                        icon = '❌';
+                                        icon = (
+                                            <svg className="w-5 h-5 text-accent animate-shake" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={3}>
+                                                <path strokeLinecap="round" strokeLinejoin="round" d="M6 18L18 6M6 6l12 12" />
+                                            </svg>
+                                        );
                                     } else {
                                         buttonClass += 'bg-surface opacity-50 border-text-dark/20';
                                     }
@@ -239,7 +247,7 @@ const BaselineTest: React.FC<BaselineTestProps> = ({ onComplete, onSaveAndExit, 
                                             <span className="font-bold mr-2">{String.fromCharCode(65 + index)}.</span>
                                             {option}
                                         </span>
-                                        {icon && <span className="text-lg">{icon}</span>}
+                                        {icon && <span className="ml-2 flex-shrink-0">{icon}</span>}
                                     </button>
                                 );
                             })}
