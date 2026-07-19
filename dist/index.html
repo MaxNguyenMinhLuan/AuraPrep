@@ -8,7 +8,9 @@
     <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
     <meta name="mobile-web-app-capable" content="yes">
     <meta name="theme-color" content="#f3f4f6">
+    <meta name="apple-mobile-web-app-title" content="AuraPrep">
     <title>AuraPrep</title>
+    <link rel="manifest" href="/manifest.json">
     <link rel="apple-touch-icon" href="/app-icon.png?v=2">
     <link rel="icon" type="image/png" href="/app-icon.png?v=2">
     <script src="https://accounts.google.com/gsi/client" async defer></script>
@@ -315,6 +317,79 @@
     </script>
 
 <style>
+    /* ── Comet Rite summon animation ─────────────────────────────── */
+    @keyframes cometFlight {
+        0%   { transform: translate(-52vw, 38vh) scale(0.45); opacity: 0; }
+        6%   { opacity: 1; }
+        26%  { transform: translate(-30vw, -10vh) scale(0.65); }
+        44%  { transform: translate(-12vw, -25vh) scale(0.8); }
+        56%  { transform: translate(-2vw, -29vh) scale(0.9); }
+        66%  { transform: translate(4vw, -28vh) scale(0.95); }
+        80%  { transform: translate(5vw, -17vh) scale(1); }
+        100% { transform: translate(0vw, 0vh) scale(1.05); opacity: 1; }
+    }
+    @keyframes cometTail {
+        0%, 44% { transform: translateY(-50%) rotate(26deg); }
+        56%     { transform: translateY(-50%) rotate(6deg); }
+        66%     { transform: translateY(-50%) rotate(-12deg); }
+        100%    { transform: translateY(-50%) rotate(-72deg); }
+    }
+    @keyframes starTwinkle {
+        0%, 100% { opacity: 0.15; }
+        50%      { opacity: 0.9; }
+    }
+    @keyframes shockwave {
+        0%   { transform: scale(0.2); opacity: 1; }
+        100% { transform: scale(7);   opacity: 0; }
+    }
+    @keyframes bigCometFall {
+        0%   { transform: translateY(-58vh) scale(0.5); opacity: 0; }
+        12%  { opacity: 1; }
+        100% { transform: translateY(0) scale(1.1); opacity: 1; }
+    }
+    @keyframes tripleFlash {
+        0%, 55%, 70%, 86%, 100% { opacity: 0; }
+        62% { opacity: 1; }
+        78% { opacity: 0.9; }
+        93% { opacity: 1; }
+    }
+    @keyframes skyWash {
+        0%, 100% { opacity: 0.12; }
+        50%      { opacity: 0.3; }
+    }
+    @keyframes silhouetteRise {
+        0%   { transform: translateY(70px) scale(0.7); opacity: 0; filter: brightness(0); }
+        60%  { transform: translateY(-8px) scale(1.03); opacity: 1; filter: brightness(0); }
+        100% { transform: translateY(0) scale(1); opacity: 1; filter: brightness(0); }
+    }
+    @keyframes colorBurst {
+        0%   { filter: brightness(0); }
+        40%  { filter: brightness(2.6) saturate(0.6); }
+        100% { filter: brightness(1) saturate(1); }
+    }
+    @keyframes stampIn {
+        0%   { transform: scale(2.4); opacity: 0; }
+        100% { transform: scale(1); opacity: 1; }
+    }
+    @keyframes slideUpFade {
+        0%   { transform: translateY(18px); opacity: 0; }
+        100% { transform: translateY(0); opacity: 1; }
+    }
+    .animate-cometFlight  { animation: cometFlight 2.05s linear forwards; }
+    .animate-cometTail    { animation: cometTail 2.05s linear forwards; }
+    .animate-starTwinkle  { animation: starTwinkle var(--twinkle-duration, 3s) ease-in-out var(--twinkle-delay, 0s) infinite; }
+    .animate-shockwave    { animation: shockwave 0.7s cubic-bezier(0.16, 1, 0.3, 1) both; }
+    .animate-bigCometFall { animation: bigCometFall 1.15s cubic-bezier(0.55, 0, 0.85, 0.36) both; }
+    .animate-tripleFlash  { animation: tripleFlash 1.5s linear both; }
+    .animate-skyWash      { animation: skyWash 2.2s ease-in-out infinite; }
+    .summon-silhouette    { animation: silhouetteRise 0.55s cubic-bezier(0.22, 1, 0.36, 1) both, colorBurst 0.55s ease-out 0.62s forwards; }
+    .summon-burst-ring    { animation: shockwave 0.6s cubic-bezier(0.16, 1, 0.3, 1) 0.62s both; }
+    .summon-stamp         { animation: stampIn 0.4s cubic-bezier(0.34, 1.56, 0.64, 1) 0.95s both; }
+    .summon-rise          { animation: slideUpFade 0.45s cubic-bezier(0.22, 1, 0.36, 1) both; }
+    @media (prefers-reduced-motion: reduce) {
+        .animate-cometFlight, .animate-cometTail, .animate-bigCometFall { animation-duration: 0.01s; }
+    }
+
     @keyframes drift {
         0% { transform: translateY(0) translateX(0); opacity: 0; }
         20% { opacity: 0.5; }
@@ -534,7 +609,7 @@
   }
 }
 </script>
-  <script type="module" crossorigin src="/assets/index-DcqbAbWr.js"></script>
+  <script type="module" crossorigin src="/assets/index-Bi-g746l.js"></script>
 </head>
 <body class="bg-background text-text-main font-sans text-[10px]">
     <div id="root"></div>

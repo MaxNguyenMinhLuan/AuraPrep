@@ -230,6 +230,17 @@ const SummonView: React.FC<SummonViewProps> = ({ auraPoints, setAuraPoints, user
     };
     useEffect(() => clearQueue, []);
 
+    // Warm the browser cache for the portal videos so the first summon
+    // doesn't open on a black screen while ~4.5MB downloads.
+    useEffect(() => {
+        ['/portal-shatter.mp4', '/portal-resists.mp4'].forEach(src => {
+            const v = document.createElement('video');
+            v.preload = 'auto';
+            v.muted = true;
+            v.src = src;
+        });
+    }, []);
+
     const getRarityColor = (rarity: Rarity) => {
         switch (rarity) {
             case Rarity.Common: return '#6b7280';
@@ -402,6 +413,10 @@ const SummonView: React.FC<SummonViewProps> = ({ auraPoints, setAuraPoints, user
             startCardReveal(0, sorted);
         } else {
             setPhase('flight');
+            // Safety net: the portal videos run ~5s. If playback stalls
+            // (autoplay blocked, decoder hiccup), advance anyway rather than
+            // stranding the user. Cleared by onEnded/onError/tap via clearQueue.
+            queue(() => startCardReveal(0, sorted), 6500);
         }
     };
 
@@ -490,12 +505,15 @@ const SummonView: React.FC<SummonViewProps> = ({ auraPoints, setAuraPoints, user
                     {phase === 'flight' && (
                         <>
                             <div className="absolute inset-0 bg-slate-950" />
-                            <video 
+                            <video
                                 src={highestRarity === Rarity.Legendary || highestRarity === Rarity.UltraRare ? "/portal-resists.mp4" : "/portal-shatter.mp4"}
-                                autoPlay 
-                                muted 
+                                autoPlay
+                                muted
                                 playsInline
-                                onEnded={() => startCardReveal(0, summonedResults)} 
+                                onEnded={() => startCardReveal(0, summonedResults)}
+                                // If the video 404s or can't decode, never strand the user in
+                                // the flight phase — fall through to the first card.
+                                onError={() => startCardReveal(0, summonedResults)}
                                 className="absolute inset-0 w-full h-full object-cover mix-blend-screen"
                                 style={{
                                     filter: highestRarity === Rarity.Legendary ? 'sepia(1) saturate(5) hue-rotate(15deg) brightness(1.3)' :
@@ -524,8 +542,9 @@ const SummonView: React.FC<SummonViewProps> = ({ auraPoints, setAuraPoints, user
                             />
                             <LightBeam color={cardColor} secondaryColor={cardSecondary} />
                             <GlitterParticles color={cardColor} secondaryColor={cardSecondary} />
-                            {/* Entry flash from the previous beat */}
-                            <div className="absolute inset-0 bg-white animate-flash pointer-events-none" />
+                            {/* Entry flash from the previous beat — opacity-0 base so it doesn't
+                                revert to solid white once the flash animation ends */}
+                            <div className="absolute inset-0 bg-white opacity-0 animate-flash pointer-events-none" />
 
                             {/* Reveal counter (multi only) */}
                             {isMulti && (
