@@ -18,6 +18,8 @@ import LeaderboardView from './components/LeaderboardView';
 import LoginView from './components/LoginView';
 import NDAModal, { checkNdaSigned } from './components/NDAModal';
 import ProfileModal from './components/ProfileModal';
+import { NotificationBanner } from './components/NotificationBanner';
+import { usePushNotifications } from './hooks/usePushNotifications';
 import { generateSatQuestion, loadLocalQuestions } from './services/questionService';
 import { getDifficultyForLevel } from './utils/mastery';
 import { AuthService } from './services/authService';
@@ -63,6 +65,7 @@ const App: React.FC = () => {
     const [isProfileOpen, setIsProfileOpen] = useState(false);
     const [headerImageError, setHeaderImageError] = useState(false);
     const [showBossFightWarning, setShowBossFightWarning] = useState<{show: boolean, targetView?: View}>({ show: false });
+    const pushNotifications = usePushNotifications();
     useEffect(() => {
         setHeaderImageError(false);
     }, [user?.photoUrl]);
@@ -878,6 +881,9 @@ const App: React.FC = () => {
     };
 
     const handleLogout = async () => {
+        if (userId) {
+            localStorage.removeItem(`push_dismissed_v1_${userId}`);
+        }
         await AuthService.logout();
         setUser(null);
         setCurrentView(View.DASHBOARD);
@@ -965,6 +971,7 @@ const App: React.FC = () => {
             case View.PROGRESS:
                 return <ProgressView
                             userId={userId || 'guest'}
+                            userEmail={user?.email}
                             profile={profile}
                             setAuraPoints={setAuraPoints}
                             updateProfile={updateProfile}
@@ -1658,6 +1665,8 @@ const App: React.FC = () => {
                     onLogout={handleLogout}
                 />
             )}
+            {/* Push Notification Enrollment Banner */}
+            <NotificationBanner push={pushNotifications} userId={userId} />
             {/* Boss Fight Quit Warning Modal */}
             {showBossFightWarning.show && (
                 <div className="fixed inset-0 z-[100] flex items-center justify-center p-4 bg-black/60 backdrop-blur-sm animate-fadeIn">

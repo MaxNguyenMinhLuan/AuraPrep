@@ -17,6 +17,8 @@ import AuraIcon from './icons/AuraIcon';
 import ShuffleIcon from './icons/ShuffleIcon';
 import ShieldIcon from './icons/ShieldIcon';
 import TargetIcon from './icons/TargetIcon';
+import ReportQuestionModal from './ReportQuestionModal';
+import { reportQuestion } from '../services/reportService';
 
 const getPowerUpColorClass = (id: PowerUpType) => {
     switch (id) {
@@ -44,6 +46,7 @@ const renderPowerUpIcon = (id: PowerUpType, className = "w-6 h-6") => {
 
 interface ProgressViewProps {
     userId: string;
+    userEmail?: string;
     profile: UserProfile;
     setAuraPoints: React.Dispatch<React.SetStateAction<number>>;
     updateProfile: (subtopic: string, isCorrect: boolean) => void;
@@ -65,7 +68,9 @@ const PracticeSession: React.FC<{
     onExit: () => void;
     awardAura: (amount: number) => void;
     awardXp: (xp: number) => void;
-}> = ({ subtopic, profile, updateProfile, onStreakComplete, onExit, awardAura, awardXp }) => {
+    userId?: string;
+    userEmail?: string;
+}> = ({ subtopic, profile, updateProfile, onStreakComplete, onExit, awardAura, awardXp, userId, userEmail }) => {
     const [currentQuestion, setCurrentQuestion] = useState<Question | null>(null);
     const [nextQuestion, setNextQuestion] = useState<Question | null>(null);
     const [isLoading, setIsLoading] = useState(true);
@@ -73,6 +78,7 @@ const PracticeSession: React.FC<{
     const [isCorrect, setIsCorrect] = useState<boolean | null>(null);
     const [streak, setStreak] = useState(0);
     const [showStreakToast, setShowStreakToast] = useState(false);
+    const [showReportModal, setShowReportModal] = useState(false);
 
     const difficulty = getDifficultyForLevel(profile.stats[subtopic].level);
     const strategyTip = currentQuestion ? getStrategyTip(currentQuestion.subtopic || subtopic, currentQuestion.question) : null;
@@ -112,9 +118,21 @@ const PracticeSession: React.FC<{
         setStreak(prev => correct ? prev + 1 : 0);
     };
     
+    const handleReportSubmit = (reason: string) => {
+        if (!currentQuestion) return;
+        reportQuestion({
+            reason,
+            questionText: currentQuestion.question,
+            subtopic: currentQuestion.subtopic || subtopic,
+            userId,
+            userEmail
+        });
+    };
+
     const handleNextQuestion = useCallback(() => {
         setSelectedAnswer(null);
         setIsCorrect(null);
+        setShowReportModal(false);
         if (nextQuestion) {
             setCurrentQuestion(nextQuestion);
             fetchQuestion().then(setNextQuestion);
@@ -242,9 +260,23 @@ const PracticeSession: React.FC<{
                             )}
 
                             <button onClick={handleNextQuestion} className="mt-4 md:mt-6 w-full bg-primary text-light font-bold py-3 md:py-4 border-b-4 border-primary/70 rounded-md hover:bg-primary/90 active:bg-primary/90 transition-colors touch-target">Next Question</button>
+
+                            <button
+                                onClick={() => setShowReportModal(true)}
+                                className="mt-2 w-full text-center text-[10px] text-text-dim hover:text-accent transition-colors py-1"
+                            >
+                                🚩 Report This Question
+                            </button>
                         </div>
                     )}
                 </div>
+            )}
+
+            {showReportModal && (
+                <ReportQuestionModal
+                    onClose={() => setShowReportModal(false)}
+                    onSubmit={handleReportSubmit}
+                />
             )}
         </div>
     )
@@ -340,7 +372,9 @@ const BossFightSession: React.FC<{
     consumePowerUp: (type: PowerUpType) => void;
     addToReviewQueue: (question: Question) => void;
     inventory: { [key in PowerUpType]?: number };
-}> = ({ subtopic, level, updateProfile, onBossFightComplete, equippedPowerUps, consumePowerUp, addToReviewQueue, inventory }) => {
+    userId?: string;
+    userEmail?: string;
+}> = ({ subtopic, level, updateProfile, onBossFightComplete, equippedPowerUps, consumePowerUp, addToReviewQueue, inventory, userId, userEmail }) => {
     const [questions, setQuestions] = useState<Question[]>([]);
     const [isLoading, setIsLoading] = useState(true);
     const [isSkipping, setIsSkipping] = useState(false);
@@ -348,6 +382,7 @@ const BossFightSession: React.FC<{
     const [selectedAnswer, setSelectedAnswer] = useState<number | null>(null);
     const [isCorrect, setIsCorrect] = useState<boolean | null>(null);
     const [fightComplete, setFightComplete] = useState(false);
+    const [showReportModal, setShowReportModal] = useState(false);
     
     // Boss State
     const BOSS_FIGHT_LENGTH = 10;
@@ -405,7 +440,20 @@ const BossFightSession: React.FC<{
         setHintVisible(false);
         setSecondChanceActive(false);
         setDoubleJeopardyActive(false);
+        setShowReportModal(false);
     }, [currentIndex]);
+
+    const handleReportSubmit = (reason: string) => {
+        const q = questions[currentIndex];
+        if (!q) return;
+        reportQuestion({
+            reason,
+            questionText: q.question,
+            subtopic: q.subtopic || subtopic,
+            userId,
+            userEmail
+        });
+    };
 
     const handleAnswerSelect = (index: number) => {
         if (selectedAnswer !== null || disabledOptions.includes(index)) return;
@@ -628,11 +676,25 @@ const BossFightSession: React.FC<{
                             <button onClick={handleNext} className="mt-6 w-full bg-primary text-light font-bold py-4 border-b-4 border-primary/70 rounded-md hover:bg-primary/90 transition-colors">
                                 {currentIndex < questions.length - 1 && bossHealth > 0 ? 'Next' : 'Finish'}
                             </button>
+
+                            <button
+                                onClick={() => setShowReportModal(true)}
+                                className="mt-2 w-full text-center text-[10px] text-text-dim hover:text-accent transition-colors py-1"
+                            >
+                                🚩 Report This Question
+                            </button>
                         </div>
                     )}
                 </div>
+
+                {showReportModal && (
+                    <ReportQuestionModal
+                        onClose={() => setShowReportModal(false)}
+                        onSubmit={handleReportSubmit}
+                    />
+                )}
             </div>
-            
+
             {/* Right Panel: Boss */}
             <div className="w-full lg:w-1/4 mt-6 lg:mt-0 lg:border-l-2 lg:border-secondary lg:pl-6 flex flex-col items-center justify-start lg:justify-center relative z-0">
                 <div className="w-full flex flex-col items-center relative">
@@ -721,7 +783,7 @@ const LevelUpAnimation: React.FC<{
 
 //--- MAIN COMPONENT ---//
 
-const ProgressView: React.FC<ProgressViewProps> = ({ userId, profile, setAuraPoints, updateProfile, levelUpSubtopic, consumePowerUp, addToReviewQueue, awardAura, addXpToActiveCreature, setIsBossFightActive }) => {
+const ProgressView: React.FC<ProgressViewProps> = ({ userId, userEmail, profile, setAuraPoints, updateProfile, levelUpSubtopic, consumePowerUp, addToReviewQueue, awardAura, addXpToActiveCreature, setIsBossFightActive }) => {
     const [view, setView] = useState<'list' | 'options' | 'practice' | 'prep' | 'bossFight' | 'levelUp'>('list');
     const [selectedSubtopic, setSelectedSubtopic] = useState<string | null>(null);
     const [lastLevelUpInfo, setLastLevelUpInfo] = useState<{ from: SkillLevel, to: SkillLevel } | null>(null);
@@ -837,9 +899,11 @@ const ProgressView: React.FC<ProgressViewProps> = ({ userId, profile, setAuraPoi
                     consumePowerUp={consumePowerUp}
                     inventory={profile.inventory}
                     addToReviewQueue={addToReviewQueue}
+                    userId={userId}
+                    userEmail={userEmail}
                 />
     }
-    
+
     // View: Practice Session
     if (view === 'practice' && selectedSubtopic) {
         return <PracticeSession
@@ -850,6 +914,8 @@ const ProgressView: React.FC<ProgressViewProps> = ({ userId, profile, setAuraPoi
                 onExit={() => setView('options')}
                 awardAura={awardAura}
                 awardXp={addXpToActiveCreature}
+                userId={userId}
+                userEmail={userEmail}
             />;
     }
 
