@@ -186,7 +186,7 @@ const ForcedNavigation: React.FC<ForcedNavigationProps> = ({
                 className="fixed z-[50] max-w-sm w-full px-4 pointer-events-auto"
                 style={getMessageStyle()}
             >
-                <div className="bg-surface border-4 border-highlight rounded-xl shadow-2xl p-5 animate-scaleIn">
+                <div className="genshin-modal p-5 animate-scaleIn">
                     {/* Pikachu icon */}
                     <div className="flex justify-center mb-3">
                         <div className="animate-bounce mb-2">

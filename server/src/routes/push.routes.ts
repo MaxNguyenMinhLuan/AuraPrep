@@ -5,6 +5,7 @@ import {
     saveSubscription,
     removeSubscription,
     sendNotificationToUser,
+    broadcastNotification,
 } from '../services/push.service';
 
 const router = Router();
@@ -146,6 +147,39 @@ router.post(
             const response: ApiResponse = {
                 success: false,
                 error: { code: 'INTERNAL_ERROR', message: 'Failed to send notification.' },
+            };
+            return res.status(500).json(response);
+        }
+    }
+);
+
+// ─────────────────────────────────────────────────────────────
+// POST /api/push/broadcast
+// Send a push notification to ALL subscribed devices
+// ─────────────────────────────────────────────────────────────
+
+router.post(
+    '/broadcast',
+    async (req: AuthenticatedRequest, res: Response) => {
+        try {
+            const { title, body, url } = req.body;
+
+            const result = await broadcastNotification({
+                title: title || 'AuraPrep',
+                body: body || 'this is a test for notification now',
+                url: url || '/',
+            });
+
+            const response: ApiResponse = {
+                success: true,
+                data: result,
+            };
+            return res.json(response);
+        } catch (err: any) {
+            console.error('Error broadcasting push notification:', err);
+            const response: ApiResponse = {
+                success: false,
+                error: { code: 'INTERNAL_ERROR', message: 'Failed to broadcast notification.' },
             };
             return res.status(500).json(response);
         }

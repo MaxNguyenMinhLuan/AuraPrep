@@ -171,7 +171,7 @@ const BaselineTest: React.FC<BaselineTestProps> = ({ onComplete, onSaveAndExit, 
                     </p>
 
                     {/* Progress Bar */}
-                    <div className="w-full bg-surface h-4 border-2 border-primary/50 rounded-full overflow-hidden">
+                    <div className="w-full genshin-panel h-4 rounded-full overflow-hidden">
                         <div
                             className="bg-gradient-to-r from-primary to-highlight h-full transition-all duration-500"
                             style={{ width: `${progress}%` }}
@@ -187,7 +187,7 @@ const BaselineTest: React.FC<BaselineTestProps> = ({ onComplete, onSaveAndExit, 
                 )}
 
                 {/* Question Card */}
-                <div className="bg-surface p-6 border-2 border-secondary rounded-xl shadow-lg">
+                <div className="genshin-panel p-6 shadow-lg">
                     <div className="mb-4">
                         <p className="text-xs text-text-dim uppercase font-bold tracking-tight mb-4">{currentQuestion.subtopic}</p>
 
@@ -203,7 +203,7 @@ const BaselineTest: React.FC<BaselineTestProps> = ({ onComplete, onSaveAndExit, 
                                 let icon: React.ReactNode = null;
 
                                 if (selectedAnswer === null) {
-                                    buttonClass += 'bg-surface hover:bg-secondary border-primary/20 shadow-sm';
+                                    buttonClass += 'genshin-panel hover:border-highlight shadow-sm';
                                 } else {
                                     if (index === currentQuestion.answerIndex) {
                                         buttonClass += 'bg-success/10 border-success text-success font-bold';
@@ -220,7 +220,7 @@ const BaselineTest: React.FC<BaselineTestProps> = ({ onComplete, onSaveAndExit, 
                                             </svg>
                                         );
                                     } else {
-                                        buttonClass += 'bg-surface opacity-50 border-text-dark/20';
+                                        buttonClass += 'genshin-panel opacity-50 border-text-dark/20';
                                     }
                                 }
 

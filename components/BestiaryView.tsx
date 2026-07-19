@@ -14,7 +14,7 @@ interface BestiaryViewProps {
 
 const getRarityClasses = (rarity: Rarity) => {
     switch (rarity) {
-        case Rarity.Common: return { bg: 'bg-slate-100/50 dark:bg-slate-800/40', text: 'text-slate-500 dark:text-slate-400 font-bold', border: 'border-slate-300 dark:border-slate-700' };
+        case Rarity.Common: return { bg: 'bg-slate-50 dark:bg-slate-800/40', text: 'text-slate-600 dark:text-slate-400 font-bold', border: 'border-slate-300 dark:border-slate-700' };
         case Rarity.Uncommon: return { bg: 'bg-emerald-50 dark:bg-emerald-950/20', text: 'text-emerald-600 dark:text-emerald-400 font-bold', border: 'border-emerald-300 dark:border-emerald-900/60' };
         case Rarity.Rare: return { bg: 'bg-indigo-50 dark:bg-indigo-950/20', text: 'text-indigo-600 dark:text-indigo-400 font-bold', border: 'border-indigo-300 dark:border-indigo-900/60' };
         case Rarity.UltraRare: return { bg: 'bg-purple-50 dark:bg-purple-950/20', text: 'text-purple-600 dark:text-purple-400 font-bold', border: 'border-purple-300 dark:border-purple-900/60' };
@@ -104,7 +104,7 @@ const BestiaryView: React.FC<BestiaryViewProps> = ({ userCreatures, userTeam, on
         }
 
         return (
-            <div className="animate-scaleIn bg-surface max-w-2xl mx-auto rounded-xl shadow-card p-3 md:p-4 lg:p-6 pt-12 lg:pt-6">
+            <div className="animate-scaleIn genshin-panel max-w-2xl mx-auto rounded-md shadow-card p-3 md:p-4 lg:p-6 pt-12 lg:pt-6">
                 <div className="flex justify-between items-center mb-3 md:mb-4">
                     <button onClick={() => { setSelectedInstance(null); setIsEditingName(false); }} className="text-text-dim hover:text-highlight active:text-highlight flex items-center gap-2 p-2 -ml-2 touch-target press-effect transition-premium">
                         <span>&larr;</span> <span className="text-xs md:text-sm">Back to Collection</span>
@@ -222,7 +222,7 @@ const BestiaryView: React.FC<BestiaryViewProps> = ({ userCreatures, userTeam, on
                      <p className="text-text-main text-sm italic leading-relaxed">{creatureData.description}</p>
                 </div>
 
-                <div className="bg-surface p-4 border-2 border-secondary/30 rounded-xl shadow-card">
+                <div className="genshin-panel p-4 border border-secondary/30 rounded-md shadow-card">
                      <h3 className="font-bold text-lg text-primary mb-2">Your Auramon's Stats</h3>
                      <p className="text-sm mb-1">Level: <span className="font-bold text-lg">{currentLevel}</span> / {MAX_LEVEL}</p>
                      <p className="text-sm mb-1">Stage: <span className="font-bold">{currentInstance.evolutionStage}</span> / {maxEvoStage}</p>
@@ -231,7 +231,7 @@ const BestiaryView: React.FC<BestiaryViewProps> = ({ userCreatures, userTeam, on
                         <p className="text-xs text-text-main mb-1">
                             {isMaxLevel ? 'Max Level Reached!' : `Progress to Level ${currentLevel + 1}:`}
                         </p>
-                         <div className="w-full bg-surface h-4 border border-secondary/30 rounded-full overflow-hidden shadow-inner-soft">
+                         <div className="w-full bg-background/50 h-4 border border-secondary/30 rounded-full overflow-hidden shadow-inner-soft">
                             <div className="bg-gradient-to-r from-success to-emerald-400 h-full flex items-center justify-center text-[10px] text-text-light rounded-full transition-all duration-500" style={{ width: `${levelProgress}%` }}>
                                 {levelProgress.toFixed(0)}%
                             </div>
@@ -250,7 +250,7 @@ const BestiaryView: React.FC<BestiaryViewProps> = ({ userCreatures, userTeam, on
     return (
         <div className="animate-fadeIn max-w-6xl mx-auto px-4">
             <div className="text-center mb-6">
-                <h1 className="font-sans text-lg md:text-xl lg:text-2xl bg-highlight text-text-light px-4 py-2 inline-block rounded-lg shadow-card animate-slideDown">Collection</h1>
+                <h1 className="font-sans text-lg md:text-xl lg:text-2xl bg-highlight text-text-light px-4 py-2 inline-block rounded-lg shadow-card animate-slideDown font-bold uppercase">COLLECTION</h1>
                 <p className="text-text-dim mt-2 text-xs md:text-sm">Manage your team and view discovered Auramons.</p>
             </div>
 
@@ -261,7 +261,7 @@ const BestiaryView: React.FC<BestiaryViewProps> = ({ userCreatures, userTeam, on
                     className={`px-4 py-2 font-bold text-sm rounded-lg transition-premium border-2 ${
                         activeTab === 'team'
                             ? 'bg-primary text-white border-primary shadow-md'
-                            : 'bg-surface text-primary border-primary/20 hover:border-primary/50'
+                            : 'genshin-panel text-primary border-primary/20 hover:border-primary/50'
                     }`}
                 >
                     Team Builder
@@ -271,7 +271,7 @@ const BestiaryView: React.FC<BestiaryViewProps> = ({ userCreatures, userTeam, on
                     className={`px-4 py-2 font-bold text-sm rounded-lg transition-premium border-2 ${
                         activeTab === 'binder'
                             ? 'bg-primary text-white border-primary shadow-md'
-                            : 'bg-surface text-primary border-primary/20 hover:border-primary/50'
+                            : 'genshin-panel text-primary border-primary/20 hover:border-primary/50'
                     }`}
                 >
                     Binder
@@ -281,7 +281,7 @@ const BestiaryView: React.FC<BestiaryViewProps> = ({ userCreatures, userTeam, on
             {activeTab === 'team' ? (
                 <div className="space-y-8 animate-fadeIn">
                     {/* Active Team slots */}
-                    <div className="bg-surface rounded-xl p-4 shadow-card border border-secondary/30">
+                    <div className="genshin-panel rounded-md p-4 shadow-card border border-secondary/30">
                         <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-2 mb-3">
                             <h2 className="text-sm font-bold text-primary uppercase tracking-wider whitespace-nowrap">Active Team ({userTeam.length} / 6)</h2>
                             {isSelectingForTeam && (
@@ -301,9 +301,9 @@ const BestiaryView: React.FC<BestiaryViewProps> = ({ userCreatures, userTeam, on
                                         <button
                                             key={idx}
                                             onClick={() => onToggleTeamMember(instance.id)}
-                                            className="relative flex flex-col items-center justify-center bg-surface border-2 border-primary/40 p-2 rounded-lg hover:border-red-400 group transition-premium shadow-sm active:scale-95 w-full h-[90px]"
+                                            className="relative flex flex-col items-center justify-center genshin-panel border border-primary/40 p-2 rounded-md hover:border-red-400 group transition-premium shadow-sm active:scale-95 w-full h-[90px]"
                                         >
-                                            <div className="absolute top-1 right-1 text-red-500 opacity-0 group-hover:opacity-100 transition-opacity bg-surface rounded-full p-0.5 shadow-sm">
+                                            <div className="absolute top-1 right-1 text-red-500 opacity-0 group-hover:opacity-100 transition-opacity bg-background/80 rounded-full p-0.5 shadow-sm">
                                                 <svg className="w-3.5 h-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                                                     <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={3} d="M6 18L18 6M6 6l12 12" />
                                                 </svg>
@@ -338,14 +338,14 @@ const BestiaryView: React.FC<BestiaryViewProps> = ({ userCreatures, userTeam, on
                     {/* Roster list */}
                     <div>
                         <div className="flex flex-col sm:flex-row sm:justify-between sm:items-center gap-3 mb-3">
-                            <h2 className="text-sm font-bold text-primary">Your Auramons ({userCreatures.length})</h2>
+                            <h2 className="text-sm font-bold text-primary uppercase">YOUR AURAMONS ({userCreatures.length})</h2>
                             <div className="relative w-full sm:max-w-xs">
                                 <input
                                     type="text"
                                     placeholder="Search Auramons..."
                                     value={searchQuery}
                                     onChange={(e) => setSearchQuery(e.target.value)}
-                                    className="w-full px-3 py-1.5 pl-8 bg-surface text-text-main border border-secondary/30 rounded-lg focus:outline-none focus:border-primary/50 text-[11px] font-bold shadow-sm transition-all font-sans placeholder-text-dim/50"
+                                    className="w-full px-3 py-1.5 pl-8 bg-background/50 text-text-main border border-secondary/30 rounded-md focus:outline-none focus:border-primary/50 text-[11px] font-bold shadow-sm transition-all font-sans placeholder-text-dim/50"
                                 />
                                 <svg className="absolute left-2.5 top-1/2 -translate-y-1/2 text-text-dim w-3.5 h-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2.5}>
                                     <path strokeLinecap="round" strokeLinejoin="round" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
@@ -353,11 +353,11 @@ const BestiaryView: React.FC<BestiaryViewProps> = ({ userCreatures, userTeam, on
                             </div>
                         </div>
                         {userCreatures.length === 0 ? (
-                            <div className="text-center py-8 bg-surface rounded-xl border border-secondary/30">
+                            <div className="text-center py-8 genshin-panel rounded-md border border-secondary/30">
                                 <p className="text-sm text-text-dim">You don't own any Auramons yet. Summon some in the Summon tab!</p>
                             </div>
                         ) : (
-                            <div className="grid grid-cols-2 sm:grid-cols-4 md:grid-cols-5 gap-3">
+                            <div className="grid grid-cols-2 sm:grid-cols-5 md:grid-cols-5 lg:grid-cols-6 gap-3">
                                 {[...filteredCreatures]
                                     .sort((a, b) => {
                                         if (a.isFavorite && !b.isFavorite) return -1;
@@ -431,13 +431,13 @@ const BestiaryView: React.FC<BestiaryViewProps> = ({ userCreatures, userTeam, on
                             <span>Collection Progress</span>
                             <span>{completionPercentage.toFixed(0)}%</span>
                         </div>
-                        <div className="w-full bg-surface h-3 md:h-4 border-2 border-primary/30 rounded-full overflow-hidden shadow-inner-soft">
+                        <div className="w-full bg-background/50 h-3 md:h-4 border border-primary/30 rounded-full overflow-hidden shadow-inner-soft">
                             <div className="bg-gradient-to-r from-primary to-highlight h-full transition-all duration-1000 rounded-full" style={{ width: `${completionPercentage}%` }}></div>
                         </div>
                         <p className="text-center text-[10px] md:text-xs mt-1 text-text-dim">{ownedCreatureIds.size} / {INITIAL_CREATURES.length} Discovered</p>
                     </div>
 
-                    <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 gap-3 md:gap-4 lg:gap-6">
+                    <div className="grid grid-cols-2 sm:grid-cols-4 md:grid-cols-4 lg:grid-cols-5 xl:grid-cols-6 gap-3 md:gap-4 lg:gap-6">
                         {INITIAL_CREATURES.map((creature, index) => {
                             const instances = userCreatures.filter(c => c.creatureId === creature.id);
                             const instance = instances[0];

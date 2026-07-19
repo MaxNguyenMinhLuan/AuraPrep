@@ -84,12 +84,54 @@ export const NotificationBanner: React.FC<NotificationBannerProps> = ({ push, us
                                 </svg>
                             </div>
                             <div>
-                                <p className="text-white font-semibold text-sm">Notifications enabled!</p>
-                                <p className="text-indigo-300 text-xs">We'll remind you to keep your streak alive.</p>
+                                <p className="text-white font-semibold text-sm">Lock Screen Notifications enabled!</p>
+                                <p className="text-indigo-300 text-xs">We'll remind you on your lock screen to keep your streak alive.</p>
                             </div>
                         </div>
+                    ) : push.isIOS && !push.isStandalone ? (
+                        /* iOS Non-Standalone State (Requires Add to Home Screen for Web Push) */
+                        <div className="flex items-start gap-3">
+                            <div className="w-10 h-10 rounded-full bg-amber-500/30 flex items-center justify-center flex-shrink-0 mt-0.5">
+                                <svg className="w-5 h-5 text-amber-300" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
+                                    <path strokeLinecap="round" strokeLinejoin="round" d="M12 18h.01M7 21h10a2 2 0 002-2V5a2 2 0 00-2-2H7a2 2 0 00-2 2v14a2 2 0 002 2z" />
+                                </svg>
+                            </div>
+
+                            <div className="flex-1 min-w-0">
+                                <p className="text-white font-bold text-sm leading-snug">
+                                    Enable Lock Screen Notifications (iOS 16.4+)
+                                </p>
+                                <p className="text-indigo-200 text-xs mt-1 leading-relaxed">
+                                    To receive daily reminders on your iPhone/iPad Lock Screen:
+                                </p>
+                                <ol className="text-indigo-300 text-xs mt-1.5 space-y-1 list-decimal list-inside font-medium">
+                                    <li>Tap the <span className="font-bold text-white">Share button</span> (at the bottom of Safari)</li>
+                                    <li>Select <span className="font-bold text-white">'Add to Home Screen'</span></li>
+                                    <li>Open AuraPrep from your Home Screen to turn on Push Notifications</li>
+                                </ol>
+
+                                <div className="mt-3">
+                                    <button
+                                        onClick={handleDismiss}
+                                        className="px-3 py-1.5 rounded-xl text-xs font-medium text-indigo-400 hover:text-indigo-200 hover:bg-white/5 transition-all"
+                                    >
+                                        Got it
+                                    </button>
+                                </div>
+                            </div>
+
+                            <button
+                                onClick={handleDismiss}
+                                className="text-indigo-400/60 hover:text-white/80 transition-colors p-1 -mr-1 -mt-1"
+                                aria-label="Dismiss"
+                            >
+                                <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
+                                    <path strokeLinecap="round" strokeLinejoin="round" d="M6 18L18 6M6 6l12 12" />
+                                </svg>
+                            </button>
+                        </div>
                     ) : (
-                        /* Prompt state */
+                        /* Standard Prompt / iOS Standalone Prompt state */
                         <div className="flex items-start gap-3">
                             {/* Bell icon */}
                             <div className="w-10 h-10 rounded-full bg-indigo-500/30 flex items-center justify-center flex-shrink-0 mt-0.5">
@@ -103,7 +145,7 @@ export const NotificationBanner: React.FC<NotificationBannerProps> = ({ push, us
                                     Never miss your daily missions
                                 </p>
                                 <p className="text-indigo-300 text-xs mt-1 leading-relaxed">
-                                    Get reminders to keep your streak going and earn bonus Aura.
+                                    Get Lock Screen reminders to keep your streak going and earn bonus Aura.
                                 </p>
 
                                 {/* Buttons */}

@@ -53,7 +53,7 @@ const BaselineResultsModal: React.FC<BaselineResultsProps> = ({ results, onConti
 
     return (
         <div className="fixed inset-0 z-[110] bg-black/80 backdrop-blur-sm flex items-center justify-center p-4 overflow-y-auto">
-            <div className="bg-surface border-4 border-highlight rounded-xl shadow-2xl max-w-2xl w-full p-8 my-8 animate-reveal">
+            <div className="genshin-modal max-w-2xl w-full p-8 my-8 animate-reveal">
                 <h2 className="text-3xl font-serif text-center text-highlight mb-6">
                     {TUTORIAL_DIALOGUE.baselineResults.complete}
                 </h2>

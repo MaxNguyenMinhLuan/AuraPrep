@@ -356,7 +356,7 @@ const SummonView: React.FC<SummonViewProps> = ({ auraPoints, setAuraPoints, user
 
             if (isNoDuplicateSummon) {
                 const rand = Math.random() * 100;
-                if (rand < 61.5) chosenRarity = Rarity.Common;
+                if (rand < 60.0) chosenRarity = Rarity.Common;
                 else if (rand < 86.5) chosenRarity = Rarity.Uncommon;
                 else if (rand < 99.5) chosenRarity = Rarity.Rare;
                 else chosenRarity = Rarity.UltraRare;
@@ -378,7 +378,7 @@ const SummonView: React.FC<SummonViewProps> = ({ auraPoints, setAuraPoints, user
                 creature = possibleCreatures[Math.floor(Math.random() * possibleCreatures.length)];
             } else {
                 const rand = Math.random() * 100;
-                if (rand < 61.5) chosenRarity = Rarity.Common;
+                if (rand < 60.0) chosenRarity = Rarity.Common;
                 else if (rand < 86.5) chosenRarity = Rarity.Uncommon;
                 else if (rand < 99.5) chosenRarity = Rarity.Rare;
                 else chosenRarity = Rarity.UltraRare;
@@ -484,7 +484,7 @@ const SummonView: React.FC<SummonViewProps> = ({ auraPoints, setAuraPoints, user
         }`}>
             {!isAnimating && (
                 <>
-                    <h1 className="font-sans text-base md:text-lg bg-highlight text-text-light px-4 md:px-6 py-2 inline-block mb-2 mt-2 md:mt-4 shadow-lg rounded-sm transform -rotate-1">Divine Portal</h1>
+                    <h1 className="font-sans text-base md:text-lg bg-highlight text-text-light px-4 md:px-6 py-2 inline-block mb-2 mt-2 md:mt-4 shadow-lg rounded-sm transform -rotate-1 font-bold uppercase">DIVINE PORTAL</h1>
                     <p className="text-text-dim mb-4 md:mb-8 text-[9px] md:text-[10px] uppercase tracking-widest font-bold">Bridge the gap between worlds</p>
                 </>
             )}
@@ -662,9 +662,45 @@ const SummonView: React.FC<SummonViewProps> = ({ auraPoints, setAuraPoints, user
 
                     {/* Idle state */}
                     {phase === 'idle' && summonedResults.length === 0 && (
-                        <div className="text-center text-slate-500 animate-fadeIn">
-                            <img src="https://play.pokemonshowdown.com/sprites/itemicons/lustrous-orb.png" alt="Crystal Ball" className="w-20 h-20 mx-auto mb-6 filter drop-shadow-[0_0_20px_rgba(100,100,255,0.3)] animate-float" style={{ imageRendering: 'pixelated' }} />
-                            <p className="text-sm font-sans uppercase tracking-[0.2em] opacity-60">The portal is silent...</p>
+                        <div className="absolute inset-0 flex flex-col items-center justify-center animate-fadeIn overflow-hidden">
+                            <style>{`
+                                @keyframes hueShift {
+                                    0% { filter: hue-rotate(0deg); }
+                                    100% { filter: hue-rotate(360deg); }
+                                }
+                            `}</style>
+                            {/* Revolving Glowing Gas Ball */}
+                            <div className="animate-float">
+                                <div 
+                                    className="relative w-40 h-40 md:w-48 md:h-48 flex items-center justify-center drop-shadow-[0_0_60px_rgba(227,179,76,0.3)]"
+                                    style={{ animation: 'hueShift 15s linear infinite' }}
+                                >
+                                    {/* Core */}
+                                    <div className="absolute w-16 h-16 md:w-20 md:h-20 bg-white rounded-full blur-xl opacity-90 animate-pulse"></div>
+                                    
+                                    {/* Outer gas layers */}
+                                    <div 
+                                        className="absolute w-32 h-32 md:w-40 md:h-40 bg-gradient-to-tr from-amber-400 to-orange-600 opacity-60 blur-xl mix-blend-screen"
+                                        style={{ borderRadius: '40% 60% 70% 30% / 40% 50% 60% 50%', animation: 'spin 8s linear infinite' }}
+                                    ></div>
+                                    <div 
+                                        className="absolute w-40 h-40 md:w-48 md:h-48 bg-gradient-to-bl from-orange-500 to-yellow-300 opacity-40 blur-2xl mix-blend-screen"
+                                        style={{ borderRadius: '60% 40% 30% 70% / 50% 60% 40% 50%', animation: 'spin 12s linear infinite reverse' }}
+                                    ></div>
+                                    <div 
+                                        className="absolute w-36 h-36 md:w-44 md:h-44 bg-gradient-to-t from-yellow-200 to-amber-500 opacity-50 blur-xl mix-blend-screen"
+                                        style={{ borderRadius: '50% 50% 60% 40% / 60% 40% 50% 50%', animation: 'spin 10s linear infinite' }}
+                                    ></div>
+                                    
+                                    {/* Inner plasma */}
+                                    <div 
+                                        className="absolute w-24 h-24 md:w-28 md:h-28 bg-gradient-to-r from-yellow-100 to-white opacity-80 blur-md mix-blend-screen"
+                                        style={{ borderRadius: '45% 55% 40% 60% / 55% 45% 60% 40%', animation: 'spin 6s linear infinite reverse' }}
+                                    ></div>
+                                </div>
+                            </div>
+
+                            <p className="relative z-10 text-sm font-sans uppercase tracking-[0.2em] text-slate-500 mt-12 md:mt-16 drop-shadow-md">The portal is silent...</p>
                         </div>
                     )}
 
@@ -683,23 +719,23 @@ const SummonView: React.FC<SummonViewProps> = ({ auraPoints, setAuraPoints, user
                             <button
                                 onClick={() => performSummon(1)}
                                 disabled={auraPoints < SUMMON_COST}
-                                className="flex-1 bg-surface hover:bg-secondary/20 active:bg-secondary/20 text-text-main font-bold py-3 md:py-4 px-4 md:px-6 shadow-card hover:shadow-card-hover transition-premium border-2 border-secondary/50 disabled:opacity-40 disabled:cursor-not-allowed border-b-4 active:border-b-0 active:translate-y-0.5 rounded-xl flex items-center justify-center gap-2 md:gap-3 uppercase tracking-tighter text-[9px] md:text-[10px] touch-target press-effect"
+                                className="flex-1 genshin-btn-dark font-bold py-3 md:py-4 px-4 md:px-6 disabled:opacity-40 disabled:cursor-not-allowed flex items-center justify-center gap-2 md:gap-3 uppercase tracking-widest text-[9px] md:text-[10px] touch-target"
                             >
                                 <span>Summon x1</span>
-                                <span className="bg-primary/10 text-primary px-2.5 py-1 rounded-full font-mono flex items-center gap-1">{SUMMON_COST} <AuraIcon className="w-3.5 h-3.5 text-primary" /></span>
+                                <span className="bg-white/10 px-2.5 py-1 rounded-full font-mono flex items-center gap-1">{SUMMON_COST} <AuraIcon className="w-3.5 h-3.5" /></span>
                             </button>
                             <button
                                 onClick={() => performSummon(10)}
                                 disabled={auraPoints < SUMMON_COST * 10}
-                                className="flex-1 bg-highlight hover:brightness-110 active:brightness-110 text-white font-bold py-3 md:py-4 px-4 md:px-6 shadow-card hover:shadow-glow-highlight transition-premium border-2 border-yellow-800 disabled:opacity-40 disabled:cursor-not-allowed border-b-4 border-yellow-900 active:border-b-0 active:translate-y-0.5 rounded-xl flex items-center justify-center gap-2 md:gap-3 uppercase tracking-tighter text-[9px] md:text-[10px] touch-target press-effect"
+                                className="flex-1 genshin-btn-light font-bold py-3 md:py-4 px-4 md:px-6 disabled:opacity-40 disabled:cursor-not-allowed flex items-center justify-center gap-2 md:gap-3 uppercase tracking-widest text-[9px] md:text-[10px] touch-target"
                             >
                                 <span>Summon x10</span>
-                                <span className="bg-white/20 px-2.5 py-1 rounded-full font-mono flex items-center gap-1">{SUMMON_COST * 10} <AuraIcon className="w-3.5 h-3.5 text-white" /></span>
+                                <span className="bg-[#3b4255]/10 px-2.5 py-1 rounded-full font-mono flex items-center gap-1">{SUMMON_COST * 10} <AuraIcon className="w-3.5 h-3.5" /></span>
                             </button>
                         </div>
                     </div>
 
-                    <div className="mt-4 glass px-4 md:px-8 py-2 md:py-3 rounded-xl border-2 border-secondary/30 shadow-card animate-fadeIn flex items-center gap-2 md:gap-3 hover-lift">
+                    <div className="mt-4 genshin-panel px-4 md:px-8 py-2 md:py-3 rounded-md border border-highlight/30 shadow-card animate-fadeIn flex items-center gap-2 md:gap-3 hover-lift">
                         <AuraIcon className="w-4 h-4 md:w-5 md:h-5 text-primary animate-gentleBounce" />
                         <p className="text-[10px] md:text-xs tracking-widest uppercase font-bold text-primary flex items-center gap-1">Your Aura: <span className="text-highlight font-black ml-1 flex items-center gap-1">{auraPoints.toLocaleString()} <AuraIcon className="w-3.5 h-3.5 text-highlight" /></span></p>
                     </div>

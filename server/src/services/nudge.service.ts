@@ -5,6 +5,8 @@ import UserGameData from '../models/UserGameData';
 import { User } from '../models/User';
 import { generateGuardianCopy } from '../shared/generateGuardianCopy';
 import { CreatureType, NudgeLevel } from '../shared/guardianPersonalities';
+import { PushSubscription } from '../models/PushSubscription';
+import { sendNotificationToUser } from './push.service';
 
 if (config.sendgrid.apiKey) {
     sgMail.setApiKey(config.sendgrid.apiKey);
@@ -83,9 +85,15 @@ export class NudgeService {
     static async processHourlyNudges(): Promise<void> {
         console.log(`[${new Date().toISOString()}] Starting hourly nudge sweep...`);
         try {
-            // Find all game records where email notifications are enabled
-            const records = await UserGameData.find({ 'emailNotifications.enabled': true });
-            console.log(`Found ${records.length} users with email notifications enabled.`);
+            // Find all users who have either email notifications enabled or active push subscriptions
+            const pushUserIds = await PushSubscription.distinct('userId');
+            const records = await UserGameData.find({
+                $or: [
+                    { 'emailNotifications.enabled': true },
+                    { userId: { $in: pushUserIds } }
+                ]
+            });
+            console.log(`Found ${records.length} users eligible for nudges (email or push).`);
 
             let nudgesSentCount = 0;
 
@@ -125,8 +133,10 @@ export class NudgeService {
                     isPrefEnabled = gameData.emailNotifications.evening === true;
                 }
 
-                if (!level || !isPrefEnabled) {
-                    // Not a nudge hour, or the user disabled this nudge tier
+                const hasPushSub = pushUserIds.includes(gameData.userId.toString());
+
+                if (!level || (!isPrefEnabled && !hasPushSub)) {
+                    // Not a nudge hour, or the user has neither email pref nor push sub for this tier
                     continue;
                 }
 
@@ -167,22 +177,24 @@ export class NudgeService {
                 const emailHtml = copy.body;
                 const emailText = copy.body.replace(/<[^>]*>/g, ''); // Basic HTML stripper
 
-                if (config.sendgrid.apiKey) {
-                    try {
-                        await sgMail.send({
-                            to: user.email,
-                            from: config.sendgrid.fromEmail,
-                            subject: copy.subject,
-                            html: emailHtml,
-                            text: emailText
-                        });
-                        console.log(`✉️ Email nudge (${level}) sent to ${user.email} from ${gameData.activeCreature.name} (${gameData.activeCreature.type})`);
-                    } catch (error) {
-                        console.error(`Failed to send email nudge to ${user.email} via SendGrid:`, error);
-                        continue;
-                    }
-                } else {
-                    console.log(`[MOCK EMAIL NUDGE]
+                let emailSent = false;
+                if (isPrefEnabled && gameData.emailNotifications.enabled) {
+                    if (config.sendgrid.apiKey) {
+                        try {
+                            await sgMail.send({
+                                to: user.email,
+                                from: config.sendgrid.fromEmail,
+                                subject: copy.subject,
+                                html: emailHtml,
+                                text: emailText
+                            });
+                            console.log(`✉️ Email nudge (${level}) sent to ${user.email} from ${gameData.activeCreature.name} (${gameData.activeCreature.type})`);
+                            emailSent = true;
+                        } catch (error) {
+                            console.error(`Failed to send email nudge to ${user.email} via SendGrid:`, error);
+                        }
+                    } else {
+                        console.log(`[MOCK EMAIL NUDGE]
 To: ${user.email}
 From: ${config.sendgrid.fromEmail}
 Subject: ${copy.subject}
@@ -190,15 +202,35 @@ Body:
 ---------------------------------------------
 ${emailText}
 ---------------------------------------------`);
+                        emailSent = true;
+                    }
+                }
+
+                let pushSent = false;
+                if (hasPushSub) {
+                    try {
+                        const { sent } = await sendNotificationToUser(gameData.userId.toString(), {
+                            title: copy.subject,
+                            body: emailText,
+                            url: deepLink
+                        });
+                        if (sent > 0) {
+                            pushSent = true;
+                            console.log(`📱 Push nudge (${level}) sent to ${user.email}`);
+                        }
+                    } catch (error) {
+                        console.error(`Failed to send push nudge to ${user.email}:`, error);
+                    }
                 }
 
                 // 9. Update Database stats
-                gameData.dailyMissions.nudgesSent = Math.min(3, gameData.dailyMissions.nudgesSent + 1);
-                gameData.dailyMissions.lastNudgeSentAt = new Date();
-                gameData.metrics.emailsSent += 1;
-                await gameData.save();
-
-                nudgesSentCount++;
+                if (emailSent || pushSent) {
+                    gameData.dailyMissions.nudgesSent = Math.min(3, gameData.dailyMissions.nudgesSent + 1);
+                    gameData.dailyMissions.lastNudgeSentAt = new Date();
+                    if (emailSent) gameData.metrics.emailsSent += 1;
+                    await gameData.save();
+                    nudgesSentCount++;
+                }
             }
 
             console.log(`[${new Date().toISOString()}] Hourly nudge sweep finished. Dispatched ${nudgesSentCount} nudges.`);

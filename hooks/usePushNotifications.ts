@@ -28,6 +28,10 @@ export interface PushNotificationState {
     isLoading: boolean;
     /** The current Notification.permission value */
     permission: NotificationPermission | 'unsupported';
+    /** True if the user is on an iOS device (iPhone/iPad) */
+    isIOS: boolean;
+    /** True if the web app is running in Standalone mode (added to Home Screen) */
+    isStandalone: boolean;
     /** Call this from a user-gesture handler (button tap) to request permission + subscribe */
     enableNotifications: () => Promise<boolean>;
     /** Unsubscribe from push notifications */
@@ -39,10 +43,27 @@ export function usePushNotifications(): PushNotificationState {
     const [isSubscribed, setIsSubscribed] = useState(false);
     const [isLoading, setIsLoading] = useState(false);
     const [permission, setPermission] = useState<NotificationPermission | 'unsupported'>('unsupported');
+    const [isIOS, setIsIOS] = useState(false);
+    const [isStandalone, setIsStandalone] = useState(false);
 
-    // Check browser support and existing subscription on mount
+    // Check browser support, iOS PWA mode, and existing subscription on mount
     useEffect(() => {
         const checkSupport = async () => {
+            const ios = /iPad|iPhone|iPod/.test(navigator.userAgent) && !(window as any).MSStream;
+            const standalone = window.matchMedia('(display-mode: standalone)').matches || (navigator as any).standalone === true;
+
+            setIsIOS(ios);
+            setIsStandalone(standalone);
+
+            // Register SW eagerly on page load so it's ready before permission requests
+            if ('serviceWorker' in navigator) {
+                try {
+                    await navigator.serviceWorker.register('/sw.js', { scope: '/' });
+                } catch (e) {
+                    console.warn('[Push] Early SW registration failed:', e);
+                }
+            }
+
             const supported =
                 'serviceWorker' in navigator &&
                 'PushManager' in window &&
@@ -81,13 +102,7 @@ export function usePushNotifications(): PushNotificationState {
         setIsLoading(true);
 
         try {
-            // 1. Register the service worker
-            const registration = await navigator.serviceWorker.register('/sw.js', {
-                scope: '/',
-            });
-            await navigator.serviceWorker.ready;
-
-            // 2. Request notification permission (iOS requires user gesture)
+            // 1. Request notification permission IMMEDIATELY on user gesture for iOS WebKit
             const perm = await Notification.requestPermission();
             setPermission(perm);
 
@@ -95,6 +110,13 @@ export function usePushNotifications(): PushNotificationState {
                 setIsLoading(false);
                 return false;
             }
+
+            // 2. Ensure service worker is registered and active
+            let registration = await navigator.serviceWorker.getRegistration('/sw.js');
+            if (!registration) {
+                registration = await navigator.serviceWorker.register('/sw.js', { scope: '/' });
+            }
+            await navigator.serviceWorker.ready;
 
             // 3. Subscribe to push with VAPID key
             const applicationServerKey = urlBase64ToUint8Array(VAPID_PUBLIC_KEY);
@@ -185,6 +207,8 @@ export function usePushNotifications(): PushNotificationState {
         isSubscribed,
         isLoading,
         permission,
+        isIOS,
+        isStandalone,
         enableNotifications,
         disableNotifications,
     };

@@ -91,7 +91,7 @@ const LeaderboardView: React.FC<LeaderboardViewProps> = ({ username, weeklyGain,
 
     const getRowClass = (rank: number, isUser: boolean) => {
         const base = "px-6 py-4 flex items-center justify-between transition-all border-l-4 ";
-        let color = "bg-surface border-secondary/10";
+        let color = "bg-secondary/10 border-secondary/30";
         
         // Custom ranking colors: Top 5 green, last 3 red
         if (rank <= 5) color = "bg-success/5 border-success/40"; 
@@ -118,8 +118,8 @@ const LeaderboardView: React.FC<LeaderboardViewProps> = ({ username, weeklyGain,
                     <span className="text-[9px] md:text-[10px] bg-primary text-white px-3 py-0.5 rounded-full font-bold uppercase tracking-widest shadow-button animate-subtlePulse">
                         {league} League
                     </span>
-                    <h1 className="font-sans text-lg md:text-xl lg:text-3xl bg-highlight text-text-light px-4 md:px-6 py-2 inline-block rounded-xl shadow-card uppercase tracking-tight animate-slideDown">
-                        Leaderboard
+                    <h1 className="font-sans text-lg md:text-xl lg:text-3xl bg-highlight text-text-light px-4 md:px-6 py-2 inline-block rounded-xl shadow-card uppercase tracking-tight animate-slideDown font-bold">
+                        LEADERBOARD
                     </h1>
                 </div>
                 <p className="text-text-dim mt-2 text-[10px] md:text-xs">League Pool: 20 Scholars</p>
@@ -142,7 +142,7 @@ const LeaderboardView: React.FC<LeaderboardViewProps> = ({ username, weeklyGain,
                                     pixelSize={displayRank === 1 ? 4 : 3}
                                 />
                             </div>
-                            <div className={`w-24 md:w-28 lg:w-40 ${height} border-t-4 ${getPodiumColor(displayRank)} flex flex-col items-center pt-3 md:pt-4 rounded-t-xl shadow-lg relative ${displayRank === 1 ? 'z-10' : ''} ${entry.isUser ? 'ring-2 ring-highlight ring-inset bg-highlight/5' : ''}`}>
+                            <div className={`w-24 md:w-28 lg:w-40 ${height} border-t-4 ${getPodiumColor(displayRank)} flex flex-col items-center pt-3 md:pt-4 rounded-none shadow-lg relative ${displayRank === 1 ? 'z-10' : ''} ${entry.isUser ? 'ring-2 ring-highlight ring-inset bg-highlight/5' : ''}`}>
                                 {displayRank === 1 && (
                                     <span className="absolute -top-8 md:-top-10 flex items-center justify-center bg-white dark:bg-slate-800 rounded-full p-1.5 shadow-md border-2 border-secondary/20">
                                         <CrownIcon className="w-5 h-5 md:w-6 md:h-6 text-yellow-500" />
@@ -171,8 +171,8 @@ const LeaderboardView: React.FC<LeaderboardViewProps> = ({ username, weeklyGain,
             )}
 
             {/* Scrollable List Container */}
-            <div ref={listContainerRef} className="bg-surface border-2 border-secondary/30 rounded-xl shadow-card overflow-hidden mx-2 animate-scaleIn">
-                <div className="glass px-6 py-3 border-b-2 border-secondary/20 flex justify-between text-[10px] font-bold text-primary uppercase tracking-widest">
+            <div ref={listContainerRef} className="genshin-panel border border-secondary/30 rounded-none shadow-card overflow-hidden mx-2 animate-scaleIn">
+                <div className="genshin-panel px-6 py-3 border-b border-highlight/30 flex justify-between text-[10px] font-bold text-primary uppercase tracking-widest">
                     <span>Rank / Seeker</span>
                     <span>Weekly Gain</span>
                 </div>
@@ -199,9 +199,9 @@ const LeaderboardView: React.FC<LeaderboardViewProps> = ({ username, weeklyGain,
                                         {entry.username} {entry.isUser ? '(You)' : ''}
                                     </p>
                                     <div className="flex gap-1.5 items-center">
-                                        {entry.rank <= 5 && <span className="text-[7px] bg-success text-white px-1 rounded-sm font-bold">PROMOTING</span>}
-                                        {entry.rank >= 18 && <span className="text-[7px] bg-accent text-white px-1 rounded-sm font-bold">DEMOTING</span>}
-                                        {entry.rank > 5 && entry.rank < 18 && <span className="text-[7px] bg-text-dark text-white px-1 rounded-sm font-bold">STAYING</span>}
+                                        {entry.rank <= 5 && <span className="text-[7px] bg-success text-white px-1 rounded-none font-bold">PROMOTING</span>}
+                                        {entry.rank >= 18 && <span className="text-[7px] bg-accent text-white px-1 rounded-none font-bold">DEMOTING</span>}
+                                        {entry.rank > 5 && entry.rank < 18 && <span className="text-[7px] bg-text-dark text-white px-1 rounded-none font-bold">STAYING</span>}
                                     </div>
                                 </div>
                             </div>
@@ -229,7 +229,7 @@ const LeaderboardView: React.FC<LeaderboardViewProps> = ({ username, weeklyGain,
 
             {/* Notification Toast */}
             {lastAction && (
-                <div className="fixed bottom-24 left-1/2 -translate-x-1/2 bg-surface border-2 border-highlight px-6 py-3 rounded-full shadow-2xl z-50 animate-bounce">
+                <div className="fixed bottom-24 left-1/2 -translate-x-1/2 genshin-panel border border-highlight px-6 py-3 rounded-full shadow-2xl z-50 animate-bounce">
                     <p className="text-[10px] font-bold text-highlight uppercase tracking-widest">{lastAction}</p>
                 </div>
             )}
@@ -255,7 +255,7 @@ const LeaderboardView: React.FC<LeaderboardViewProps> = ({ username, weeklyGain,
                     </button>
                     <button
                         onClick={() => handleAction("Coming Soon!")}
-                        className="bg-surface text-text-main px-4 py-2 rounded-full flex items-center gap-3 shadow-xl border-2 border-secondary/50 cursor-not-allowed relative"
+                        className="genshin-panel text-text-main px-4 py-2 rounded-full flex items-center gap-3 shadow-xl border border-secondary/50 cursor-not-allowed relative"
                     >
                         <span className="text-[10px] font-bold uppercase tracking-widest">Add Friend</span>
                         <UserPlusIcon className="h-5 w-5" />

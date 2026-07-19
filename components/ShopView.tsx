@@ -53,7 +53,7 @@ const ShopView: React.FC<ShopViewProps> = ({ auraPoints, inventory, onBuy, onExi
             {/* Purchase Confirmation Modal */}
             {confirmItem && (
                 <div className="fixed inset-0 bg-black/60 backdrop-blur-sm z-50 flex items-center justify-center p-4">
-                    <div className="bg-surface border-4 border-highlight p-6 max-w-sm w-full shadow-card-hover animate-scaleIn text-center rounded-xl">
+                    <div className="genshin-modal border border-highlight p-6 max-w-sm w-full shadow-card-hover animate-scaleIn text-center rounded-md">
                         <div className="mb-4 animate-bounce flex items-center justify-center">
                             {renderPowerUpIcon(confirmItem.id, "w-16 h-16")}
                         </div>
@@ -85,12 +85,12 @@ const ShopView: React.FC<ShopViewProps> = ({ auraPoints, inventory, onBuy, onExi
                 <div className="text-center md:text-left w-full md:w-auto flex flex-col md:flex-row md:items-center">
                     <div className="flex items-center justify-center md:justify-start">
                         <button onClick={onExit} className="text-text-dim hover:text-highlight mr-4 p-2 -ml-2 touch-target press-effect transition-premium">&larr; Back</button>
-                        <h1 className="font-sans text-base md:text-lg bg-highlight text-text-light px-3 md:px-4 py-2 inline-block rounded-lg shadow-card">Item Shop</h1>
+                        <h1 className="font-sans text-base md:text-lg bg-highlight text-text-light px-3 md:px-4 py-2 inline-block rounded-lg shadow-card font-bold uppercase">ITEM SHOP</h1>
                     </div>
                     <p className="text-text-dim text-[10px] md:text-xs mt-1.5 md:mt-0 md:ml-4 whitespace-nowrap">Stock up for Boss Fights</p>
                 </div>
 
-                <div className="glass px-4 md:px-6 py-2 rounded-full border-2 border-secondary/30 text-center font-bold text-primary shadow-card text-sm md:text-base hover-lift flex items-center gap-1.5 justify-center">
+                <div className="genshin-panel px-4 md:px-6 py-2 rounded-full border border-highlight/30 text-center font-bold text-primary shadow-card text-sm md:text-base hover-lift flex items-center gap-1.5 justify-center">
                     <AuraIcon className="animate-gentleBounce text-primary w-4 h-4" />
                     <span>{auraPoints.toLocaleString()} Aura</span>
                 </div>
@@ -104,7 +104,7 @@ const ShopView: React.FC<ShopViewProps> = ({ auraPoints, inventory, onBuy, onExi
                     return (
                         <div
                             key={powerup.id}
-                            className="bg-surface border-2 border-secondary/30 p-3 md:p-4 flex flex-col justify-between shadow-card hover:shadow-card-hover rounded-xl hover:border-highlight/50 active:border-highlight/50 transition-premium animate-fadeInScale"
+                            className="genshin-panel border border-secondary/30 p-3 md:p-4 flex flex-col justify-between shadow-card hover:shadow-card-hover rounded-md hover:border-highlight/50 active:border-highlight/50 transition-premium animate-fadeInScale"
                             style={{ animationDelay: `${index * 0.05}s` }}
                         >
                             <div className="flex items-start gap-3 md:gap-4 mb-3 md:mb-4">

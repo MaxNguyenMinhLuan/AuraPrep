@@ -100,7 +100,7 @@ const DailyMissionsExplainer: React.FC<DailyMissionsExplainerProps> = ({ onCompl
                 </div>
 
                 {/* Card */}
-                <div className="bg-surface border-4 border-highlight rounded-xl p-6 shadow-2xl animate-scaleIn pointer-events-auto" key={step}>
+                <div className="genshin-modal p-6 animate-scaleIn pointer-events-auto" key={step}>
                     {/* Pikachu */}
                     <div className="flex justify-center mb-4">
                         <div className="animate-gentleBounce mb-2">

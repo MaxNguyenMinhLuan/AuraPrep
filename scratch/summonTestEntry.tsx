@@ -7,6 +7,9 @@ import ReactDOM from 'react-dom/client';
 import SummonView from '../components/SummonView';
 import { CreatureInstance } from '../types';
 
+// Match the app's primary aesthetic (dark "midnight temple") in the harness
+document.documentElement.classList.add('dark');
+
 const rig = new URLSearchParams(window.location.search).get('rig');
 if (rig === 'ultra') {
     // rand*100 = 99.9 → Ultra Rare bucket; shiny check 0.999 < 1/500 fails

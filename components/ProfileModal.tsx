@@ -44,7 +44,7 @@ const ProfileModal: React.FC<ProfileModalProps> = ({ user, onClose, onUpdateUser
 
     return (
         <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/60 backdrop-blur-sm animate-fadeIn">
-            <div className="bg-surface w-full max-w-md rounded-2xl shadow-2xl border-2 border-secondary overflow-hidden animate-reveal">
+            <div className="genshin-modal w-full max-w-md overflow-hidden animate-reveal">
                 <div className="bg-primary p-6 text-center relative">
                     <button 
                         onClick={onClose}
