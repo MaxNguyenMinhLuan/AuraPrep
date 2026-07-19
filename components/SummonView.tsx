@@ -522,6 +522,14 @@ const SummonView: React.FC<SummonViewProps> = ({ auraPoints, setAuraPoints, user
                                 // If the video 404s or can't decode, never strand the user in
                                 // the flight phase — fall through to the first card.
                                 onError={() => startCardReveal(0, summonedResults)}
+                                onTimeUpdate={(e) => {
+                                    const video = e.currentTarget;
+                                    // Zoom in with velocity during the last 0.8 seconds to enter the door's light
+                                    if (video.duration > 0 && (video.duration - video.currentTime) <= 0.8) {
+                                        video.style.transform = 'scale(15)';
+                                        video.style.transition = 'transform 0.8s cubic-bezier(0.5, 0, 1, 1)';
+                                    }
+                                }}
                                 className="absolute inset-0 w-full h-full object-cover mix-blend-screen"
                                 style={{
                                     filter: highestRarity === Rarity.Legendary ? 'sepia(1) saturate(5) hue-rotate(15deg) brightness(1.3)' :
