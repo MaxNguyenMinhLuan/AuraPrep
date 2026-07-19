@@ -477,8 +477,10 @@ const SummonView: React.FC<SummonViewProps> = ({ auraPoints, setAuraPoints, user
     const bigPullSecondary = currentCard && (currentCard.rarity === Rarity.Legendary || currentCard.isShiny) ? '#f97316' : '#ec4899';
 
     return (
-        <div className={`flex flex-col items-center justify-center min-h-[75vh] lg:min-h-0 w-full text-center p-2 md:p-4 pb-12 max-w-4xl mx-auto ${
-            isAnimating ? 'fixed inset-0 z-[100] w-screen h-screen bg-slate-900 p-0 max-w-none overflow-y-auto' : ''
+        <div className={`flex flex-col items-center justify-center min-h-[75vh] lg:min-h-0 w-full text-center ${
+            isAnimating 
+                ? 'fixed inset-0 z-[100] w-screen h-screen bg-slate-900 !p-0 !m-0 !max-w-none overflow-y-auto' 
+                : 'p-2 md:p-4 pb-12 max-w-4xl mx-auto'
         }`}>
             {!isAnimating && (
                 <>
@@ -487,13 +489,13 @@ const SummonView: React.FC<SummonViewProps> = ({ auraPoints, setAuraPoints, user
                 </>
             )}
 
-            <div className={`w-full flex items-center justify-center mx-auto ${isAnimating ? 'max-w-none h-full my-0' : 'max-w-lg md:max-w-2xl lg:max-w-3xl my-3 md:my-6'}`}>
+            <div className={`w-full flex items-center justify-center ${isAnimating ? '!max-w-none !h-full !min-h-screen !m-0 !p-0' : 'max-w-lg md:max-w-2xl lg:max-w-3xl mx-auto my-3 md:my-6'}`}>
                 <div
                     className={`w-full bg-slate-900 flex items-center justify-center relative overflow-hidden transition-all duration-700 shadow-[0_20px_50px_rgba(0,0,0,0.3)] ${
                         phase === 'charging' || phase === 'impact' ? 'animate-shake' : ''
                     } ${
                         isAnimating
-                            ? 'w-full h-full min-h-screen rounded-none border-none'
+                            ? '!w-full !h-full !min-h-screen !rounded-none !border-none !m-0 !p-0'
                             : 'min-h-[300px] md:min-h-[400px] lg:min-h-[500px] border-4 border-slate-800 rounded-2xl md:rounded-3xl'
                     }`}
                     onClick={phase !== 'idle' ? handleTap : undefined}
