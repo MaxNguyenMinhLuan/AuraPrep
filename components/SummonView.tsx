@@ -276,12 +276,7 @@ const SummonView: React.FC<SummonViewProps> = ({ auraPoints, setAuraPoints, user
     const startCardReveal = (i: number, results: SummonResult[]) => {
         clearQueue();
         setRevealIndex(i);
-        if (!prefersReducedMotion && isBigPull(results[i])) {
-            setPhase('bigPull');
-            queue(() => setPhase('card'), 1500);
-        } else {
-            setPhase('card');
-        }
+        setPhase('card');
     };
 
     const finishReveals = () => {
@@ -403,13 +398,10 @@ const SummonView: React.FC<SummonViewProps> = ({ auraPoints, setAuraPoints, user
         });
         setSummonedResults(sorted);
 
-        setPhase('charging');
         if (prefersReducedMotion) {
-            queue(() => startCardReveal(0, sorted), 600);
+            startCardReveal(0, sorted);
         } else {
-            queue(() => setPhase('flight'), 1300);      // portal charges
-            queue(() => setPhase('impact'), 3350);      // comet lands
-            queue(() => startCardReveal(0, sorted), 3950);
+            setPhase('flight');
         }
     };
 
@@ -494,28 +486,16 @@ const SummonView: React.FC<SummonViewProps> = ({ auraPoints, setAuraPoints, user
                         style={{ backgroundColor: phase !== 'idle' ? `${themeColor}40` : '#ca8a0410' }}
                     />
 
-                    {/* Phase: Charging — the portal draws in energy */}
-                    {phase === 'charging' && (
-                        <>
-                            <GatheringParticles color={themeColor} />
-                            <div className="absolute inset-0 flex items-center justify-center pointer-events-none">
-                                <div className="absolute w-48 h-48 border-t-4 border-b-4 rounded-full animate-spinSlow" style={{ borderColor: `${themeColor}60` }} />
-                                <div className="absolute w-64 h-64 border-l-4 border-r-4 rounded-full animate-spinSlowReverse" style={{ borderColor: `${themeColor}40` }} />
-                                <div className="absolute w-24 h-24 rounded-full filter blur-xl animate-pulse" style={{ backgroundColor: themeColor }} />
-                            </div>
-                            <p className="absolute bottom-8 text-slate-400 text-xs animate-pulse">The portal stirs...</p>
-                        </>
-                    )}
-
-                    {/* Phase: Flight — the comet crosses the night sky */}
+                    {/* Phase: Flight (Cinematic Portal Shatter) */}
                     {phase === 'flight' && (
                         <>
                             <div className="absolute inset-0 bg-slate-950" />
                             <video 
-                                src="/summon-star.mp4" 
+                                src={highestRarity === Rarity.Legendary || highestRarity === Rarity.UltraRare ? "/portal-resists.mp4" : "/portal-shatter.mp4"}
                                 autoPlay 
                                 muted 
-                                playsInline 
+                                playsInline
+                                onEnded={() => startCardReveal(0, summonedResults)} 
                                 className="absolute inset-0 w-full h-full object-cover mix-blend-screen"
                                 style={{
                                     filter: highestRarity === Rarity.Legendary ? 'sepia(1) saturate(5) hue-rotate(15deg) brightness(1.3)' :
@@ -530,44 +510,6 @@ const SummonView: React.FC<SummonViewProps> = ({ auraPoints, setAuraPoints, user
                                 <div className="absolute inset-0 animate-skyWash pointer-events-none mix-blend-screen" style={{ backgroundColor: '#ca8a0440' }} />
                             )}
                         </>
-                    )}
-
-                    {/* Phase: Impact — the comet lands */}
-                    {phase === 'impact' && (
-                        <>
-                            <div className="absolute inset-0 bg-slate-950" />
-                            <StarField dim />
-                            <div className="absolute inset-0 flex items-center justify-center pointer-events-none">
-                                <div className="absolute w-24 h-24 rounded-full border-4 animate-shockwave" style={{ borderColor: themeColor }} />
-                                <div className="absolute w-24 h-24 rounded-full border-2 animate-shockwave" style={{ borderColor: secondaryColor, animationDelay: '0.12s' }} />
-                                <div className="absolute w-32 h-32 rounded-full filter blur-2xl" style={{ backgroundColor: themeColor, opacity: 0.7 }} />
-                            </div>
-                            <GlitterParticles color={themeColor} secondaryColor={secondaryColor} />
-                            <div className="absolute inset-0 bg-white animate-flash pointer-events-none" />
-                        </>
-                    )}
-
-                    {/* Phase: Big-pull interstitial — a second comet falls just for them */}
-                    {phase === 'bigPull' && currentCard && (
-                        <div key={`big-${revealIndex}`} className="absolute inset-0">
-                            <div className="absolute inset-0 bg-black/85" />
-                            <video 
-                                src="/summon-star.mp4" 
-                                autoPlay 
-                                muted 
-                                playsInline 
-                                className="absolute inset-0 w-full h-full object-cover mix-blend-screen"
-                                style={{
-                                    filter: (currentCard.rarity === Rarity.Legendary || currentCard.isShiny)
-                                        ? 'sepia(1) saturate(5) hue-rotate(15deg) brightness(1.3)' 
-                                        : 'sepia(1) saturate(4) hue-rotate(260deg) brightness(1.2)'
-                                }}
-                            />
-                            <div className="absolute inset-0 bg-white animate-tripleFlash pointer-events-none" />
-                            <p className="absolute bottom-8 left-0 right-0 text-center text-xs uppercase tracking-[0.4em] animate-pulse font-bold" style={{ color: bigPullColor }}>
-                                A powerful presence approaches
-                            </p>
-                        </div>
                     )}
 
                     {/* Phase: Card — one-by-one reveal, tap to advance */}
@@ -690,7 +632,7 @@ const SummonView: React.FC<SummonViewProps> = ({ auraPoints, setAuraPoints, user
                     )}
 
                     {/* Skip hint during cinematics */}
-                    {(phase === 'charging' || phase === 'flight' || phase === 'impact') && (
+                    {phase === 'flight' && (
                         <p className="absolute bottom-4 right-5 text-slate-500 text-[10px] animate-pulse">Tap to skip</p>
                     )}
                 </div>
