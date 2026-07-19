@@ -478,7 +478,7 @@ const SummonView: React.FC<SummonViewProps> = ({ auraPoints, setAuraPoints, user
 
     return (
         <div className={`flex flex-col items-center justify-center min-h-[75vh] lg:min-h-0 w-full text-center p-2 md:p-4 pb-12 max-w-4xl mx-auto ${
-            isAnimating ? 'fixed inset-0 z-50 w-screen h-screen bg-slate-900 p-0 max-w-none overflow-y-auto lg:relative lg:w-full lg:h-full lg:bg-transparent lg:p-4 lg:max-w-4xl lg:overflow-visible' : ''
+            isAnimating ? 'fixed inset-0 z-[100] w-screen h-screen bg-slate-900 p-0 max-w-none overflow-y-auto' : ''
         }`}>
             {!isAnimating && (
                 <>
