@@ -10,6 +10,7 @@ import analyticsRoutes from './routes/analytics';
 import analyticsApiRoutes from './routes/analytics-api.routes';
 import questionsRoutes from './routes/questions.routes';
 import complianceRoutes from './routes/compliance.routes';
+import pushRoutes from './routes/push.routes';
 import { ApiResponse } from './types';
 
 const app: Express = express();
@@ -101,6 +102,9 @@ app.use('/api/analytics', analyticsRoutes);
 
 // Compliance routes
 app.use('/api/compliance', complianceRoutes);
+
+// Push notification routes
+app.use('/api/push', pushRoutes);
 
 // 404 handler
 app.use((_req: Request, res: Response) => {

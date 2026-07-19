@@ -35,7 +35,7 @@ const ReportQuestionModal: React.FC<ReportQuestionModalProps> = ({ onClose, onSu
                 ) : (
                     <>
                         <h2 className="text-lg font-bold text-highlight mb-2 flex items-center gap-2">
-                            🚩 Report This Question
+                            Report This Question
                         </h2>
                         <p className="text-xs text-text-dim mb-3 leading-relaxed">
                             What's wrong with it? (typo, wrong answer marked correct, confusing wording, etc.)

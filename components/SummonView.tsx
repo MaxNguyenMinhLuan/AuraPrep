@@ -154,18 +154,21 @@ const GlitterParticles: React.FC<{ color: string; secondaryColor: string }> = ({
         <div className="absolute inset-0 pointer-events-none overflow-hidden">
             {particles.map((p) => {
                 const activeColor = p.useSecondary ? secondaryColor : color;
+                const randomTop = -10 - Math.random() * 20; // Randomize start height above container top
                 return (
                     <div
                         key={p.id}
-                        className="absolute top-0"
+                        className="absolute"
                         style={{
                             left: p.left,
+                            top: `${randomTop}px`,
                             width: p.size,
                             height: p.size,
                             backgroundColor: activeColor,
                             boxShadow: `0 0 ${p.size * 2}px ${activeColor}`,
                             borderRadius: '50%',
-                            animation: `glitterFall ${p.duration}s linear ${p.delay}s forwards`,
+                            opacity: 0,
+                            animation: `glitterFall ${p.duration}s linear ${p.delay}s both`,
                         }}
                     />
                 );
@@ -186,19 +189,24 @@ const AtmosphericParticles: React.FC = () => {
 
     return (
         <div className="absolute inset-0 pointer-events-none overflow-hidden">
-            {particles.map((p) => (
-                <div
-                    key={p.id}
-                    className="aura-particle absolute bottom-0 bg-highlight/30 rounded-full"
-                    style={{
-                        left: p.left,
-                        width: p.size,
-                        height: p.size,
-                        '--duration': p.duration,
-                        '--delay': p.delay,
-                    } as React.CSSProperties}
-                />
-            ))}
+            {particles.map((p) => {
+                const randomBottom = -Math.random() * 10;
+                return (
+                    <div
+                        key={p.id}
+                        className="aura-particle absolute bg-highlight/30 rounded-full"
+                        style={{
+                            left: p.left,
+                            bottom: `${randomBottom}px`,
+                            width: p.size,
+                            height: p.size,
+                            opacity: 0,
+                            '--duration': p.duration,
+                            '--delay': p.delay,
+                        } as React.CSSProperties}
+                    />
+                );
+            })}
         </div>
     );
 };

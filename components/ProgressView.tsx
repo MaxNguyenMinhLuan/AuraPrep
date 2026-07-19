@@ -265,7 +265,7 @@ const PracticeSession: React.FC<{
                                 onClick={() => setShowReportModal(true)}
                                 className="mt-2 w-full text-center text-[10px] text-text-dim hover:text-accent transition-colors py-1"
                             >
-                                🚩 Report This Question
+                                Report This Question
                             </button>
                         </div>
                     )}
@@ -681,7 +681,7 @@ const BossFightSession: React.FC<{
                                 onClick={() => setShowReportModal(true)}
                                 className="mt-2 w-full text-center text-[10px] text-text-dim hover:text-accent transition-colors py-1"
                             >
-                                🚩 Report This Question
+                                Report This Question
                             </button>
                         </div>
                     )}
@@ -1052,9 +1052,7 @@ const ProgressView: React.FC<ProgressViewProps> = ({ userId, userEmail, profile,
             {!searchQuery && (
                 <div className="mb-8 animate-fadeIn">
                     <div className="flex items-center gap-2 mb-3">
-                        <span className="text-base">⭐</span>
                         <h2 className="text-[11px] md:text-xs font-bold text-highlight uppercase tracking-widest">Skills of the Day</h2>
-                        <span className="text-base">⭐</span>
                     </div>
                     <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 md:gap-4">
                         {renderSkillCard(todaysSkills.mathSkill, 0, true)}

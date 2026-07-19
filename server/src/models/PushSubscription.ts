@@ -1,0 +1,43 @@
+import mongoose, { Schema, Document } from 'mongoose';
+
+export interface IPushSubscription extends Document {
+    userId: string;
+    subscription: {
+        endpoint: string;
+        keys: {
+            p256dh: string;
+            auth: string;
+        };
+    };
+    createdAt: Date;
+    updatedAt: Date;
+}
+
+const PushSubscriptionSchema = new Schema<IPushSubscription>(
+    {
+        userId: {
+            type: String,
+            required: true,
+            index: true,
+        },
+        subscription: {
+            endpoint: { type: String, required: true },
+            keys: {
+                p256dh: { type: String, required: true },
+                auth: { type: String, required: true },
+            },
+        },
+    },
+    { timestamps: true }
+);
+
+// Prevent duplicate device registrations for the same user
+PushSubscriptionSchema.index(
+    { userId: 1, 'subscription.endpoint': 1 },
+    { unique: true }
+);
+
+export const PushSubscription = mongoose.model<IPushSubscription>(
+    'PushSubscription',
+    PushSubscriptionSchema
+);

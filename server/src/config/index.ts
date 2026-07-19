@@ -70,6 +70,12 @@ export const config = {
     sendgrid: {
         apiKey: process.env.SENDGRID_API_KEY || '',
         fromEmail: process.env.FROM_EMAIL || 'nudge@auraprep.com'
+    },
+
+    vapid: {
+        publicKey: process.env.VAPID_PUBLIC_KEY || '',
+        privateKey: process.env.VAPID_PRIVATE_KEY || '',
+        contactEmail: process.env.VAPID_CONTACT_EMAIL || 'mailto:admin@auraprep.academy'
     }
 };
 

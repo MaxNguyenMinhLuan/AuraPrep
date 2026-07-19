@@ -258,7 +258,7 @@ const MissionView: React.FC<MissionViewProps> = ({ mission, onAnswer, onExit, in
                             onClick={() => setShowReportModal(true)}
                             className="mt-2 w-full text-center text-[10px] text-text-dim hover:text-accent transition-premium py-1"
                         >
-                            🚩 Report This Question
+                            Report This Question
                         </button>
                     </div>
                 )}

@@ -181,7 +181,7 @@ const ReviewView: React.FC<ReviewViewProps> = ({ questions, onAnswer, onExit, us
                             onClick={() => setShowReportModal(true)}
                             className="mt-2 w-full text-center text-[10px] text-text-dim hover:text-accent transition-all"
                         >
-                            🚩 Report This Question
+                            Report This Question
                         </button>
                     </div>
                 )}
