@@ -6,6 +6,7 @@ import { User } from '../models/User';
 import { generateGuardianCopy } from '../shared/generateGuardianCopy';
 import { CreatureType, NudgeLevel } from '../shared/guardianPersonalities';
 import { sendNotificationToUser } from './push.service';
+import { PushCategory, pickRandomTemplate, pickRival, renderPushTemplate } from '../shared/pushNotificationTemplates';
 
 if (config.sendgrid.apiKey) {
     sgMail.setApiKey(config.sendgrid.apiKey);
@@ -76,6 +77,24 @@ export class NudgeService {
         } catch {
             return date.toISOString().split('T')[0];
         }
+    }
+
+    /**
+     * Decide which push-notification category to pull from for this send.
+     * Morning leans on the daily-missions set, afternoon on aura-farming,
+     * evening on the streak-at-risk set (or leaderboard on Sundays, ahead of
+     * the weekly league reset) - falling back to daily-missions whenever the
+     * more specific category wouldn't make sense (e.g. no streak to lose).
+     */
+    static selectPushCategory(level: NudgeLevel, localDateStr: string, streakCount: number): PushCategory {
+        if (level === 'evening') {
+            const dayOfWeek = new Date(`${localDateStr}T12:00:00Z`).getUTCDay(); // 0 = Sunday
+            if (dayOfWeek === 0) return 'leaderboard';
+            if (streakCount > 0) return 'streak';
+            return 'dailyMissions';
+        }
+        if (level === 'afternoon') return 'auraFarming';
+        return 'dailyMissions';
     }
 
     /**
@@ -195,17 +214,29 @@ ${emailText}
 
                 // Web Push wakes the service worker and displays a native
                 // notification, so it reaches installed iOS PWAs even when
-                // AuraPrep has no open window.
+                // AuraPrep has no open window. Push gets its own (shorter,
+                // punchier) copy bank rather than reusing the email subject -
+                // see shared/pushNotificationTemplates.ts.
+                const streakCount = (gameData.profile as any)?.dailyStreak ?? 0;
+                const leagueName = (gameData.profile as any)?.league ?? 'Bronze';
+                const pushCategory = this.selectPushCategory(level, localDateStr, streakCount);
+                const pushContent = renderPushTemplate(pickRandomTemplate(pushCategory), {
+                    partnerName: gameData.activeCreature?.name || 'your Auramon',
+                    streakCount,
+                    rival: pickRival(),
+                    leagueName,
+                });
+
                 const pushResult = await sendNotificationToUser(user._id.toString(), {
-                    title: copy.subject,
-                    body: copy.preview,
+                    title: pushContent.title,
+                    body: pushContent.body,
                     url: deepLink,
                 });
 
                 if (pushResult.sent > 0) {
-                    console.log(`🔔 Push nudge (${level}) sent to ${user.email} on ${pushResult.sent} device(s).`);
+                    console.log(`🔔 Push nudge (${level}/${pushCategory}) sent to ${user.email} on ${pushResult.sent} device(s).`);
                 } else if (pushResult.failed > 0) {
-                    console.warn(`Push nudge (${level}) could not be delivered to ${user.email}.`);
+                    console.warn(`Push nudge (${level}/${pushCategory}) could not be delivered to ${user.email}.`);
                 }
 
                 // 9. Update Database stats
