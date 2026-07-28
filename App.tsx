@@ -16,7 +16,6 @@ import ShopView from './components/ShopView';
 import StreakPopup from './components/StreakPopup';
 import LeaderboardView from './components/LeaderboardView';
 import LoginView from './components/LoginView';
-import BossFightView from './components/BossFightView';
 import NDAModal, { checkNdaSigned } from './components/NDAModal';
 import ProfileModal from './components/ProfileModal';
 import { NotificationBanner } from './components/NotificationBanner';
@@ -47,14 +46,13 @@ import { INITIAL_TUTORIAL_STATE, TUTORIAL_DIALOGUE, STARTER_IDS, PROGRESS_UNLOCK
 // import BaselineResults from './components/Tutorial/BaselineResults';
 // import { processBaselineResults, baselineResultsToStats } from './utils/baselineScoring';
 import { hasCompletedStealthPlacement, processStealthMissionAnswer } from './services/stealthMissionService';
-import { migrateLocalStorageToBackend, syncGameDataToBackend, fetchGameData, fetchLeaderboard } from './services/gameDataService';
+import { migrateLocalStorageToBackend, syncGameDataToBackend, fetchGameData } from './services/gameDataService';
 import { DifficultyTier } from './types/stealthDiagnostic';
 
 const App: React.FC = () => {
     const [user, setUser] = useLocalStorage<User | null>('user', null);
     const [currentView, setCurrentView] = useState<View>(View.DASHBOARD);
     const [isBossFightActive, setIsBossFightActive] = useState(false);
-    const [bossQuestions, setBossQuestions] = useState<Question[]>([]);
     const [isCheckingSession, setIsCheckingSession] = useState(true);
     // True while we are fetching the authoritative cloud copy of the user's
     // game data.  During this time the UI shows a loading spinner so that
@@ -126,8 +124,7 @@ const App: React.FC = () => {
     const [theme, setTheme] = useState<'light' | 'dark'>(() => {
         const saved = localStorage.getItem('theme');
         if (saved === 'dark' || saved === 'light') return saved;
-        // Dark "midnight temple" is the primary aesthetic; parchment light is secondary
-        return 'dark';
+        return 'light';
     });
 
     useEffect(() => {
@@ -281,7 +278,7 @@ const App: React.FC = () => {
 
                 const cloudData = await fetchGameData(token);
                 if (cloudData && cloudData.profile) {
-                    // Overwrite local state with authoritative cloud data
+                    // ✅ Overwrite local state with authoritative cloud data
                     setProfile(cloudData.profile);
                     if (cloudData.creatures) setCreatures(cloudData.creatures);
                     if (cloudData.activeCreature?.creatureId !== undefined) setActiveCreatureId(cloudData.activeCreature.creatureId);
@@ -583,27 +580,6 @@ const App: React.FC = () => {
             setMockCompetitors(generateCompetitors(profile.league));
         }
     }, [dailyActivity.date, profile.lastStreakDate, user, tutorialState.currentPhase, currentView]);
-
-    // Fetch leaderboard competitors from the server
-    useEffect(() => {
-        const loadLeaderboard = async () => {
-            if (!user) return;
-            try {
-                const token = await AuthService.getAuthToken();
-                if (token) {
-                    const list = await fetchLeaderboard(token);
-                    if (list && list.length > 0) {
-                        setMockCompetitors(list);
-                    }
-                }
-            } catch (err) {
-                console.error('Failed to load leaderboard from server:', err);
-            }
-        };
-        if (currentView === View.LEADERBOARD) {
-            loadLeaderboard();
-        }
-    }, [user, currentView, profile.league, profile.weeklyAuraGain]);
 
     // Continuous spawning of missions during onboarding diagnostic phase
     useEffect(() => {
@@ -1004,17 +980,7 @@ const App: React.FC = () => {
                             addToReviewQueue={addToReviewQueue}
                             awardAura={awardAura}
                             addXpToActiveCreature={addXpToActiveCreature}
-                            onStartBossFight={async (subtopic: string) => {
-                                // Generate 5 questions for the boss fight using the selected subtopic
-                                const questions = await Promise.all(
-                                    Array(5).fill(0).map(() => generateSatQuestion(subtopic || 'Algebra: Linear Functions', 'Hard'))
-                                );
-                                // Ensure subtopic is set on questions
-                                const mappedQuestions = questions.map(q => ({ ...q, subtopic: subtopic || 'Algebra: Linear Functions' })) as Question[];
-                                setBossQuestions(mappedQuestions);
-                                setIsBossFightActive(true);
-                                setCurrentView(View.BOSS_FIGHT);
-                            }}
+                            setIsBossFightActive={setIsBossFightActive}
                         />;
             case View.LEADERBOARD:
                 return <LeaderboardView 
@@ -1075,21 +1041,6 @@ const App: React.FC = () => {
                         ));
                     }}
                 />;
-            case View.BOSS_FIGHT:
-                return <BossFightView
-                            creatures={creatures}
-                            bossQuestions={bossQuestions}
-                            activeCreatureId={activeCreatureId}
-                            onComplete={(success, activeCreatureId) => {
-                                if (success) addXpToActiveCreature(500);
-                                setCurrentView(View.DASHBOARD);
-                                setIsBossFightActive(false);
-                            }}
-                            onExit={() => {
-                                setCurrentView(View.DASHBOARD);
-                                setIsBossFightActive(false);
-                            }}
-                        />;
             default:
                 return null;
         }
@@ -1460,7 +1411,7 @@ const App: React.FC = () => {
             case 'progress-tour':
                 return (
                     <PikachuGuide
-                        message={"Welcome to Progress! Here's how it works:\n\nPRACTICE: Pick any skill and drill questions at your level. Every 3 correct answers in a row = +50 Aura. Exiting early? You keep partial streak rewards!\n\nBOSS FIGHT: Win a 10-question fight to LEVEL UP the skill — from Easy → Medium → Hard → Master. Beating a boss earns Aura + Guardian XP. You can bring up to 2 power-ups into each fight.\n\nI've added a special Tutorial skill for you to try first!"}
+                        message={"Welcome to Progress! Here's how it works:\n\n🏋️ PRACTICE: Pick any skill and drill questions at your level. Every 3 correct answers in a row = +50 Aura. Exiting early? You keep partial streak rewards!\n\n⚔️ BOSS FIGHT: Win a 10-question fight to LEVEL UP the skill — from Easy → Medium → Hard → Master. Beating a boss earns Aura + Guardian XP. You can bring up to 2 power-ups into each fight.\n\n💡 I've added a special Tutorial skill for you to try first!"}
                         onNext={handleProgressTourComplete}
                         buttonText="Start Tutorial Practice"
                         position="top"
@@ -1652,12 +1603,12 @@ const App: React.FC = () => {
                 <div className="lg:hidden fixed top-[calc(env(safe-area-inset-top)+12px)] left-3 right-3 z-30 flex items-center justify-between pointer-events-none">
                     {/* Left side stats (click events enabled) */}
                     <div className="flex gap-1.5 items-center pointer-events-auto">
-                        <div className="genshin-panel px-3 py-1.5 text-xs font-bold text-primary shadow-card flex items-center gap-1.5">
+                        <div className="glass px-3 py-1.5 rounded-lg border border-secondary/50 text-xs font-bold text-primary shadow-card flex items-center gap-1.5">
                             <AuraIcon className="w-3.5 h-3.5 animate-gentleBounce text-primary" />
                             <span>{auraPoints.toLocaleString()}</span>
                         </div>
                         {profile.dailyStreak > 0 && (
-                            <div className="genshin-panel px-3 py-1.5 border-accent/30 text-xs font-bold text-accent shadow-card flex items-center gap-1 animate-popIn">
+                            <div className="glass px-3 py-1.5 rounded-lg border border-accent/30 text-xs font-bold text-accent shadow-card flex items-center gap-1 animate-popIn">
                                 <FireIcon className="w-4 h-4 animate-subtlePulse text-accent" />
                                 <span>{profile.dailyStreak}</span>
                             </div>
@@ -1719,7 +1670,7 @@ const App: React.FC = () => {
             {/* Boss Fight Quit Warning Modal */}
             {showBossFightWarning.show && (
                 <div className="fixed inset-0 z-[100] flex items-center justify-center p-4 bg-black/60 backdrop-blur-sm animate-fadeIn">
-                    <div className="genshin-modal p-6 md:p-8 max-w-sm w-full shadow-[0_0_40px_rgba(255,50,50,0.3)] border border-red-500/30 animate-scaleIn relative overflow-hidden">
+                    <div className="bg-surface rounded-3xl p-6 md:p-8 max-w-sm w-full shadow-[0_0_40px_rgba(255,50,50,0.3)] border border-red-500/30 animate-scaleIn relative overflow-hidden">
                         <div className="absolute top-0 left-0 w-full h-1 bg-gradient-to-r from-red-500 to-orange-500"></div>
                         <h3 className="text-xl font-bold text-text-main mb-3">Abandon Boss Fight?</h3>
                         <p className="text-text-dim text-sm mb-6">
