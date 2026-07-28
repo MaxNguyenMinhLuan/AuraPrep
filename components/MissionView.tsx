@@ -1,4 +1,3 @@
-
 import React, { useState, useCallback, useEffect } from 'react';
 import { MissionInstance, PowerUpType } from '../types';
 import QuestionGraph from './QuestionGraph';
@@ -176,8 +175,8 @@ const MissionView: React.FC<MissionViewProps> = ({ mission, onAnswer, onExit, in
                 </div>
             </div>
 
-            <div className={`p-3 md:p-4 border flex flex-col justify-between rounded-md shadow-card transition-all duration-300 ${
-                isCorrect === false ? 'bg-accent/5 border-accent shadow-[0_0_20px_rgba(220,38,38,0.25)] red-flash' : 'genshin-panel border-highlight/30'
+            <div className={`p-3 md:p-4 flex flex-col justify-between rounded-xl transition-all duration-300 ${
+                isCorrect === false ? 'bg-accent/5 border-2 border-accent shadow-[0_0_20px_rgba(220,38,38,0.25)] red-flash' : 'bg-surface border-2 border-secondary shadow-card'
             }`}>
                 <div className="pb-4">
                   <div className="flex justify-between items-center mb-2 flex-wrap gap-2">
@@ -200,7 +199,7 @@ const MissionView: React.FC<MissionViewProps> = ({ mission, onAnswer, onExit, in
                           let icon: React.ReactNode = null;
 
                           if (selectedAnswer === null) {
-                              buttonClass += 'genshin-panel hover:bg-highlight/10 active:bg-highlight/20 border-highlight/30 shadow-card hover:shadow-card-hover';
+                              buttonClass += 'bg-surface hover:bg-secondary/30 active:bg-secondary/50 border-secondary shadow-card hover:border-highlight';
                           } else {
                               if (index === currentQuestion.answerIndex) {
                                   buttonClass += 'bg-success/10 border-success text-success font-bold shadow-glow-success animate-successPop';
