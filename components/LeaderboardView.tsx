@@ -2,7 +2,7 @@
 import React, { useState, useMemo, useRef, useEffect } from 'react';
 import { INITIAL_CREATURES } from '../constants';
 import { PixelCreature } from './CreatureCard';
-import { Rarity, LeagueType } from '../types';
+import { Rarity, LeagueType, User } from '../types';
 import UserPlusIcon from './icons/UserPlusIcon';
 import AuraIcon from './icons/AuraIcon';
 import CrownIcon from './icons/CrownIcon';
@@ -10,6 +10,7 @@ import SecondPlaceIcon from './icons/SecondPlaceIcon';
 import ThirdPlaceIcon from './icons/ThirdPlaceIcon';
 import SwordsIcon from './icons/SwordsIcon';
 import HandshakeIcon from './icons/HandshakeIcon';
+import AddFriendModal from './AddFriendModal';
 
 interface LeaderboardEntry {
     rank: number;
@@ -20,15 +21,19 @@ interface LeaderboardEntry {
 }
 
 interface LeaderboardViewProps {
+    user: User;
     username: string;
     weeklyGain: number;
     league: LeagueType;
     competitors: any[];
     activeGuardianId?: number;
+    pendingFriendRequestCount?: number;
+    onFriendRequestsChanged?: () => void;
 }
 
-const LeaderboardView: React.FC<LeaderboardViewProps> = ({ username, weeklyGain, league, competitors, activeGuardianId = 1 }) => {
+const LeaderboardView: React.FC<LeaderboardViewProps> = ({ user, username, weeklyGain, league, competitors, activeGuardianId = 1, pendingFriendRequestCount = 0, onFriendRequestsChanged = () => {} }) => {
     const [isMenuOpen, setIsMenuOpen] = useState(false);
+    const [isAddFriendOpen, setIsAddFriendOpen] = useState(false);
     const [lastAction, setLastAction] = useState<string | null>(null);
     const [userVisibility, setUserVisibility] = useState<'visible' | 'above' | 'below'>('visible');
     
@@ -254,24 +259,41 @@ const LeaderboardView: React.FC<LeaderboardViewProps> = ({ username, weeklyGain,
                         <span className="absolute -top-2 -right-2 bg-highlight text-[7px] text-white px-1.5 py-0.5 rounded-full font-bold shadow-md">SOON</span>
                     </button>
                     <button
-                        onClick={() => handleAction("Coming Soon!")}
-                        className="bg-surface text-text-main px-4 py-2 rounded-full flex items-center gap-3 shadow-xl border-2 border-secondary/50 cursor-not-allowed relative"
+                        onClick={() => { setIsMenuOpen(false); setIsAddFriendOpen(true); }}
+                        className="bg-surface text-text-main px-4 py-2 rounded-full flex items-center gap-3 shadow-xl border-2 border-secondary/50 hover:brightness-105 active:scale-95 transition-all relative"
                     >
                         <span className="text-[10px] font-bold uppercase tracking-widest">Add Friend</span>
                         <UserPlusIcon className="h-5 w-5" />
-                        <span className="absolute -top-2 -right-2 bg-highlight text-[7px] text-white px-1.5 py-0.5 rounded-full font-bold shadow-md">SOON</span>
+                        {pendingFriendRequestCount > 0 && (
+                            <span className="absolute -top-2 -right-2 bg-highlight text-[9px] text-white min-w-[18px] h-[18px] px-1 rounded-full font-bold shadow-md flex items-center justify-center">
+                                {pendingFriendRequestCount}
+                            </span>
+                        )}
                     </button>
                 </div>
 
-                <button 
+                <button
                     onClick={() => setIsMenuOpen(!isMenuOpen)}
-                    className={`w-14 h-14 rounded-full bg-highlight flex items-center justify-center shadow-[0_0_20px_rgba(202,138,4,0.4)] border-2 border-yellow-800 transition-all duration-300 hover:scale-110 active:scale-95 group ${isMenuOpen ? 'rotate-45 bg-accent border-accent-dark' : 'rotate-0'}`}
+                    className={`relative w-14 h-14 rounded-full bg-highlight flex items-center justify-center shadow-[0_0_20px_rgba(202,138,4,0.4)] border-2 border-yellow-800 transition-all duration-300 hover:scale-110 active:scale-95 group ${isMenuOpen ? 'rotate-45 bg-accent border-accent-dark' : 'rotate-0'}`}
                 >
                     <svg className="w-8 h-8 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                         <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="3" d="M12 4v16m8-8H4" />
                     </svg>
+                    {!isMenuOpen && pendingFriendRequestCount > 0 && (
+                        <span className="absolute -top-1 -right-1 bg-accent text-[9px] text-white min-w-[18px] h-[18px] px-1 rounded-full font-bold shadow-md flex items-center justify-center border-2 border-white">
+                            {pendingFriendRequestCount}
+                        </span>
+                    )}
                 </button>
             </div>
+
+            {isAddFriendOpen && (
+                <AddFriendModal
+                    user={user}
+                    onClose={() => setIsAddFriendOpen(false)}
+                    onRequestsChanged={onFriendRequestsChanged}
+                />
+            )}
         </div>
     );
 };

@@ -18,6 +18,35 @@ service cloud.firestore {
       allow read, write: if request.auth != null && request.auth.uid == uid;
     }
 
+    // Public profile directory: minimal {uid, name, photoUrl} doc so a user
+    // can be looked up by Academy ID (uid) when sending a friend request.
+    // Readable by any signed-in user; only the owner can write their own.
+    match /users/{uid} {
+      allow read: if request.auth != null;
+      allow write: if request.auth != null && request.auth.uid == uid;
+    }
+
+    // Friend requests: sender creates it; both sides can read/update it
+    // (recipient accepts/rejects, sender acknowledges an accepted request
+    // when reconciling their own friends list). Either side may delete
+    // (cancel a pending request / clear a resolved one).
+    match /friendRequests/{requestId} {
+      allow create: if request.auth != null
+        && request.auth.uid == request.resource.data.fromUid
+        && request.resource.data.fromUid != request.resource.data.toUid;
+      allow read: if request.auth != null
+        && (request.auth.uid == resource.data.fromUid || request.auth.uid == resource.data.toUid);
+      allow update: if request.auth != null
+        && (request.auth.uid == resource.data.fromUid || request.auth.uid == resource.data.toUid);
+      allow delete: if request.auth != null
+        && (request.auth.uid == resource.data.fromUid || request.auth.uid == resource.data.toUid);
+    }
+
+    // Friends list: each user owns their own list of friend uids.
+    match /friends/{uid} {
+      allow read, write: if request.auth != null && request.auth.uid == uid;
+    }
+
     // Deny everything else
     match /{document=**} {
       allow read, write: if false;

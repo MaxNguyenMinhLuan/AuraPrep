@@ -47,6 +47,7 @@ import { INITIAL_TUTORIAL_STATE, TUTORIAL_DIALOGUE, STARTER_IDS, PROGRESS_UNLOCK
 // import { processBaselineResults, baselineResultsToStats } from './utils/baselineScoring';
 import { hasCompletedStealthPlacement, processStealthMissionAnswer } from './services/stealthMissionService';
 import { migrateLocalStorageToBackend, syncGameDataToBackend, fetchGameData } from './services/gameDataService';
+import { ensurePublicProfile, reconcileAcceptedRequests, getIncomingRequests } from './services/friendsService';
 import { DifficultyTier } from './types/stealthDiagnostic';
 
 const App: React.FC = () => {
@@ -64,6 +65,8 @@ const App: React.FC = () => {
     const [baselineResults, setBaselineResults] = useState<any>(null);
     const [isProfileOpen, setIsProfileOpen] = useState(false);
     const [headerImageError, setHeaderImageError] = useState(false);
+    const [pendingFriendRequestCount, setPendingFriendRequestCount] = useState(0);
+    const [friendRequestsRefreshKey, setFriendRequestsRefreshKey] = useState(0);
     const [showBossFightWarning, setShowBossFightWarning] = useState<{show: boolean, targetView?: View}>({ show: false });
     const pushNotifications = usePushNotifications();
     useEffect(() => {
@@ -258,6 +261,29 @@ const App: React.FC = () => {
             setIsHydrating(false);
         }
     }, [user?.uid]);
+
+    // Friends: keep the public directory doc fresh, fold in any friend
+    // requests that were accepted while this device was offline, then
+    // refresh the pending-request badge. Re-runs when a modal action
+    // bumps friendRequestsRefreshKey.
+    useEffect(() => {
+        if (!user) {
+            setPendingFriendRequestCount(0);
+            return;
+        }
+        let cancelled = false;
+        (async () => {
+            try {
+                await ensurePublicProfile(user);
+                await reconcileAcceptedRequests(user.uid);
+                const incoming = await getIncomingRequests(user.uid);
+                if (!cancelled) setPendingFriendRequestCount(incoming.length);
+            } catch (error) {
+                console.error('[Friends] Sync error:', error);
+            }
+        })();
+        return () => { cancelled = true; };
+    }, [user?.uid, friendRequestsRefreshKey]);
 
     // On login: fetch the authoritative cloud copy BEFORE the app renders.
     // We show a loading spinner during this time so stale localStorage data
@@ -983,12 +1009,15 @@ const App: React.FC = () => {
                             setIsBossFightActive={setIsBossFightActive}
                         />;
             case View.LEADERBOARD:
-                return <LeaderboardView 
+                return <LeaderboardView
+                            user={user!}
                             username={user?.name || "Seeker"}
-                            weeklyGain={profile.weeklyAuraGain} 
-                            league={profile.league} 
+                            weeklyGain={profile.weeklyAuraGain}
+                            league={profile.league}
                             competitors={mockCompetitors}
                             activeGuardianId={creatures.find(c => c.id === activeCreatureId)?.creatureId || 1}
+                            pendingFriendRequestCount={pendingFriendRequestCount}
+                            onFriendRequestsChanged={() => setFriendRequestsRefreshKey(k => k + 1)}
                         />;
             case View.SUMMON:
                 return <SummonView

@@ -6,6 +6,30 @@ export interface User {
     photoUrl?: string;
 }
 
+// Minimal public-facing profile, looked up by Academy ID (uid) so a user
+// can be found and shown before a friend request is sent.
+export interface PublicProfile {
+    uid: string;
+    name: string;
+    photoUrl?: string;
+}
+
+export type FriendRequestStatus = 'pending' | 'accepted' | 'rejected';
+
+export interface FriendRequest {
+    id: string;
+    fromUid: string;
+    fromName: string;
+    fromPhotoUrl?: string;
+    toUid: string;
+    status: FriendRequestStatus;
+    createdAt: string;
+    updatedAt: string;
+    // Set true once the sender has folded an accepted request into their
+    // own friends list (see reconcileAcceptedRequests in friendsService).
+    senderAcked: boolean;
+}
+
 export enum LeagueType {
     BRONZE = 'Bronze',
     SILVER = 'Silver',
