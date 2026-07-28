@@ -1,18 +1,11 @@
-import sgMail from '@sendgrid/mail';
 import jwt from 'jsonwebtoken';
 import { config } from '../config';
 import UserGameData from '../models/UserGameData';
 import { User } from '../models/User';
-import { generateGuardianCopy } from '../shared/generateGuardianCopy';
-import { CreatureType, NudgeLevel } from '../shared/guardianPersonalities';
+import { NudgeLevel } from '../shared/guardianPersonalities';
+import { PushSubscription } from '../models/PushSubscription';
 import { sendNotificationToUser } from './push.service';
 import { PushCategory, pickRandomTemplate, pickRival, renderPushTemplate } from '../shared/pushNotificationTemplates';
-
-if (config.sendgrid.apiKey) {
-    sgMail.setApiKey(config.sendgrid.apiKey);
-} else {
-    console.warn('⚠️ SENDGRID_API_KEY is not configured. Nudge emails will be logged to the console instead of sent.');
-}
 
 export class NudgeService {
     /**
@@ -98,15 +91,15 @@ export class NudgeService {
     }
 
     /**
-     * Process hourly checks across all active users.
+     * Process hourly checks across all active users. Push is the only nudge
+     * channel - a saved Web Push subscription is the only opt-in a user needs.
      */
     static async processHourlyNudges(): Promise<void> {
         console.log(`[${new Date().toISOString()}] Starting hourly nudge sweep...`);
         try {
-            // These are the user's chosen reminder windows. A Web Push
-            // subscription is its own opt-in and is sent in addition to email.
-            const records = await UserGameData.find({ 'emailNotifications.enabled': true });
-            console.log(`Found ${records.length} users with reminders enabled.`);
+            const pushUserIds = await PushSubscription.distinct('userId');
+            const records = await UserGameData.find({ userId: { $in: pushUserIds } });
+            console.log(`Found ${records.length} users with an active push subscription.`);
 
             let nudgesSentCount = 0;
 
@@ -133,21 +126,11 @@ export class NudgeService {
 
                 // 3. Determine if the current local hour is a nudge target: 8 (Morning), 14 (Afternoon), or 20 (Evening)
                 let level: NudgeLevel | null = null;
-                let isPrefEnabled = false;
+                if (localHour === 8) level = 'morning';
+                else if (localHour === 14) level = 'afternoon';
+                else if (localHour === 20) level = 'evening';
 
-                if (localHour === 8) {
-                    level = 'morning';
-                    isPrefEnabled = gameData.emailNotifications.morning === true;
-                } else if (localHour === 14) {
-                    level = 'afternoon';
-                    isPrefEnabled = gameData.emailNotifications.afternoon === true;
-                } else if (localHour === 20) {
-                    level = 'evening';
-                    isPrefEnabled = gameData.emailNotifications.evening === true;
-                }
-
-                if (!level || !isPrefEnabled) {
-                    // Not a nudge hour, or the user disabled this nudge tier
+                if (!level) {
                     continue;
                 }
 
@@ -159,7 +142,7 @@ export class NudgeService {
                     continue;
                 }
 
-                // 5. Fetch User details for email & name
+                // 5. Fetch User details for the deep link
                 const user = await User.findById(gameData.userId);
                 if (!user) {
                     console.warn(`User document not found for user ID: ${gameData.userId}`);
@@ -168,55 +151,13 @@ export class NudgeService {
 
                 // 6. Generate deep link autologin token
                 const token = jwt.sign(
-                    { userId: user._id.toString(), email: user.email, purpose: 'email-nudge' },
+                    { userId: user._id.toString(), email: user.email, purpose: 'push-nudge' },
                     config.jwt.accessTokenSecret,
                     { expiresIn: '7d' }
                 );
                 const deepLink = `${config.appUrl}?token=${token}`;
 
-                // 7. Generate Guardian Copy
-                const copy = generateGuardianCopy({
-                    guardianType: (gameData.activeCreature.type as CreatureType) || 'Fire',
-                    guardianName: gameData.activeCreature.name || 'Guardian',
-                    nudgeLevel: level,
-                    userName: user.name || 'Adventurer',
-                    currentStreak: gameData.currentStreak || 0,
-                    deepLink
-                });
-
-                // 8. Dispatch Email via SendGrid or log
-                const emailHtml = copy.body;
-                const emailText = copy.body.replace(/<[^>]*>/g, ''); // Basic HTML stripper
-
-                if (config.sendgrid.apiKey) {
-                    try {
-                        await sgMail.send({
-                            to: user.email,
-                            from: config.sendgrid.fromEmail,
-                            subject: copy.subject,
-                            html: emailHtml,
-                            text: emailText
-                        });
-                        console.log(`✉️ Email nudge (${level}) sent to ${user.email} from ${gameData.activeCreature.name} (${gameData.activeCreature.type})`);
-                    } catch (error) {
-                        console.error(`Failed to send email nudge to ${user.email} via SendGrid:`, error);
-                    }
-                } else {
-                    console.log(`[MOCK EMAIL NUDGE]
-To: ${user.email}
-From: ${config.sendgrid.fromEmail}
-Subject: ${copy.subject}
-Body:
----------------------------------------------
-${emailText}
----------------------------------------------`);
-                }
-
-                // Web Push wakes the service worker and displays a native
-                // notification, so it reaches installed iOS PWAs even when
-                // AuraPrep has no open window. Push gets its own (shorter,
-                // punchier) copy bank rather than reusing the email subject -
-                // see shared/pushNotificationTemplates.ts.
+                // 7. Pick a category + template and render it with the user's real state
                 const streakCount = (gameData.profile as any)?.dailyStreak ?? 0;
                 const leagueName = (gameData.profile as any)?.league ?? 'Bronze';
                 const pushCategory = this.selectPushCategory(level, localDateStr, streakCount);
@@ -239,10 +180,9 @@ ${emailText}
                     console.warn(`Push nudge (${level}/${pushCategory}) could not be delivered to ${user.email}.`);
                 }
 
-                // 9. Update Database stats
+                // 8. Update Database stats
                 gameData.dailyMissions.nudgesSent = Math.min(3, gameData.dailyMissions.nudgesSent + 1);
                 gameData.dailyMissions.lastNudgeSentAt = new Date();
-                gameData.metrics.emailsSent += 1;
                 await gameData.save();
 
                 nudgesSentCount++;
