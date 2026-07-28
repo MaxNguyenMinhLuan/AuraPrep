@@ -236,8 +236,6 @@ const Dashboard: React.FC<DashboardProps> = ({
                                 >
                                     <div className="flex justify-between items-center mb-2">
                                         <span className="text-sm flex-1 pr-2 whitespace-normal group-hover:text-primary transition-premium">
-                                            {isWelcomeMission ? '🌟 ' : ''}
-                                            {isBaselineMission && baselineProgress?.currentIndex ? '📋 ' : ''}
                                             {mission.description}
                                             {isBaselineMission && baselineProgress?.currentIndex ? ' (In Progress)' : ''}
                                         </span>

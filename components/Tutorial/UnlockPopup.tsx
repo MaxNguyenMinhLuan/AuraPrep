@@ -14,25 +14,43 @@ interface UnlockPopupProps {
 
 const FEATURE_DATA = {
     Progress: {
-        icon: '📊',
+        icon: (
+            <svg className="w-16 h-16 mx-auto text-primary" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2.5}>
+                <path strokeLinecap="round" strokeLinejoin="round" d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z" />
+            </svg>
+        ),
         title: 'Progress Tab Unlocked!',
         description: 'Track your skills in each SAT topic and take on Boss Fights to level up!',
         color: 'primary'
     },
     Training: {
-        icon: '🎯',
+        icon: (
+            <svg className="w-16 h-16 mx-auto text-success" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2.5}>
+                <circle cx="12" cy="12" r="10" />
+                <circle cx="12" cy="12" r="6" />
+                <circle cx="12" cy="12" r="2" />
+            </svg>
+        ),
         title: 'Training Unlocked!',
         description: 'Review questions you got wrong to master tough concepts and earn bonus Aura!',
         color: 'success'
     },
     Shop: {
-        icon: '🛒',
+        icon: (
+            <svg className="w-16 h-16 mx-auto text-highlight" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
+                <path strokeLinecap="round" strokeLinejoin="round" d="M3 3h2l.4 2M7 13h10l4-8H5.4M7 13L5.4 5M7 13l-2.293 2.293c-.63.63-.184 1.707.707 1.707H17m0 0a2 2 0 100 4 2 2 0 000-4zm-8 2a2 2 0 11-4 0 2 2 0 014 0z" />
+            </svg>
+        ),
         title: 'Shop Unlocked!',
         description: 'Buy power-ups to help you during tough questions and boss fights!',
         color: 'highlight'
     },
     Leaderboard: {
-        icon: '🏆',
+        icon: (
+            <svg className="w-16 h-16 mx-auto text-accent" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
+                <path strokeLinecap="round" strokeLinejoin="round" d="M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm10-10V7a4 4 0 00-8 0v4h8z" />
+            </svg>
+        ),
         title: 'Leaderboard Unlocked!',
         description: 'Compete with other Seekers! Climb the leagues and become a legend!',
         color: 'accent'
@@ -87,16 +105,16 @@ const UnlockPopup: React.FC<UnlockPopupProps> = ({ feature, onContinue }) => {
 
             <div className="max-w-sm w-full text-center relative">
                 {/* Lock breaking animation */}
-                <div className="relative mb-6">
-                    <div className="text-7xl animate-shake">🔓</div>
-                    <div className="absolute -top-2 -right-2 text-3xl animate-spin-slow">✨</div>
-                    <div className="absolute -bottom-2 -left-2 text-3xl animate-spin-slow" style={{ animationDirection: 'reverse' }}>✨</div>
+                <div className="relative mb-6 flex justify-center">
+                    <svg className="w-16 h-16 text-highlight animate-shake" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2.5}>
+                        <path strokeLinecap="round" strokeLinejoin="round" d="M8 11V7a4 4 0 118 0m-4 8v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2z" />
+                    </svg>
                 </div>
 
                 {showContent && (
                     <div className={`bg-surface border-4 ${colorClasses[data.color as keyof typeof colorClasses]} rounded-2xl p-6 animate-scaleIn shadow-2xl pointer-events-auto`}>
                         {/* Feature icon */}
-                        <div className="text-6xl mb-4 animate-gentleBounce">
+                        <div className="mb-4 animate-gentleBounce flex justify-center">
                             {data.icon}
                         </div>
 

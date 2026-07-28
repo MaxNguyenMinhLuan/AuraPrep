@@ -154,18 +154,21 @@ const GlitterParticles: React.FC<{ color: string; secondaryColor: string }> = ({
         <div className="absolute inset-0 pointer-events-none overflow-hidden">
             {particles.map((p) => {
                 const activeColor = p.useSecondary ? secondaryColor : color;
+                const randomTop = -10 - Math.random() * 20; // Randomize start height above container top
                 return (
                     <div
                         key={p.id}
-                        className="absolute top-0"
+                        className="absolute"
                         style={{
                             left: p.left,
+                            top: `${randomTop}px`,
                             width: p.size,
                             height: p.size,
                             backgroundColor: activeColor,
                             boxShadow: `0 0 ${p.size * 2}px ${activeColor}`,
                             borderRadius: '50%',
-                            animation: `glitterFall ${p.duration}s linear ${p.delay}s forwards`,
+                            opacity: 0,
+                            animation: `glitterFall ${p.duration}s linear ${p.delay}s both`,
                         }}
                     />
                 );
@@ -186,19 +189,24 @@ const AtmosphericParticles: React.FC = () => {
 
     return (
         <div className="absolute inset-0 pointer-events-none overflow-hidden">
-            {particles.map((p) => (
-                <div
-                    key={p.id}
-                    className="aura-particle absolute bottom-0 bg-highlight/30 rounded-full"
-                    style={{
-                        left: p.left,
-                        width: p.size,
-                        height: p.size,
-                        '--duration': p.duration,
-                        '--delay': p.delay,
-                    } as React.CSSProperties}
-                />
-            ))}
+            {particles.map((p) => {
+                const randomBottom = -Math.random() * 10;
+                return (
+                    <div
+                        key={p.id}
+                        className="aura-particle absolute bg-highlight/30 rounded-full"
+                        style={{
+                            left: p.left,
+                            bottom: `${randomBottom}px`,
+                            width: p.size,
+                            height: p.size,
+                            opacity: 0,
+                            '--duration': p.duration,
+                            '--delay': p.delay,
+                        } as React.CSSProperties}
+                    />
+                );
+            })}
         </div>
     );
 };
@@ -348,7 +356,7 @@ const SummonView: React.FC<SummonViewProps> = ({ auraPoints, setAuraPoints, user
 
             if (isNoDuplicateSummon) {
                 const rand = Math.random() * 100;
-                if (rand < 61.5) chosenRarity = Rarity.Common;
+                if (rand < 60.0) chosenRarity = Rarity.Common;
                 else if (rand < 86.5) chosenRarity = Rarity.Uncommon;
                 else if (rand < 99.5) chosenRarity = Rarity.Rare;
                 else chosenRarity = Rarity.UltraRare;
@@ -370,7 +378,7 @@ const SummonView: React.FC<SummonViewProps> = ({ auraPoints, setAuraPoints, user
                 creature = possibleCreatures[Math.floor(Math.random() * possibleCreatures.length)];
             } else {
                 const rand = Math.random() * 100;
-                if (rand < 61.5) chosenRarity = Rarity.Common;
+                if (rand < 60.0) chosenRarity = Rarity.Common;
                 else if (rand < 86.5) chosenRarity = Rarity.Uncommon;
                 else if (rand < 99.5) chosenRarity = Rarity.Rare;
                 else chosenRarity = Rarity.UltraRare;
@@ -469,8 +477,10 @@ const SummonView: React.FC<SummonViewProps> = ({ auraPoints, setAuraPoints, user
     const bigPullSecondary = currentCard && (currentCard.rarity === Rarity.Legendary || currentCard.isShiny) ? '#f97316' : '#ec4899';
 
     return (
-        <div className={`flex flex-col items-center justify-center min-h-[75vh] lg:min-h-0 w-full text-center p-2 md:p-4 pb-12 max-w-4xl mx-auto ${
-            isAnimating ? 'fixed inset-0 z-50 w-screen h-screen bg-slate-900 p-0 max-w-none overflow-y-auto lg:relative lg:w-full lg:h-full lg:bg-transparent lg:p-4 lg:max-w-4xl lg:overflow-visible' : ''
+        <div className={`flex flex-col items-center justify-center min-h-[75vh] lg:min-h-0 w-full text-center ${
+            isAnimating 
+                ? 'fixed inset-0 z-[100] w-screen h-[100dvh] bg-slate-900 !p-0 !m-0 !max-w-none overflow-y-auto' 
+                : 'p-2 md:p-4 pb-12 max-w-4xl mx-auto'
         }`}>
             {!isAnimating && (
                 <>
@@ -479,13 +489,13 @@ const SummonView: React.FC<SummonViewProps> = ({ auraPoints, setAuraPoints, user
                 </>
             )}
 
-            <div className="w-full flex items-center justify-center max-w-lg md:max-w-2xl lg:max-w-3xl mx-auto my-3 md:my-6">
+            <div className={`w-full flex items-center justify-center ${isAnimating ? '!max-w-none !h-full !min-h-[100dvh] !m-0 !p-0' : 'max-w-lg md:max-w-2xl lg:max-w-3xl mx-auto my-3 md:my-6'}`}>
                 <div
                     className={`w-full bg-slate-900 flex items-center justify-center relative overflow-hidden transition-all duration-700 shadow-[0_20px_50px_rgba(0,0,0,0.3)] ${
                         phase === 'charging' || phase === 'impact' ? 'animate-shake' : ''
                     } ${
                         isAnimating
-                            ? 'w-full h-full min-h-screen rounded-none border-none lg:min-h-[500px] lg:rounded-3xl lg:border-4 lg:border-slate-800'
+                            ? '!w-full !h-full !min-h-[100dvh] !rounded-none !border-none !m-0 !p-0'
                             : 'min-h-[300px] md:min-h-[400px] lg:min-h-[500px] border-4 border-slate-800 rounded-2xl md:rounded-3xl'
                     }`}
                     onClick={phase !== 'idle' ? handleTap : undefined}
@@ -506,7 +516,7 @@ const SummonView: React.FC<SummonViewProps> = ({ auraPoints, setAuraPoints, user
                         <>
                             <div className="absolute inset-0 bg-slate-950" />
                             <video
-                                src={highestRarity === Rarity.Legendary || highestRarity === Rarity.UltraRare ? "/portal-resists.mp4" : "/portal-shatter.mp4"}
+                                src="/portal-shatter.mp4"
                                 autoPlay
                                 muted
                                 playsInline
@@ -514,6 +524,14 @@ const SummonView: React.FC<SummonViewProps> = ({ auraPoints, setAuraPoints, user
                                 // If the video 404s or can't decode, never strand the user in
                                 // the flight phase — fall through to the first card.
                                 onError={() => startCardReveal(0, summonedResults)}
+                                onTimeUpdate={(e) => {
+                                    const video = e.currentTarget;
+                                    // Zoom in with velocity during the last 0.8 seconds to enter the door's light
+                                    if (video.duration > 0 && (video.duration - video.currentTime) <= 0.8) {
+                                        video.style.transform = 'scale(15)';
+                                        video.style.transition = 'transform 0.8s cubic-bezier(0.5, 0, 1, 1)';
+                                    }
+                                }}
                                 className="absolute inset-0 w-full h-full object-cover mix-blend-screen"
                                 style={{
                                     filter: highestRarity === Rarity.Legendary ? 'sepia(1) saturate(5) hue-rotate(15deg) brightness(1.3)' :
@@ -548,7 +566,7 @@ const SummonView: React.FC<SummonViewProps> = ({ auraPoints, setAuraPoints, user
 
                             {/* Reveal counter (multi only) */}
                             {isMulti && (
-                                <p className="absolute top-6 right-6 text-slate-400 text-xs font-mono tracking-widest z-20">
+                                <p className="absolute top-12 md:top-6 right-6 text-slate-400 text-xs font-mono tracking-widest z-20">
                                     {revealIndex + 1} / {summonedResults.length}
                                 </p>
                             )}
@@ -565,7 +583,7 @@ const SummonView: React.FC<SummonViewProps> = ({ auraPoints, setAuraPoints, user
                                 </div>
 
                                 <h2 className="summon-rise text-2xl md:text-3xl font-bold mt-6 text-white tracking-tighter drop-shadow-md" style={{ animationDelay: '0.8s' }}>
-                                    {currentCard.isShiny ? `✨ Shiny ${currentCard.name} ✨` : currentCard.name}
+                                    {currentCard.isShiny ? `Shiny ${currentCard.name}` : currentCard.name}
                                 </h2>
                                 <p className={`summon-stamp text-lg md:text-xl font-black uppercase tracking-[0.3em] mt-2 ${getRarityTextClass(currentCard.rarity)} animate-textGlow`}>
                                     {currentCard.rarity}
@@ -631,7 +649,7 @@ const SummonView: React.FC<SummonViewProps> = ({ auraPoints, setAuraPoints, user
                                                 <div className="absolute -bottom-2 -right-2 bg-primary text-white font-black text-[10px] px-1 rounded-sm border border-white shadow-md">x{result.multiplier}</div>
                                             )}
                                             {result.isShiny && (
-                                                <div className="absolute -top-4 -left-4 bg-amber-400 text-white font-black text-[7px] px-1 py-0.5 rounded-sm border border-white shadow-sm animate-pulse">✨</div>
+                                                <div className="absolute -top-4 -left-4 bg-amber-400 text-white font-black text-[7px] px-1 py-0.5 rounded-sm border border-white shadow-sm animate-pulse">S</div>
                                             )}
                                         </div>
                                         <p className="text-[9px] mt-4 font-bold truncate w-full text-slate-300 uppercase">{result.name}</p>
@@ -657,32 +675,36 @@ const SummonView: React.FC<SummonViewProps> = ({ auraPoints, setAuraPoints, user
                 </div>
             </div>
 
-            {/* Summon buttons */}
-            <div className="w-full mt-3 md:mt-6 space-y-3 max-w-lg md:max-w-2xl lg:max-w-3xl mx-auto">
-                <div className="flex flex-col sm:flex-row gap-3 md:gap-4 max-w-2xl mx-auto">
-                    <button
-                        onClick={() => performSummon(1)}
-                        disabled={(auraPoints < SUMMON_COST) || (phase !== 'idle' && phase !== 'summary')}
-                        className="flex-1 bg-surface hover:bg-secondary/20 active:bg-secondary/20 text-text-main font-bold py-3 md:py-4 px-4 md:px-6 shadow-card hover:shadow-card-hover transition-premium border-2 border-secondary/50 disabled:opacity-40 disabled:cursor-not-allowed border-b-4 active:border-b-0 active:translate-y-0.5 rounded-xl flex items-center justify-center gap-2 md:gap-3 uppercase tracking-tighter text-[9px] md:text-[10px] touch-target press-effect"
-                    >
-                        <span>Summon x1</span>
-                        <span className="bg-primary/10 text-primary px-2.5 py-1 rounded-full font-mono flex items-center gap-1">{SUMMON_COST} <AuraIcon className="w-3.5 h-3.5 text-primary" /></span>
-                    </button>
-                    <button
-                        onClick={() => performSummon(10)}
-                        disabled={(auraPoints < SUMMON_COST * 10) || (phase !== 'idle' && phase !== 'summary')}
-                        className="flex-1 bg-highlight hover:brightness-110 active:brightness-110 text-white font-bold py-3 md:py-4 px-4 md:px-6 shadow-card hover:shadow-glow-highlight transition-premium border-2 border-yellow-800 disabled:opacity-40 disabled:cursor-not-allowed border-b-4 border-yellow-900 active:border-b-0 active:translate-y-0.5 rounded-xl flex items-center justify-center gap-2 md:gap-3 uppercase tracking-tighter text-[9px] md:text-[10px] touch-target press-effect"
-                    >
-                        <span>Summon x10</span>
-                        <span className="bg-white/20 px-2.5 py-1 rounded-full font-mono flex items-center gap-1">{SUMMON_COST * 10} <AuraIcon className="w-3.5 h-3.5 text-white" /></span>
-                    </button>
-                </div>
-            </div>
+            {/* Summon buttons and Aura Points - only show when not animating */}
+            {!isAnimating && (
+                <>
+                    <div className="w-full mt-3 md:mt-6 space-y-3 max-w-lg md:max-w-2xl lg:max-w-3xl mx-auto">
+                        <div className="flex flex-col sm:flex-row gap-3 md:gap-4 max-w-2xl mx-auto">
+                            <button
+                                onClick={() => performSummon(1)}
+                                disabled={auraPoints < SUMMON_COST}
+                                className="flex-1 bg-surface hover:bg-secondary/20 active:bg-secondary/20 text-text-main font-bold py-3 md:py-4 px-4 md:px-6 shadow-card hover:shadow-card-hover transition-premium border-2 border-secondary/50 disabled:opacity-40 disabled:cursor-not-allowed border-b-4 active:border-b-0 active:translate-y-0.5 rounded-xl flex items-center justify-center gap-2 md:gap-3 uppercase tracking-tighter text-[9px] md:text-[10px] touch-target press-effect"
+                            >
+                                <span>Summon x1</span>
+                                <span className="bg-primary/10 text-primary px-2.5 py-1 rounded-full font-mono flex items-center gap-1">{SUMMON_COST} <AuraIcon className="w-3.5 h-3.5 text-primary" /></span>
+                            </button>
+                            <button
+                                onClick={() => performSummon(10)}
+                                disabled={auraPoints < SUMMON_COST * 10}
+                                className="flex-1 bg-highlight hover:brightness-110 active:brightness-110 text-white font-bold py-3 md:py-4 px-4 md:px-6 shadow-card hover:shadow-glow-highlight transition-premium border-2 border-yellow-800 disabled:opacity-40 disabled:cursor-not-allowed border-b-4 border-yellow-900 active:border-b-0 active:translate-y-0.5 rounded-xl flex items-center justify-center gap-2 md:gap-3 uppercase tracking-tighter text-[9px] md:text-[10px] touch-target press-effect"
+                            >
+                                <span>Summon x10</span>
+                                <span className="bg-white/20 px-2.5 py-1 rounded-full font-mono flex items-center gap-1">{SUMMON_COST * 10} <AuraIcon className="w-3.5 h-3.5 text-white" /></span>
+                            </button>
+                        </div>
+                    </div>
 
-            <div className="mt-4 glass px-4 md:px-8 py-2 md:py-3 rounded-xl border-2 border-secondary/30 shadow-card animate-fadeIn flex items-center gap-2 md:gap-3 hover-lift">
-                <AuraIcon className="w-4 h-4 md:w-5 md:h-5 text-primary animate-gentleBounce" />
-                <p className="text-[10px] md:text-xs tracking-widest uppercase font-bold text-primary flex items-center gap-1">Your Aura: <span className="text-highlight font-black ml-1 flex items-center gap-1">{auraPoints.toLocaleString()} <AuraIcon className="w-3.5 h-3.5 text-highlight" /></span></p>
-            </div>
+                    <div className="mt-4 glass px-4 md:px-8 py-2 md:py-3 rounded-xl border-2 border-secondary/30 shadow-card animate-fadeIn flex items-center gap-2 md:gap-3 hover-lift">
+                        <AuraIcon className="w-4 h-4 md:w-5 md:h-5 text-primary animate-gentleBounce" />
+                        <p className="text-[10px] md:text-xs tracking-widest uppercase font-bold text-primary flex items-center gap-1">Your Aura: <span className="text-highlight font-black ml-1 flex items-center gap-1">{auraPoints.toLocaleString()} <AuraIcon className="w-3.5 h-3.5 text-highlight" /></span></p>
+                    </div>
+                </>
+            )}
         </div>
     );
 };

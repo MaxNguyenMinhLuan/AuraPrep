@@ -56,17 +56,25 @@ const FirstMissionQuestion: React.FC<FirstMissionQuestionProps> = ({ onComplete 
                     <div className="space-y-3">
                         {question.options.map((option, index) => {
                             let buttonClass = 'w-full text-left p-4 transition-all border-2 flex justify-between items-center rounded-xl ';
-                            let icon = null;
+                            let icon: React.ReactNode = null;
 
                             if (selectedAnswer === null) {
                                 buttonClass += 'bg-surface hover:bg-secondary/30 border-secondary/30 shadow-card hover:shadow-card-hover';
                             } else {
                                 if (index === question.correctIndex) {
                                     buttonClass += 'bg-success/10 border-success text-success font-bold animate-successPop';
-                                    icon = '✅';
+                                    icon = (
+                                        <svg className="w-5 h-5 text-success" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={3}>
+                                            <path strokeLinecap="round" strokeLinejoin="round" d="M5 13l4 4L19 7" />
+                                        </svg>
+                                    );
                                 } else if (index === selectedAnswer) {
                                     buttonClass += 'bg-accent/10 border-accent text-accent font-bold';
-                                    icon = '❌';
+                                    icon = (
+                                        <svg className="w-5 h-5 text-accent animate-shake" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={3}>
+                                            <path strokeLinecap="round" strokeLinejoin="round" d="M6 18L18 6M6 6l12 12" />
+                                        </svg>
+                                    );
                                 } else {
                                     buttonClass += 'bg-surface opacity-50 border-text-dark/20';
                                 }
@@ -85,7 +93,7 @@ const FirstMissionQuestion: React.FC<FirstMissionQuestionProps> = ({ onComplete 
                                         </span>
                                         <FormattedText className="inline" text={option} />
                                     </span>
-                                    {icon && <span className="text-xl ml-2">{icon}</span>}
+                                    {icon && <span className="ml-2 flex-shrink-0">{icon}</span>}
                                 </button>
                             );
                         })}

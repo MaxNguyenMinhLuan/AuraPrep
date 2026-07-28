@@ -191,7 +191,7 @@ const EmailPreferences: React.FC<EmailPreferencesProps> = ({ onClose, onSave }) 
           <>
             {/* Nudge Time Preferences */}
             <div className="mb-8 p-4 bg-background rounded-xl">
-              <h2 className="text-lg font-bold text-text-main mb-4">📧 Email Times</h2>
+              <h2 className="text-lg font-bold text-text-main mb-4">Email Times</h2>
               <p className="text-sm text-text-dim mb-4">Choose which nudges to receive:</p>
 
               <div className="space-y-3">
@@ -270,10 +270,9 @@ const EmailPreferences: React.FC<EmailPreferencesProps> = ({ onClose, onSave }) 
           </div>
         </div>
 
-        {/* Info Box */}
         <div className="mb-8 p-4 bg-primary/10 border border-primary rounded-lg">
           <p className="text-sm text-text-main">
-            💡 <strong>Tip:</strong> Your Guardian will get increasingly desperate if you miss your daily missions! The evening nudge is the most aggressive.
+            <strong>Tip:</strong> Your Guardian will get increasingly desperate if you miss your daily missions! The evening nudge is the most aggressive.
           </p>
         </div>
 

@@ -21,27 +21,49 @@ const DailyMissionsExplainer: React.FC<DailyMissionsExplainerProps> = ({ onCompl
 
     const steps = [
         {
-            icon: '📋',
+            icon: (
+                <svg className="w-8 h-8 text-primary" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2.5}>
+                    <path strokeLinecap="round" strokeLinejoin="round" d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2" />
+                </svg>
+            ),
             title: TUTORIAL_DIALOGUE.explainDailyMissions.intro,
             content: TUTORIAL_DIALOGUE.explainDailyMissions.point1
         },
         {
-            icon: '💎',
+            icon: (
+                <svg className="w-8 h-8 text-success" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2.5}>
+                    <path strokeLinecap="round" strokeLinejoin="round" d="M6 3h12l4 6-10 12L2 9z" />
+                </svg>
+            ),
             title: 'Earn Rewards',
             content: TUTORIAL_DIALOGUE.explainDailyMissions.point2
         },
         {
-            icon: '📊',
+            icon: (
+                <svg className="w-8 h-8 text-highlight" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2.5}>
+                    <path strokeLinecap="round" strokeLinejoin="round" d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z" />
+                </svg>
+            ),
             title: 'Adaptive Difficulty',
             content: TUTORIAL_DIALOGUE.explainDailyMissions.point3
         },
         {
-            icon: '🎯',
+            icon: (
+                <svg className="w-8 h-8 text-accent" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2.5}>
+                    <circle cx="12" cy="12" r="10" />
+                    <circle cx="12" cy="12" r="6" />
+                    <circle cx="12" cy="12" r="2" />
+                </svg>
+            ),
             title: 'Personalized Learning',
             content: TUTORIAL_DIALOGUE.explainDailyMissions.point4
         },
         {
-            icon: '🚀',
+            icon: (
+                <svg className="w-8 h-8 text-primary animate-pulse" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2.5}>
+                    <path strokeLinecap="round" strokeLinejoin="round" d="M13 10V3L4 14h7v7l9-11h-7z" />
+                </svg>
+            ),
             title: TUTORIAL_DIALOGUE.explainDailyMissions.ready,
             content: 'Complete all 3 daily missions each day to maximize your Aura and level up your Guardian!'
         }
@@ -72,7 +94,7 @@ const DailyMissionsExplainer: React.FC<DailyMissionsExplainerProps> = ({ onCompl
                                     : i < step
                                     ? 'bg-highlight/50'
                                     : 'bg-text-dim/30'
-                            }`}
+                                }`}
                         />
                     ))}
                 </div>
@@ -89,7 +111,7 @@ const DailyMissionsExplainer: React.FC<DailyMissionsExplainerProps> = ({ onCompl
                     {/* Icon */}
                     <div className="flex justify-center mb-4">
                         <div className="w-16 h-16 bg-primary/20 rounded-full flex items-center justify-center">
-                            <span className="text-3xl">{currentStep.icon}</span>
+                            {currentStep.icon}
                         </div>
                     </div>
 

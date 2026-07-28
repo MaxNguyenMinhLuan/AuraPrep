@@ -67,14 +67,16 @@ const RewardCelebration: React.FC<RewardCelebrationProps> = ({
                             animationDuration: `${3 + Math.random() * 2}s`
                         }}
                     >
-                        <span className="text-2xl opacity-50">✨</span>
+                        <div className="w-2 h-2 bg-amber-400/30 rounded-full blur-[1px]" />
                     </div>
                 ))}
             </div>
 
             <div className="max-w-md w-full text-center relative">
-                {/* Celebration emoji */}
-                <div className="text-7xl mb-6 animate-gentleBounce">🎉</div>
+                {/* Celebration vector */}
+                <svg className="w-20 h-20 text-highlight mx-auto mb-6 animate-gentleBounce" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={1.75}>
+                    <path strokeLinecap="round" strokeLinejoin="round" d="M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm10-10V7a4 4 0 00-8 0v4h8z" />
+                </svg>
 
                 {/* Message */}
                 <h1 className="text-3xl font-serif text-highlight mb-2 animate-fadeIn">

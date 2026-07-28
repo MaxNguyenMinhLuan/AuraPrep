@@ -1,5 +1,6 @@
-
 import React, { useState, useEffect } from 'react';
+import FireIcon from './icons/FireIcon';
+import CrownIcon from './icons/CrownIcon';
 
 interface StreakPopupProps {
     streak: number;
@@ -79,8 +80,16 @@ const StreakPopup: React.FC<StreakPopupProps> = ({ streak, onClose }) => {
                 )}
 
                 <div className="relative z-10">
-                    <div className={`text-7xl mb-6 transition-transform duration-300 ${isAnimating ? 'scale-125' : 'scale-100'}`}>
-                        {isMilestone ? '🔥👑🔥' : '🔥'}
+                    <div className={`flex justify-center items-center gap-3 mb-6 transition-transform duration-300 ${isAnimating ? 'scale-125' : 'scale-100'}`}>
+                        {isMilestone ? (
+                            <>
+                                <FireIcon className="w-12 h-12 text-highlight" />
+                                <CrownIcon className="w-12 h-12 text-highlight" />
+                                <FireIcon className="w-12 h-12 text-highlight" />
+                            </>
+                        ) : (
+                            <FireIcon className="w-16 h-16 text-highlight" />
+                        )}
                     </div>
 
                     <h2 className="text-sm font-bold text-text-dim uppercase tracking-[0.2em] mb-2">

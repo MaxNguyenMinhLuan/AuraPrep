@@ -15,18 +15,9 @@ const containsProfanity = (text: string): boolean => {
     return PROFANITY_REGEX.test(text);
 };
 
-const PREMADE_AVATARS = [
-    { id: 'seeker', url: 'https://api.dicebear.com/7.x/avataaars/svg?seed=Seeker' },
-    { id: 'champion', url: 'https://api.dicebear.com/7.x/avataaars/svg?seed=Champion' },
-    { id: 'mystic', url: 'https://api.dicebear.com/7.x/avataaars/svg?seed=Mystic' },
-    { id: 'guardian', url: 'https://api.dicebear.com/7.x/avataaars/svg?seed=Guardian' },
-    { id: 'scholar', url: 'https://api.dicebear.com/7.x/avataaars/svg?seed=Scholar' },
-    { id: 'wizard', url: 'https://api.dicebear.com/7.x/avataaars/svg?seed=Wizard' },
-];
-
 const ProfileModal: React.FC<ProfileModalProps> = ({ user, onClose, onUpdateUser, onLogout }) => {
     const [name, setName] = useState(user.name);
-    const [photoUrl, setPhotoUrl] = useState(user.photoUrl || PREMADE_AVATARS[0].url);
+    const [photoUrl] = useState(user.photoUrl);
     const [isCopied, setIsCopied] = useState(false);
     const [modalImageError, setModalImageError] = useState(false);
     const [error, setError] = useState<string | null>(null);
@@ -47,7 +38,7 @@ const ProfileModal: React.FC<ProfileModalProps> = ({ user, onClose, onUpdateUser
             return;
         }
         setError(null);
-        onUpdateUser({ name, photoUrl });
+        onUpdateUser({ name });
         onClose();
     };
 
@@ -107,27 +98,6 @@ const ProfileModal: React.FC<ProfileModalProps> = ({ user, onClose, onUpdateUser
                                 placeholder="Enter seeker name..."
                             />
                             {error && <p className="text-accent text-xs font-bold mt-1 animate-shake">{error}</p>}
-                        </div>
-
-                        {/* Avatar Grid Selection */}
-                        <div>
-                            <label className="block text-[10px] text-text-dim uppercase font-bold mb-2 tracking-widest">Choose Avatar</label>
-                            <div className="grid grid-cols-6 gap-2 bg-background/50 p-3 rounded-xl border border-secondary/30">
-                                {PREMADE_AVATARS.map((avatar) => (
-                                    <button
-                                        key={avatar.id}
-                                        onClick={() => setPhotoUrl(avatar.url)}
-                                        className={`relative w-full aspect-square rounded-full border-2 transition-all hover:scale-110 active:scale-95 overflow-hidden ${photoUrl === avatar.url ? 'border-highlight bg-highlight/10 shadow-sm' : 'border-transparent bg-white grayscale-[50%] hover:grayscale-0'}`}
-                                    >
-                                        <img src={avatar.url} alt={avatar.id} className="w-full h-full object-cover" />
-                                        {photoUrl === avatar.url && (
-                                            <div className="absolute inset-0 bg-highlight/5 flex items-center justify-center">
-                                                <div className="bg-highlight text-white text-[8px] rounded-full px-1">✓</div>
-                                            </div>
-                                        )}
-                                    </button>
-                                ))}
-                            </div>
                         </div>
                     </div>
 
