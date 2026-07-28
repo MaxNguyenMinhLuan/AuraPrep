@@ -122,12 +122,15 @@ router.delete(
 );
 
 // ─────────────────────────────────────────────────────────────
-// POST /api/push/test
-// Send a test notification only to the authenticated user's own devices.
+// POST /api/push/send
+// Send a notification (default or caller-supplied copy) only to the
+// authenticated user's own devices. Used both as the "test" ping the
+// client fires right after subscribing, and generically by anything
+// that needs to push to the current user's devices on demand.
 // ─────────────────────────────────────────────────────────────
 
 router.post(
-    '/test',
+    '/send',
     async (req: AuthenticatedRequest, res: Response) => {
         try {
             const recipientId = req.user?.id;
@@ -139,9 +142,11 @@ router.post(
                 return res.status(400).json(response);
             }
 
+            const { title, body } = req.body || {};
+
             const result = await sendNotificationToUser(recipientId, {
-                title: 'AuraPrep notifications are ready',
-                body: 'Your daily-mission reminders can now reach this device, even when AuraPrep is closed.',
+                title: title || 'AuraPrep notifications are ready',
+                body: body || 'Your daily-mission reminders can now reach this device, even when AuraPrep is closed.',
                 url: '/',
             });
 
