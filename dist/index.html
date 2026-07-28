@@ -7,7 +7,7 @@
     <meta name="apple-mobile-web-app-capable" content="yes">
     <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
     <meta name="mobile-web-app-capable" content="yes">
-    <meta name="theme-color" content="#080d1c">
+    <meta name="theme-color" content="#f3f4f6">
     <meta name="apple-mobile-web-app-title" content="AuraPrep">
     <title>AuraPrep</title>
     <link rel="manifest" href="/manifest.json">
@@ -17,35 +17,40 @@
     <script src="https://cdn.tailwindcss.com"></script>
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-    <link href="https://fonts.googleapis.com/css2?family=Cinzel:wght@400;500;600;700;900&family=Inter:wght@400;500;600;700&family=Noto+Serif:ital,wght@0,400;0,500;0,600;0,700;1,400&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=Playfair+Display:wght@700&family=Press+Start+2P&family=VT323&family=Noto+Serif:ital,wght@0,400;0,700;1,400&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/katex@0.16.8/dist/katex.min.css">
     <style>
-        /* ── Genshin-style theme: parchment (light) / night sky (dark) ── */
+        @font-face {
+            font-family: 'Terminal Grotesque';
+            src: url('https://fontlibrary.org/face/terminal-grotesque') format('truetype');
+            font-weight: normal;
+            font-style: normal;
+        }
         :root {
-            --color-background: #f4f1e9;
-            --color-surface: #fcfbf8;
-            --color-text-main: #3b4255;
-            --color-text-dim: #636b7c;
-            --color-text-dark: #818a9e;
-            --color-highlight: #b89b5e;
-            --color-legendary: #b89b5e;
-            --color-primary: #b89b5e;
-            --color-accent: #c44f4f;
-            --color-secondary: #e8e2d5;
-            --color-secondary-hover: #dcd4c3;
+            --color-background: #f3f4f6;
+            --color-surface: #ffffff;
+            --color-text-main: #111827;
+            --color-text-dim: #6b7280;
+            --color-text-dark: #9ca3af;
+            --color-highlight: #ca8a04;
+            --color-legendary: #ca8a04;
+            --color-primary: #4338ca;
+            --color-accent: #dc2626;
+            --color-secondary: #ddd6fe;
+            --color-secondary-hover: #c4b5fd;
         }
         html.dark {
-            --color-background: #1c2331;
-            --color-surface: #2c3545;
-            --color-text-main: #ece4d4;
-            --color-text-dim: #9ba1b0;
-            --color-text-dark: #707788;
-            --color-highlight: #d3bc8e;
-            --color-legendary: #d3bc8e;
-            --color-primary: #d3bc8e;
-            --color-accent: #db5454;
-            --color-secondary: #3b4354;
-            --color-secondary-hover: #4a5468;
+            --color-background: #0f172a;
+            --color-surface: #1e293b;
+            --color-text-main: #f8fafc;
+            --color-text-dim: #94a3b8;
+            --color-text-dark: #64748b;
+            --color-highlight: #fbbf24; /* amber-400 - bright gold */
+            --color-legendary: #fbbf24; /* amber-400 - bright gold */
+            --color-primary: #b388ff; /* light neon purple */
+            --color-accent: #ff3b3b; /* bright saturated red */
+            --color-secondary: #ddd6fe;
+            --color-secondary-hover: #c4b5fd;
         }
     </style>
     <script>
@@ -54,10 +59,10 @@
             theme: {
                 extend: {
                     fontFamily: {
-                        sans: ['"Noto Serif"', 'Georgia', 'serif'],
-                        serif: ['Cinzel', '"Noto Serif"', 'serif'],
-                        mono: ['Cinzel', '"Noto Serif"', 'serif'],
-                        clean: ['"Noto Serif"', 'Georgia', 'serif'],
+                        sans: ['"Press Start 2P"', 'cursive'],
+                        serif: ['"Press Start 2P"', 'cursive'],
+                        mono: ['"Press Start 2P"', 'cursive'],
+                        clean: ['"-apple-system"', '"BlinkMacSystemFont"', '"SF Pro"', '"Segoe UI"', '"Roboto"', '"Helvetica Neue"', 'Arial', 'sans-serif'],
                     },
                     colors: {
                         'background': 'var(--color-background)',
@@ -324,8 +329,8 @@
                         'card-hover': '0 8px 24px -4px rgba(0, 0, 0, 0.15), 0 12px 32px -8px rgba(0, 0, 0, 0.1)',
                         'button': '0 2px 4px -1px rgba(0, 0, 0, 0.1), 0 4px 6px -2px rgba(0, 0, 0, 0.05)',
                         'button-active': '0 1px 2px -1px rgba(0, 0, 0, 0.1)',
-                        'glow-highlight': '0 0 20px -5px rgba(227, 179, 76, 0.45)',
-                        'glow-primary': '0 0 20px -5px rgba(180, 155, 240, 0.45)',
+                        'glow-highlight': '0 0 20px -5px rgba(202, 138, 4, 0.4)',
+                        'glow-primary': '0 0 20px -5px rgba(67, 56, 202, 0.4)',
                         'glow-success': '0 0 20px -5px rgba(22, 163, 74, 0.4)',
                         'inner-soft': 'inset 0 2px 4px -2px rgba(0, 0, 0, 0.05)',
                     },
@@ -478,125 +483,78 @@
 
     /* Premium glass effect */
     .glass {
-        background: rgba(252, 251, 248, 0.82);
-        backdrop-filter: blur(12px);
-        -webkit-backdrop-filter: blur(12px);
+        background: rgba(255, 255, 255, 0.8);
+        backdrop-filter: blur(10px);
+        -webkit-backdrop-filter: blur(10px);
     }
     html.dark .glass {
-        background: rgba(44, 53, 69, 0.75);
-        border-color: rgba(211, 188, 142, 0.25) !important;
+        background: var(--color-surface);
     }
     .glass-dark {
-        background: rgba(28, 35, 49, 0.6);
-        backdrop-filter: blur(12px);
-        -webkit-backdrop-filter: blur(12px);
+        background: rgba(0, 0, 0, 0.1);
+        backdrop-filter: blur(10px);
+        -webkit-backdrop-filter: blur(10px);
     }
-    
-    /* ── Genshin UI kit ──────────────────────────────────────────────
-       Panels: soft parchment rows (light) / slate-blue rows with a top
-       inner highlight (dark). Modals: translucent navy dialog with four
-       glowing gold corner sparks + faint Greek-fret watermark, matching
-       the reference dialog language. */
+
+    /* ── UI kit ──────────────────────────────────────────────────────
+       Plain solid-surface cards/modals matching the original pixel
+       theme's flat look - no parchment gradients or gold ornamentation.
+       Component markup still uses these class names, so only what they
+       render as changes here, not any .tsx file. */
     .genshin-panel {
-        background: linear-gradient(180deg, rgba(255, 253, 247, 0.97), rgba(244, 238, 224, 0.95));
-        border: 1px solid rgba(184, 155, 94, 0.45);
-        box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.8), 0 2px 10px -4px rgba(90, 70, 20, 0.25);
-        border-radius: 10px;
+        background: var(--color-surface);
+        border: 1px solid var(--color-secondary);
+        border-radius: 8px;
         position: relative;
     }
     html.dark .genshin-panel {
-        background: linear-gradient(180deg, rgba(66, 74, 94, 0.95), rgba(52, 59, 78, 0.93));
-        border: 1px solid rgba(211, 188, 142, 0.35);
-        box-shadow: inset 0 1px 0 rgba(236, 228, 212, 0.12), 0 4px 16px -6px rgba(0, 0, 0, 0.5);
+        background: var(--color-surface);
+        border: 1px solid var(--color-secondary);
     }
 
     .genshin-modal {
-        background: linear-gradient(180deg, rgba(248, 244, 234, 0.97), rgba(238, 231, 214, 0.96));
-        border: 1px solid rgba(184, 155, 94, 0.55);
-        box-shadow:
-            inset 0 0 0 1px rgba(255, 255, 255, 0.55),
-            inset 0 0 0 4px rgba(184, 155, 94, 0.12),
-            0 24px 60px -12px rgba(0, 0, 0, 0.55);
-        border-radius: 14px;
+        background: var(--color-surface);
+        border: 2px solid var(--color-secondary);
+        border-radius: 12px;
         position: relative;
     }
     html.dark .genshin-modal {
-        background: rgba(41, 48, 68, 0.92);
-        backdrop-filter: blur(14px);
-        -webkit-backdrop-filter: blur(14px);
-        border: 1px solid rgba(211, 188, 142, 0.4);
-        box-shadow:
-            inset 0 0 0 1px rgba(236, 228, 212, 0.08),
-            inset 0 0 60px rgba(16, 20, 36, 0.5),
-            0 24px 60px -12px rgba(0, 0, 0, 0.7);
+        background: var(--color-surface);
+        border: 2px solid var(--color-secondary);
     }
 
-    /* Four glowing gold corner sparks (rotationally-symmetric 4-point star,
-       so one asset serves every corner) */
     .genshin-modal::before {
-        content: '';
-        position: absolute;
-        inset: -9px;
-        pointer-events: none;
-        background-image:
-            url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='26' height='26'%3E%3Cpath d='M13 1 L16 10 L25 13 L16 16 L13 25 L10 16 L1 13 L10 10 Z' fill='%23e8c883'/%3E%3Cpath d='M13 6 L15 11 L20 13 L15 15 L13 20 L11 15 L6 13 L11 11 Z' fill='%23fff3d6'/%3E%3C/svg%3E"),
-            url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='26' height='26'%3E%3Cpath d='M13 1 L16 10 L25 13 L16 16 L13 25 L10 16 L1 13 L10 10 Z' fill='%23e8c883'/%3E%3Cpath d='M13 6 L15 11 L20 13 L15 15 L13 20 L11 15 L6 13 L11 11 Z' fill='%23fff3d6'/%3E%3C/svg%3E"),
-            url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='26' height='26'%3E%3Cpath d='M13 1 L16 10 L25 13 L16 16 L13 25 L10 16 L1 13 L10 10 Z' fill='%23e8c883'/%3E%3Cpath d='M13 6 L15 11 L20 13 L15 15 L13 20 L11 15 L6 13 L11 11 Z' fill='%23fff3d6'/%3E%3C/svg%3E"),
-            url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='26' height='26'%3E%3Cpath d='M13 1 L16 10 L25 13 L16 16 L13 25 L10 16 L1 13 L10 10 Z' fill='%23e8c883'/%3E%3Cpath d='M13 6 L15 11 L20 13 L15 15 L13 20 L11 15 L6 13 L11 11 Z' fill='%23fff3d6'/%3E%3C/svg%3E");
-        background-repeat: no-repeat;
-        background-position: top left, top right, bottom left, bottom right;
-        filter: drop-shadow(0 0 5px rgba(232, 200, 131, 0.75));
+        display: none;
     }
 
-    /* Faint Greek-fret watermark drifting out of the top-right corner */
-    .genshin-modal::after {
-        content: '';
-        position: absolute;
-        inset: 0;
-        pointer-events: none;
-        border-radius: inherit;
-        background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='28' height='28'%3E%3Cpath d='M2 26 V2 H26 V20 H8 V8 H20 V14 H14' fill='none' stroke='%23d3bc8e' stroke-width='2'/%3E%3C/svg%3E");
-        background-repeat: repeat;
-        opacity: 0.05;
-        -webkit-mask-image: radial-gradient(120% 120% at 100% 0%, black, transparent 52%);
-        mask-image: radial-gradient(120% 120% at 100% 0%, black, transparent 52%);
-    }
-
-    /* Title divider: hairline that fades at both ends, gold diamond center */
+    /* Title divider: plain hairline, no gold ornamentation */
     .genshin-divider {
-        height: 9px;
-        background-image:
-            url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='14' height='9'%3E%3Cpath d='M7 0.5 L13.5 4.5 L7 8.5 L0.5 4.5 Z' fill='%23d3bc8e'/%3E%3C/svg%3E"),
-            linear-gradient(90deg, transparent, rgba(211, 188, 142, 0.65) 18%, rgba(211, 188, 142, 0.65) 82%, transparent);
-        background-repeat: no-repeat, no-repeat;
-        background-position: center center, center center;
-        background-size: 14px 9px, 100% 1px;
+        height: 1px;
+        background: var(--color-secondary);
     }
 
-    /* Genshin pill buttons: cream = primary/selected, navy = secondary */
+    /* Buttons: match the site's original bottom-border button style */
     .genshin-btn-light {
-        border-radius: 999px;
-        background: linear-gradient(180deg, #fbf7ec, #ece3cd);
-        color: #3b4255 !important;
-        border: 1px solid #d8c9a4;
-        box-shadow: inset 0 0 0 1px rgba(255, 255, 255, 0.65), 0 3px 12px -3px rgba(0, 0, 0, 0.35);
-        transition: box-shadow 0.2s ease, filter 0.2s ease, transform 0.1s ease;
+        border-radius: 12px;
+        background: var(--color-secondary);
+        color: var(--color-primary) !important;
+        border: none;
+        border-bottom: 4px solid var(--color-secondary-hover);
+        transition: filter 0.2s ease, transform 0.1s ease;
     }
     .genshin-btn-light:hover:not(:disabled) {
-        filter: brightness(1.04);
-        box-shadow: inset 0 0 0 1px rgba(255, 255, 255, 0.65), 0 0 0 2px rgba(232, 200, 131, 0.55), 0 3px 14px -3px rgba(0, 0, 0, 0.4);
+        filter: brightness(1.05);
     }
     .genshin-btn-dark {
-        border-radius: 999px;
-        background: linear-gradient(180deg, rgba(62, 70, 90, 0.95), rgba(46, 53, 72, 0.95));
-        color: #ece4d4 !important;
-        border: 1px solid rgba(211, 188, 142, 0.35);
-        box-shadow: inset 0 1px 0 rgba(236, 228, 212, 0.1), 0 3px 12px -3px rgba(0, 0, 0, 0.45);
-        transition: box-shadow 0.2s ease, filter 0.2s ease, transform 0.1s ease;
+        border-radius: 12px;
+        background: var(--color-accent);
+        color: #ffffff !important;
+        border: none;
+        border-bottom: 4px solid var(--color-accent-dark, #b91c1c);
+        transition: filter 0.2s ease, transform 0.1s ease;
     }
     .genshin-btn-dark:hover:not(:disabled) {
-        filter: brightness(1.1);
-        box-shadow: inset 0 1px 0 rgba(236, 228, 212, 0.1), 0 0 0 2px rgba(211, 188, 142, 0.4), 0 3px 14px -3px rgba(0, 0, 0, 0.5);
+        filter: brightness(1.05);
     }
     .genshin-btn-light:active, .genshin-btn-dark:active { transform: scale(0.97); }
 
@@ -657,38 +615,14 @@
 
     /* Subtle gradient backgrounds */
     .gradient-subtle {
-        background: linear-gradient(135deg, rgba(250,245,233,0.92) 0%, rgba(242,234,217,0.92) 100%);
+        background: linear-gradient(135deg, rgba(255,255,255,0.9) 0%, rgba(243,244,246,0.9) 100%);
     }
     html.dark .gradient-subtle {
         background: var(--color-surface);
     }
 
-    /* ── Genshin atmosphere ─────────────────────────────────────────
-       Subtle clouds/gradient backdrop. */
-    .font-serif { letter-spacing: 0.035em; }
-    h1, h2, h3 {
-        font-family: 'Cinzel', 'Noto Serif', serif;
-        letter-spacing: 0.03em;
-    }
     /* Never let default white html peek out around the themed body */
     html { background-color: var(--color-background); }
-    body {
-        background-image:
-            radial-gradient(900px 500px at 50% -5%, rgba(184, 155, 94, 0.08), transparent 70%);
-        background-attachment: fixed;
-    }
-    html.dark body {
-        background-image:
-            radial-gradient(1100px 700px at 50% -10%, rgba(44, 53, 69, 0.6), transparent 65%),
-            radial-gradient(700px 500px at 85% 110%, rgba(211, 188, 142, 0.08), transparent 70%),
-            radial-gradient(1.5px 1.5px at 12% 22%, rgba(211, 188, 142, 0.35), transparent 100%),
-            radial-gradient(1px 1px at 78% 14%, rgba(236, 228, 212, 0.4), transparent 100%),
-            radial-gradient(1.5px 1.5px at 32% 64%, rgba(236, 228, 212, 0.22), transparent 100%),
-            radial-gradient(1px 1px at 64% 38%, rgba(211, 188, 142, 0.3), transparent 100%),
-            radial-gradient(1px 1px at 90% 72%, rgba(236, 228, 212, 0.25), transparent 100%),
-            radial-gradient(1.5px 1.5px at 45% 88%, rgba(59, 67, 84, 0.8), transparent 100%);
-        background-attachment: fixed;
-    }
 
     /* Focus ring for accessibility */
     .focus-ring:focus {
@@ -740,12 +674,12 @@
         color: #ffffff;
         font-weight: 600;
         padding: 8px 12px;
-        font-family: 'Noto Serif', Georgia, serif;
+        font-family: '"Press Start 2P"', cursive;
     }
     .formatted-text td {
         padding: 6px 12px;
         border-bottom: 1px solid var(--color-secondary);
-        font-family: 'Noto Serif', Georgia, serif;
+        font-family: '"Press Start 2P"', cursive;
         color: var(--color-text-main);
     }
     .formatted-text tr:last-child td {
@@ -775,7 +709,7 @@
   }
 }
 </script>
-  <script type="module" crossorigin src="/assets/index-BsGAxAox.js"></script>
+  <script type="module" crossorigin src="/assets/index-C3S3mAPF.js"></script>
 </head>
 <body class="bg-background text-text-main font-sans text-[10px]">
     <div id="root"></div>

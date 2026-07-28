@@ -36,7 +36,7 @@ export const NotificationBanner: React.FC<NotificationBannerProps> = ({ push, us
 
     const handleEnable = async () => {
         const result = await push.enableNotifications();
-        if (result) {
+        if (result.enabled) {
             setSuccess(true);
             setTimeout(() => {
                 setVisible(false);
