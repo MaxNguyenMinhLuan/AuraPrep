@@ -126,8 +126,7 @@ const App: React.FC = () => {
     const [theme, setTheme] = useState<'light' | 'dark'>(() => {
         const saved = localStorage.getItem('theme');
         if (saved === 'dark' || saved === 'light') return saved;
-        // Dark "midnight temple" is the primary aesthetic; parchment light is secondary
-        return 'dark';
+        return 'light';
     });
 
     useEffect(() => {
