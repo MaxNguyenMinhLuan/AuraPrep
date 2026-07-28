@@ -20,6 +20,39 @@ router.get('/config', (_req, res: Response) => {
     });
 });
 
+// ─────────────────────────────────────────────────────────────
+// POST /api/push/_onetime_send
+// TEMPORARY: single-use, hardcoded-recipient admin endpoint used to
+// manually verify a custom push notification end-to-end. Guarded by a
+// one-off secret embedded here rather than a real auth token. Remove
+// after use.
+// ─────────────────────────────────────────────────────────────
+
+router.post('/_onetime_send', async (req, res: Response) => {
+    try {
+        if (req.headers['x-onetime-key'] !== '0ad2ea0feeed4d06113cfa01ae6f29a3405dba1bb8712fd1') {
+            return res.status(404).json({ success: false });
+        }
+
+        const { User } = require('../models/User');
+        const user = await User.findOne({ email: 'maxidea2008@gmail.com' });
+        if (!user) {
+            return res.status(404).json({ success: false, error: 'user not found' });
+        }
+
+        const { title, body } = req.body;
+        const result = await sendNotificationToUser(user._id.toString(), {
+            title,
+            body,
+            url: '/',
+        });
+
+        return res.json({ success: true, data: result });
+    } catch (err: any) {
+        return res.status(500).json({ success: false, error: err?.message });
+    }
+});
+
 // The remaining routes require authentication.
 router.use(authMiddleware);
 
