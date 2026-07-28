@@ -2,15 +2,25 @@ import { Router, Response } from 'express';
 import { AuthenticatedRequest, ApiResponse } from '../types';
 import { authMiddleware } from '../middleware/auth.middleware';
 import {
+    getPushPublicConfiguration,
     saveSubscription,
     removeSubscription,
     sendNotificationToUser,
-    broadcastNotification,
 } from '../services/push.service';
 
 const router = Router();
 
-// All push routes require authentication
+// A VAPID public key is designed to be available to the browser. Exposing the
+// configuration lets the client fail clearly instead of showing a useless
+// permission button when the API is not ready to deliver notifications.
+router.get('/config', (_req, res: Response) => {
+    return res.json({
+        success: true,
+        data: getPushPublicConfiguration(),
+    });
+});
+
+// The remaining routes require authentication.
 router.use(authMiddleware);
 
 // ─────────────────────────────────────────────────────────────
@@ -112,17 +122,15 @@ router.delete(
 );
 
 // ─────────────────────────────────────────────────────────────
-// POST /api/push/send  (for internal/admin use or testing)
-// Send a push notification to a specific user
+// POST /api/push/test
+// Send a test notification only to the authenticated user's own devices.
 // ─────────────────────────────────────────────────────────────
 
 router.post(
-    '/send',
+    '/test',
     async (req: AuthenticatedRequest, res: Response) => {
         try {
-            const { targetUserId, title, body, url } = req.body;
-
-            const recipientId = targetUserId || req.user?.id;
+            const recipientId = req.user?.id;
             if (!recipientId) {
                 const response: ApiResponse = {
                     success: false,
@@ -132,10 +140,21 @@ router.post(
             }
 
             const result = await sendNotificationToUser(recipientId, {
-                title: title || 'AuraPrep',
-                body: body || 'You have a new notification!',
-                url: url || '/',
+                title: 'AuraPrep notifications are ready',
+                body: 'Your daily-mission reminders can now reach this device, even when AuraPrep is closed.',
+                url: '/',
             });
+
+            if (result.sent === 0) {
+                const response: ApiResponse = {
+                    success: false,
+                    error: {
+                        code: 'PUSH_NOT_DELIVERED',
+                        message: 'The test notification could not be delivered.',
+                    },
+                };
+                return res.status(502).json(response);
+            }
 
             const response: ApiResponse = {
                 success: true,
@@ -143,43 +162,10 @@ router.post(
             };
             return res.json(response);
         } catch (err: any) {
-            console.error('Error sending push notification:', err);
+            console.error('Error sending push test notification:', err);
             const response: ApiResponse = {
                 success: false,
                 error: { code: 'INTERNAL_ERROR', message: 'Failed to send notification.' },
-            };
-            return res.status(500).json(response);
-        }
-    }
-);
-
-// ─────────────────────────────────────────────────────────────
-// POST /api/push/broadcast
-// Send a push notification to ALL subscribed devices
-// ─────────────────────────────────────────────────────────────
-
-router.post(
-    '/broadcast',
-    async (req: AuthenticatedRequest, res: Response) => {
-        try {
-            const { title, body, url } = req.body;
-
-            const result = await broadcastNotification({
-                title: title || 'AuraPrep',
-                body: body || 'this is a test for notification now',
-                url: url || '/',
-            });
-
-            const response: ApiResponse = {
-                success: true,
-                data: result,
-            };
-            return res.json(response);
-        } catch (err: any) {
-            console.error('Error broadcasting push notification:', err);
-            const response: ApiResponse = {
-                success: false,
-                error: { code: 'INTERNAL_ERROR', message: 'Failed to broadcast notification.' },
             };
             return res.status(500).json(response);
         }

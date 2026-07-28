@@ -55,7 +55,7 @@ interface ProgressViewProps {
     addToReviewQueue: (question: Question) => void;
     awardAura: (amount: number) => void;
     addXpToActiveCreature: (xp: number) => void;
-    onStartBossFight?: (subtopic: string) => void;
+    setIsBossFightActive?: (isActive: boolean) => void;
 }
 
 //--- SUB-COMPONENTS ---//
@@ -175,7 +175,7 @@ const PracticeSession: React.FC<{
                      <span className="text-primary font-bold text-xs md:text-sm">Streak:</span>
                      <div className="w-16 md:w-20 flex gap-[2px] h-3.5 md:h-4 z-10 relative">
                          {Array.from({ length: 3 }).map((_, i) => (
-                             <div key={i} className="flex-1 rounded-[2px] bg-background/50 border border-text-dark/40 overflow-hidden relative -skew-x-12 shadow-sm">
+                             <div key={i} className="flex-1 rounded-[2px] bg-surface/30 border border-text-dark/40 overflow-hidden relative -skew-x-12 shadow-sm">
                                  <div 
                                      className={`absolute top-0 h-full bg-gradient-to-r from-orange-600 via-amber-500 to-yellow-400 transition-opacity duration-300 ${i >= streak ? 'opacity-0' : 'opacity-100'}`}
                                      style={{
@@ -195,8 +195,8 @@ const PracticeSession: React.FC<{
                     <p className="text-text-dim mt-2 text-[10px]">Loading {difficulty} question...</p>
                 </div>
             ) : (
-                <div className={`p-4 md:p-6 border flex flex-col justify-between rounded-md shadow-card transition-all duration-300 ${
-                    isCorrect === false ? 'bg-accent/5 border-accent shadow-[0_0_20px_rgba(220,38,38,0.25)] red-flash' : 'genshin-panel border-highlight/30'
+                <div className={`p-4 md:p-6 border-2 flex flex-col justify-between rounded-xl shadow-card transition-all duration-300 ${
+                    isCorrect === false ? 'bg-accent/5 border-accent shadow-[0_0_20px_rgba(220,38,38,0.25)] red-flash' : 'bg-surface border-secondary/30'
                 }`}>
                     <div>
                         <div className="flex justify-between items-start mb-3 md:mb-4">
@@ -210,11 +210,11 @@ const PracticeSession: React.FC<{
 
                         <div className="space-y-2 md:space-y-3">
                             {currentQuestion.options.map((option, index) => {
-                                let buttonClass = 'w-full text-left p-3 md:p-4 transition-premium border flex justify-between items-center rounded-md touch-target press-effect ';
+                                let buttonClass = 'w-full text-left p-3 md:p-4 transition-premium border-2 flex justify-between items-center rounded-xl touch-target press-effect ';
                                 let icon: React.ReactNode = null;
 
                                 if (selectedAnswer === null) {
-                                    buttonClass += 'genshin-panel hover:border-highlight active:bg-secondary/30 shadow-card hover:shadow-card-hover';
+                                    buttonClass += 'bg-surface hover:bg-secondary/30 active:bg-secondary/30 border-secondary/30 shadow-card hover:shadow-card-hover';
                                 } else {
                                     if (index === currentQuestion.answerIndex) {
                                         buttonClass += 'bg-success/10 border-success text-success font-bold shadow-glow-success animate-successPop';
@@ -231,7 +231,7 @@ const PracticeSession: React.FC<{
                                             </svg>
                                         );
                                     } else {
-                                        buttonClass += 'bg-background opacity-50 border-text-dark/20';
+                                        buttonClass += 'bg-surface opacity-50 border-text-dark/20';
                                     }
                                 }
 
@@ -253,7 +253,7 @@ const PracticeSession: React.FC<{
                         </div>
                     </div>
                     {selectedAnswer !== null && (
-                        <div className="mt-6 md:mt-8 p-4 md:p-6 bg-background animate-fadeIn border border-secondary rounded-md shadow-md">
+                        <div className="mt-6 md:mt-8 p-4 md:p-6 bg-background animate-fadeIn border-2 border-secondary rounded-lg shadow-md">
                             <h3 className={`text-lg md:text-xl font-bold ${isCorrect ? 'text-success' : 'text-accent'}`}>{isCorrect ? 'Correct!' : 'Incorrect'}</h3>
                             <FormattedText className="text-xs md:text-sm text-text-main mt-2 leading-relaxed italic font-clean" text={currentQuestion.explanation} />
                             
@@ -270,7 +270,7 @@ const PracticeSession: React.FC<{
                                 </div>
                             )}
 
-                            <button onClick={handleNextQuestion} className="mt-4 md:mt-6 w-full genshin-panel text-text-main font-bold py-3 md:py-4 border border-highlight rounded-md hover:bg-highlight/10 active:bg-highlight/20 transition-colors touch-target">Next Question</button>
+                            <button onClick={handleNextQuestion} className="mt-4 md:mt-6 w-full bg-primary text-light font-bold py-3 md:py-4 border-b-4 border-primary/70 rounded-md hover:bg-primary/90 active:bg-primary/90 transition-colors touch-target">Next Question</button>
 
                             <button
                                 onClick={() => setShowReportModal(true)}
@@ -330,10 +330,10 @@ const BossFightPrep: React.FC<{
                             key={powerUp.id}
                             onClick={() => toggleSelection(powerUp.id)}
                             disabled={isUnselectable}
-                            className={`w-full p-4 border flex items-center justify-between transition-all rounded-md ${
+                            className={`w-full p-4 border-2 flex items-center justify-between transition-all rounded-lg ${
                                 isSelected 
                                 ? 'bg-highlight/20 border-highlight shadow-md scale-[1.02]' 
-                                : (isUnselectable ? 'opacity-50 bg-background cursor-not-allowed border-text-dark' : 'genshin-panel hover:border-highlight')
+                                : (isUnselectable ? 'opacity-50 bg-background cursor-not-allowed border-text-dark' : 'bg-surface border-text-dim hover:bg-secondary/20 hover:border-secondary')
                             }`}
                         >
                             <div className="flex items-center gap-4 text-left">
@@ -354,7 +354,7 @@ const BossFightPrep: React.FC<{
 
             <button 
                 onClick={() => onStart(selected)} 
-                className="w-full genshin-panel text-text-main font-bold py-4 mt-4 hover:border-highlight transition-all rounded-md shadow-lg text-sm tracking-widest"
+                className="w-full bg-accent text-light font-bold py-4 mt-4 border-b-4 border-accent-dark hover:bg-accent/90 transition-all rounded-lg shadow-lg text-sm tracking-widest"
             >
                 ENTER FIGHT
             </button>
@@ -560,12 +560,12 @@ const BossFightSession: React.FC<{
             <div className="flex flex-col items-center justify-center h-full text-center animate-fadeIn max-w-md mx-auto">
                 <h2 className={`text-4xl font-serif mb-6 ${success ? 'text-highlight' : 'text-accent'}`}>{success ? 'Victory!' : 'Defeated by ' + boss.name}</h2>
                 {success ? (
-                    <div className="genshin-panel p-6 border border-secondary mb-6 w-full shadow-md">
+                    <div className="bg-surface p-6 rounded-lg border-2 border-secondary mb-6 w-full shadow-md">
                         <p className="text-xl mb-2 font-bold">You defeated {boss.name}!</p>
                         <p className="text-sm text-text-dim">Your Auramon grew stronger.</p>
                     </div>
                 ) : (
-                    <div className="genshin-panel p-6 border border-accent mb-6 w-full shadow-md">
+                    <div className="bg-surface p-6 rounded-lg border-2 border-accent mb-6 w-full shadow-md">
                         <p className="text-xl mb-2 font-bold">Your Auramon fainted...</p>
                         {timeRemaining === 0 ? (
                             <p className="text-sm text-text-dim">Time ran out!</p>
@@ -603,12 +603,12 @@ const BossFightSession: React.FC<{
                     </div>
                 </div>
                 
-                <div className={`p-6 ${selectedAnswer === null && availablePowerUps.length > 0 ? 'pb-20 lg:pb-6' : ''} border ${
+                <div className={`p-6 ${selectedAnswer === null && availablePowerUps.length > 0 ? 'pb-20 lg:pb-6' : ''} border-2 ${
                     isCorrect === false ? 'bg-accent/5 border-accent shadow-[0_0_20px_rgba(220,38,38,0.25)] red-flash' 
-                    : doubleJeopardyActive ? 'genshin-panel border-rose-500 shadow-[0_0_15px_rgba(244,63,94,0.5)]' 
-                    : secondChanceActive ? 'genshin-panel border-highlight shadow-[0_0_15px_rgba(202,138,4,0.5)]' 
-                    : 'genshin-panel border-accent/50'
-                } flex-grow flex flex-col justify-between relative rounded-md shadow-card`}>
+                    : doubleJeopardyActive ? 'bg-surface border-rose-500 shadow-[0_0_15px_rgba(244,63,94,0.5)]' 
+                    : secondChanceActive ? 'bg-surface border-highlight shadow-[0_0_15px_rgba(202,138,4,0.5)]' 
+                    : 'bg-surface border-accent/50'
+                } flex-grow flex flex-col justify-between relative rounded-xl shadow-card`}>
                     {secondChanceActive && <div className="absolute top-0 left-0 w-full bg-highlight text-white text-[8px] font-bold text-center py-1 rounded-t-sm">SECOND WIND ACTIVE</div>}
                     {doubleJeopardyActive && (
                         <div className="absolute top-0 left-0 w-full bg-rose-500 text-white text-[8px] font-bold text-center py-1 rounded-t-sm animate-pulse shadow-[0_0_10px_rgba(244,63,94,0.8)]">
@@ -635,12 +635,12 @@ const BossFightSession: React.FC<{
                                    if (disabledOptions.includes(index)) {
                                        btnClass += 'bg-text-dark/10 border-text-dark/30 text-text-dim cursor-not-allowed opacity-60';
                                    } else {
-                                       btnClass += 'genshin-panel hover:bg-secondary border-primary/20 shadow-sm';
+                                       btnClass += 'bg-surface hover:bg-secondary border-primary/20 shadow-sm';
                                    }
                               }
                               else if (index === currentQuestion.answerIndex) btnClass += 'bg-success/10 border-success font-bold';
                               else if (index === selectedAnswer) btnClass += 'bg-accent/10 border-accent font-bold';
-                              else btnClass += 'bg-background opacity-50 border-text-dark/20';
+                              else btnClass += 'bg-surface opacity-50 border-text-dark/20';
                               
                               return (
                                 <button key={index} onClick={() => handleAnswerSelect(index)} disabled={selectedAnswer !== null || disabledOptions.includes(index)} className={btnClass}>
@@ -663,7 +663,7 @@ const BossFightSession: React.FC<{
                                         key={i}
                                         onClick={() => handleUsePowerUp(type)}
                                         disabled={isActive}
-                                        className={`w-12 h-12 genshin-panel ${isActive ? 'border-gray-400 opacity-50' : 'border-highlight'} rounded-full flex items-center justify-center text-2xl shadow-lg hover:scale-110 transition-transform`}
+                                        className={`w-12 h-12 bg-surface border-2 ${isActive ? 'border-gray-400 opacity-50' : 'border-highlight'} rounded-full flex items-center justify-center text-2xl shadow-lg hover:scale-110 transition-transform`}
                                         title={def.name}
                                     >
                                         {renderPowerUpIcon(def.id, "w-8 h-8")}
@@ -722,7 +722,7 @@ const BossFightSession: React.FC<{
                     {/* Segmented Boss Health Bar */}
                     <div className="w-full max-w-[280px] flex gap-[2px] mb-8 px-2 z-10 relative">
                         {Array.from({ length: initialBossHealth }).map((_, i) => (
-                            <div key={i} className="flex-1 h-5 rounded-[2px] bg-background/50 border border-text-dark/40 overflow-hidden relative -skew-x-12 shadow-sm">
+                            <div key={i} className="flex-1 h-5 rounded-[2px] bg-surface/30 border border-text-dark/40 overflow-hidden relative -skew-x-12 shadow-sm">
                                 <div 
                                     className={`absolute top-0 h-full bg-gradient-to-r from-red-600 via-orange-500 to-yellow-400 transition-opacity duration-300 ${i >= bossHealth ? 'opacity-0' : 'opacity-100'}`}
                                     style={{
@@ -781,7 +781,7 @@ const LevelUpAnimation: React.FC<{
     return (
         <div className="flex flex-col items-center justify-center h-full text-center animate-fadeIn p-4 overflow-hidden">
             <h1 className="font-serif text-2xl md:text-4xl text-highlight mb-6 drop-shadow-sm uppercase">LEVEL UP!</h1>
-            <div className="animate-levelUp genshin-modal p-5 md:p-8 border border-highlight rounded-lg shadow-xl w-full max-w-[90vw] md:max-w-md">
+            <div className="animate-levelUp bg-surface p-5 md:p-8 border-4 border-highlight rounded-lg shadow-xl w-full max-w-[90vw] md:max-w-md">
                 <p className="text-xs md:text-sm font-bold mb-4 uppercase tracking-tighter line-clamp-2">{subtopic}</p>
                 <p className="text-sm md:text-lg font-bold flex items-center gap-2 md:gap-4 justify-center">
                     <span className="text-text-dim">{fromLevel}</span>
@@ -797,9 +797,7 @@ const LevelUpAnimation: React.FC<{
 
 //--- MAIN COMPONENT ---//
 
-const ProgressView: React.FC<ProgressViewProps> = ({ userId, userEmail, profile, setAuraPoints, updateProfile, levelUpSubtopic, consumePowerUp, addToReviewQueue, awardAura, addXpToActiveCreature,
-    onStartBossFight
-}) => {
+const ProgressView: React.FC<ProgressViewProps> = ({ userId, userEmail, profile, setAuraPoints, updateProfile, levelUpSubtopic, consumePowerUp, addToReviewQueue, awardAura, addXpToActiveCreature, setIsBossFightActive }) => {
     const [view, setView] = useState<'list' | 'options' | 'practice' | 'prep' | 'bossFight' | 'levelUp'>('list');
     const [selectedSubtopic, setSelectedSubtopic] = useState<string | null>(null);
     const [lastLevelUpInfo, setLastLevelUpInfo] = useState<{ from: SkillLevel, to: SkillLevel } | null>(null);
@@ -862,14 +860,12 @@ const ProgressView: React.FC<ProgressViewProps> = ({ userId, userEmail, profile,
 
     const startBossFight = (powerUps: PowerUpType[]) => {
         setEquippedPowerUps(powerUps);
-        if (onStartBossFight && selectedSubtopic) {
-            onStartBossFight(selectedSubtopic);
-        } else {
-            setView('bossFight');
-        }
+        setView('bossFight');
+        setIsBossFightActive?.(true);
     };
 
     const handleBossFightComplete = (success: boolean) => {
+        setIsBossFightActive?.(false);
         if (success && selectedSubtopic) {
             const currentLevel = profile.stats[selectedSubtopic].level;
             const nextLevel = getNextLevel(currentLevel);
@@ -948,17 +944,11 @@ const ProgressView: React.FC<ProgressViewProps> = ({ userId, userEmail, profile,
                     <h2 className="text-2xl text-highlight leading-tight">{selectedSubtopic}</h2>
                 </div>
                 <div className="space-y-6">
-                    <button onClick={() => setView('practice')} className="w-full text-left p-6 genshin-panel hover:bg-highlight/10 border-b border-highlight/30 transition-colors duration-200 rounded-md shadow-md group">
+                    <button onClick={() => setView('practice')} className="w-full text-left p-6 bg-surface hover:bg-secondary border-b-4 border-secondary/50 transition-colors duration-200 rounded-lg shadow-md group">
                         <h3 className="text-xl font-bold text-primary mb-2 group-hover:text-primary/80">Practice</h3>
                         <p className="text-sm text-text-dim">Hone your skills. Earn {AURA_POINTS_PER_PRACTICE_STREAK} Aura for every 3-question streak.</p>
                     </button>
-                     <button onClick={() => {
-                        if (onStartBossFight && selectedSubtopic) {
-                            onStartBossFight(selectedSubtopic);
-                        } else {
-                            setView('prep');
-                        }
-                     }} disabled={!nextLevel} className="w-full text-left p-6 genshin-panel hover:bg-highlight/10 border-b border-highlight/30 transition-colors duration-200 disabled:opacity-50 disabled:cursor-not-allowed rounded-md shadow-md group">
+                     <button onClick={() => setView('prep')} disabled={!nextLevel} className="w-full text-left p-6 bg-surface hover:bg-secondary border-b-4 border-secondary/50 transition-colors duration-200 disabled:opacity-50 disabled:cursor-not-allowed rounded-lg shadow-md group">
                         <h3 className="text-xl font-bold text-accent mb-2">Boss Fight</h3>
                         {nextLevel ? (
                              <p className="text-sm text-text-dim">Level up from <span className="font-bold">{currentLevel}</span> to <span className="font-bold">{nextLevel}</span>. Win to earn <span className="font-bold text-primary">{nextLevel === 'Master' ? 1000 : 500} Aura</span> + <span className="font-bold text-success">{nextLevel === 'Master' ? 200 : 150} Guardian XP</span>.</p>
@@ -1005,7 +995,7 @@ const ProgressView: React.FC<ProgressViewProps> = ({ userId, userEmail, profile,
                 <button
                     key={subtopic}
                     onClick={() => handleSelectSubtopic(subtopic)}
-                    className="w-full text-left p-5 md:p-6 relative group overflow-hidden press-effect animate-fadeInScale rounded-xl shadow-[0_0_25px_rgba(202,138,4,0.45)] border-b-4 hover:-translate-y-1 transition-premium shimmer-overlay"
+                    className="w-full text-left p-4 relative group overflow-hidden press-effect animate-fadeInScale rounded-xl shadow-[0_0_20px_rgba(202,138,4,0.35)] border-b-4 hover:-translate-y-1 transition-premium shimmer-overlay"
                     style={{
                         background: 'linear-gradient(135deg, #fef3c7 0%, #fde68a 40%, #fbbf24 80%, #f59e0b 100%)',
                         borderColor: '#d97706',
@@ -1016,15 +1006,15 @@ const ProgressView: React.FC<ProgressViewProps> = ({ userId, userEmail, profile,
                     <div className="absolute inset-0 rounded-xl border-2 border-yellow-300/60 animate-pulse pointer-events-none" />
 
                     {/* Question count badge */}
-                    <div className={`absolute top-0 right-0 px-2.5 py-1 rounded-bl-xl uppercase tracking-tighter text-[9px] md:text-[10px] font-bold ${isLoadingCounts ? 'bg-yellow-600/30 text-yellow-900 animate-pulse' : qCount > 0 ? 'bg-yellow-600/30 text-yellow-900' : 'bg-yellow-400/30 text-yellow-800'}`}>
+                    <div className={`absolute top-0 right-0 px-1.5 py-0.5 rounded-bl-lg uppercase tracking-tighter text-[8px] font-bold ${isLoadingCounts ? 'bg-yellow-600/30 text-yellow-900 animate-pulse' : qCount > 0 ? 'bg-yellow-600/30 text-yellow-900' : 'bg-yellow-400/30 text-yellow-800'}`}>
                         {isLoadingCounts ? 'Loading...' : `${displayCount} Question${qCount !== 1 ? 's' : ''}`}
                     </div>
 
-                    <div className="flex justify-between items-center mb-3">
-                        <span className="text-xs md:text-sm lg:text-base font-bold flex-1 pr-2 truncate text-yellow-950">{subtopic}</span>
-                        <span className={`text-[9px] md:text-[10px] font-bold px-2.5 py-0.5 rounded-full ${getLevelColor(level)} text-text-light uppercase shadow-button`}>{level}</span>
+                    <div className="flex justify-between items-center mb-2">
+                        <span className="text-[10px] font-bold flex-1 pr-2 truncate text-yellow-900">{subtopic}</span>
+                        <span className={`text-[8px] font-bold px-2 py-0.5 rounded-full ${getLevelColor(level)} text-text-light uppercase shadow-button`}>{level}</span>
                     </div>
-                    <div className="w-full bg-yellow-200/70 h-3 md:h-3.5 border border-yellow-400/60 rounded-full overflow-hidden">
+                    <div className="w-full bg-yellow-200/60 h-2.5 border border-yellow-400/50 rounded-full overflow-hidden">
                         <div className={`${getLevelColor(level)} h-full ${qCount === 0 ? 'opacity-30' : ''} rounded-full transition-all duration-500`} style={{ width: `${progress}%` }} />
                     </div>
                 </button>
@@ -1035,7 +1025,7 @@ const ProgressView: React.FC<ProgressViewProps> = ({ userId, userEmail, profile,
             <button
                 key={subtopic}
                 onClick={() => handleSelectSubtopic(subtopic)}
-                className="w-full text-left p-4 genshin-panel hover:border-highlight transition-premium rounded-md shadow-card hover:shadow-card-hover hover:-translate-y-1 relative group overflow-hidden press-effect animate-fadeInScale"
+                className="w-full text-left p-4 bg-surface hover:bg-secondary/30 border-b-4 border-secondary/30 transition-premium rounded-xl shadow-card hover:shadow-card-hover hover:-translate-y-1 relative group overflow-hidden press-effect animate-fadeInScale"
                 style={{ animationDelay: `${index * 0.03}s` }}
             >
                 <div className={`absolute top-0 right-0 px-1.5 py-0.5 rounded-bl-lg uppercase tracking-tighter text-[8px] font-bold ${isLoadingCounts ? 'bg-secondary/20 text-primary animate-pulse' : qCount > 0 ? 'bg-success/20 text-success' : 'bg-text-dark/20 text-text-dim'}`}>
@@ -1056,7 +1046,7 @@ const ProgressView: React.FC<ProgressViewProps> = ({ userId, userEmail, profile,
     return (
         <div className="animate-fadeIn">
             <div className="text-center mb-4 md:mb-6">
-                <h1 className="text-lg md:text-xl lg:text-2xl bg-highlight text-text-light px-3 md:px-4 py-2 inline-block rounded-lg shadow-card animate-slideDown font-bold uppercase">PROGRESS</h1>
+                <h1 className="text-lg md:text-xl lg:text-2xl bg-highlight text-text-light px-3 md:px-4 py-2 inline-block rounded-lg shadow-card animate-slideDown">Progress</h1>
                 <p className="text-text-dim mt-2 text-xs md:text-sm">Practice skills or defeat bosses to level up.</p>
             </div>
 
@@ -1067,7 +1057,7 @@ const ProgressView: React.FC<ProgressViewProps> = ({ userId, userEmail, profile,
                     placeholder="Search skills..."
                     value={searchQuery}
                     onChange={(e) => setSearchQuery(e.target.value)}
-                    className="w-full px-4 py-2 pl-10 bg-background/50 text-text-main border border-highlight/30 rounded-md focus:outline-none focus:border-highlight text-xs md:text-sm font-bold shadow-card transition-all font-sans placeholder-text-dim/50"
+                    className="w-full px-4 py-2 pl-10 bg-surface text-text-main border-2 border-secondary/30 rounded-xl focus:outline-none focus:border-primary/50 text-xs md:text-sm font-bold shadow-card transition-all font-sans placeholder-text-dim/50"
                 />
                 <svg className="absolute left-3.5 top-1/2 -translate-y-1/2 text-text-dim w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2.5}>
                     <path strokeLinecap="round" strokeLinejoin="round" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
@@ -1078,7 +1068,7 @@ const ProgressView: React.FC<ProgressViewProps> = ({ userId, userEmail, profile,
             {!searchQuery && (
                 <div className="mb-8 animate-fadeIn">
                     <div className="flex items-center gap-2 mb-3">
-                        <h2 className="text-sm md:text-base font-extrabold text-highlight uppercase tracking-widest">Skills of the Day</h2>
+                        <h2 className="text-[11px] md:text-xs font-bold text-highlight uppercase tracking-widest">Skills of the Day</h2>
                     </div>
                     <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 md:gap-4">
                         {renderSkillCard(todaysSkills.mathSkill, 0, true)}

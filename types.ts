@@ -230,8 +230,7 @@ export enum View {
     REVIEW = 'REVIEW',
     SHOP = 'SHOP',
     LEADERBOARD = 'LEADERBOARD',
-    LOGIN = 'LOGIN',
-    BOSS_FIGHT = 'BOSS_FIGHT'
+    LOGIN = 'LOGIN'
 }
 
 export type Difficulty = 'Easy' | 'Medium' | 'Hard' | 'Extra Hard';

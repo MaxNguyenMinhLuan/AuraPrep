@@ -46,7 +46,7 @@ const NavItem: React.FC<{
                 {icon}
             </div>
             {/* Labels hidden on mobile, shown on tablet (md) and desktop (lg) */}
-            <span className={`hidden md:block text-xs md:text-[10px] lg:text-sm font-bold uppercase truncate mt-1 md:mt-0 transition-premium ${isActive ? 'opacity-100' : 'opacity-80 group-hover:opacity-100'}`}>{label}</span>
+            <span className={`hidden md:block text-xs md:text-[10px] lg:text-sm font-medium truncate mt-1 md:mt-0 transition-premium ${isActive ? 'opacity-100' : 'opacity-80 group-hover:opacity-100'}`}>{label}</span>
             {isLocked && <LockIcon className="w-4 h-4 text-text-dark/40 absolute -top-1 -right-1 md:top-2 md:right-2 lg:relative lg:ml-auto" />}
             {!isLocked && isActive && <div className="hidden lg:block ml-auto w-2 h-2 rounded-full bg-highlight shadow-glow-highlight animate-subtlePulse"></div>}
             {/* Active indicator line for mobile */}
@@ -78,9 +78,9 @@ const BottomNavBar: React.FC<BottomNavBarProps> = ({ currentView, setCurrentView
     return (
         <>
             {/* Desktop Sidebar (Visible on lg+) */}
-            <nav className="hidden lg:flex fixed left-0 top-0 h-full w-64 genshin-panel border-r border-highlight/30 flex-col items-start z-20 shadow-card">
+            <nav className="hidden lg:flex fixed left-0 top-0 h-full w-64 bg-surface border-r border-secondary/30 flex-col items-start z-20 shadow-card">
                 <div className="p-6 w-full border-b border-secondary/20 mb-4 flex items-center justify-center">
-                    <h1 className="font-sans text-3xl lg:text-4xl bg-gradient-to-tr from-[#c084fc] via-[#fcd34d] to-[#22d3ee] bg-clip-text text-transparent font-bold tracking-tighter animate-fadeIn text-center dark:drop-shadow-[0_0_12px_rgba(192,132,252,0.7)]">
+                    <h1 className="font-sans text-2xl bg-gradient-to-tr from-[#c084fc] via-[#fcd34d] to-[#22d3ee] bg-clip-text text-transparent font-bold tracking-tighter animate-fadeIn text-center dark:drop-shadow-[0_0_12px_rgba(192,132,252,0.7)]">
                         AuraPrep
                     </h1>
                 </div>
@@ -178,7 +178,7 @@ const BottomNavBar: React.FC<BottomNavBarProps> = ({ currentView, setCurrentView
             </nav>
 
             {/* Mobile & Tablet Bottom Bar (Hidden on lg+) */}
-            <nav className="lg:hidden fixed bottom-0 left-0 right-0 pt-3 pb-[calc(env(safe-area-inset-bottom)+10px)] genshin-panel border-t border-highlight/30 flex items-center justify-around z-50 shadow-[0_-4px_20px_rgba(0,0,0,0.08)]">
+            <nav className="lg:hidden fixed bottom-0 left-0 right-0 pt-3 pb-[calc(env(safe-area-inset-bottom)+10px)] bg-surface border-t border-secondary/30 flex items-center justify-around z-50 shadow-[0_-4px_20px_rgba(0,0,0,0.08)]">
                 <NavItem
                     id="nav-mission-mobile"
                     label="Missions"

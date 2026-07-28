@@ -64,6 +64,11 @@ const FormattedText: React.FC<FormattedTextProps> = ({ text, className = '' }) =
             <ReactMarkdown
                 remarkPlugins={[remarkGfm, remarkMath]}
                 rehypePlugins={[rehypeKatex]}
+                components={{
+                    // Tailwind's preflight removes paragraph margins. Restore a
+                    // deliberate gap so a passage and its prompt never run together.
+                    p: ({ children }) => <p style={{ marginBottom: '1.25rem' }}>{children}</p>
+                }}
             >
                 {doubleSpacedText}
             </ReactMarkdown>

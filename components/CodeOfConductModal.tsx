@@ -7,7 +7,7 @@ interface CodeOfConductModalProps {
 const CodeOfConductModal: React.FC<CodeOfConductModalProps> = ({ onClose }) => {
     return (
         <div className="fixed inset-0 z-[100] flex items-center justify-center p-4 bg-black/60 backdrop-blur-sm animate-fadeIn">
-            <div className="genshin-modal w-full max-w-lg overflow-hidden animate-reveal flex flex-col max-h-[85vh]">
+            <div className="bg-surface w-full max-w-lg rounded-2xl shadow-2xl border-2 border-secondary overflow-hidden animate-reveal flex flex-col max-h-[85vh]">
                 {/* Header */}
                 <div className="bg-primary p-5 text-center relative flex-shrink-0">
                     <button 

@@ -126,7 +126,7 @@ const WelcomeMission: React.FC<WelcomeMissionProps> = ({ uid, onComplete, onExit
                     <h1 className="text-3xl font-serif text-highlight mb-4">Welcome Mission Complete!</h1>
                     <p className="text-text-dim mb-8">Great job! You've completed your first mission.</p>
 
-                    <div className="genshin-panel p-6 mb-6 space-y-4">
+                    <div className="bg-surface p-6 rounded-xl border-2 border-secondary/30 mb-6 space-y-4">
                         <div className="flex justify-between items-center">
                             <span className="text-text-dim">Questions Answered:</span>
                             <span className="font-bold text-text-main">{totalQuestions}</span>
@@ -193,7 +193,7 @@ const WelcomeMission: React.FC<WelcomeMissionProps> = ({ uid, onComplete, onExit
                             <span>Question {currentIndex + 1} of {totalQuestions}</span>
                             <span>{Math.round(progress)}% Complete</span>
                         </div>
-                        <div className="w-full genshin-panel h-3 rounded-full overflow-hidden">
+                        <div className="w-full bg-surface h-3 border-2 border-secondary/30 rounded-full overflow-hidden">
                             <div
                                 className="bg-gradient-to-r from-highlight to-yellow-500 h-full transition-all duration-500 rounded-full"
                                 style={{ width: `${progress}%` }}
@@ -203,7 +203,7 @@ const WelcomeMission: React.FC<WelcomeMissionProps> = ({ uid, onComplete, onExit
                 </div>
 
                 {/* Question Card */}
-                <div className="genshin-panel p-5 md:p-6 shadow-card">
+                <div className="bg-surface p-5 md:p-6 border-2 border-secondary/30 rounded-xl shadow-card">
                     <p className="text-[10px] text-primary uppercase font-bold tracking-tight mb-4 bg-primary/10 px-3 py-1 rounded-full inline-block">
                         {currentQuestion.subtopic}
                     </p>
@@ -220,7 +220,7 @@ const WelcomeMission: React.FC<WelcomeMissionProps> = ({ uid, onComplete, onExit
                             let icon: React.ReactNode = null;
 
                             if (selectedAnswer === null) {
-                                buttonClass += 'genshin-panel hover:border-highlight active:border-highlight shadow-card hover:shadow-card-hover';
+                                buttonClass += 'bg-surface hover:bg-secondary/30 active:bg-secondary/30 border-secondary/30 shadow-card hover:shadow-card-hover';
                             } else {
                                 if (index === currentQuestion.answerIndex) {
                                     buttonClass += 'bg-success/10 border-success text-success font-bold shadow-glow-success animate-successPop';
@@ -237,7 +237,7 @@ const WelcomeMission: React.FC<WelcomeMissionProps> = ({ uid, onComplete, onExit
                                         </svg>
                                     );
                                 } else {
-                                    buttonClass += 'genshin-panel opacity-50 border-text-dark/20';
+                                    buttonClass += 'bg-surface opacity-50 border-text-dark/20';
                                 }
                             }
 

@@ -112,7 +112,7 @@ const UnlockPopup: React.FC<UnlockPopupProps> = ({ feature, onContinue }) => {
                 </div>
 
                 {showContent && (
-                    <div className={`genshin-modal border-4 ${colorClasses[data.color as keyof typeof colorClasses]} p-6 animate-scaleIn pointer-events-auto`}>
+                    <div className={`bg-surface border-4 ${colorClasses[data.color as keyof typeof colorClasses]} rounded-2xl p-6 animate-scaleIn shadow-2xl pointer-events-auto`}>
                         {/* Feature icon */}
                         <div className="mb-4 animate-gentleBounce flex justify-center">
                             {data.icon}

@@ -10,8 +10,6 @@ import SecondPlaceIcon from './icons/SecondPlaceIcon';
 import ThirdPlaceIcon from './icons/ThirdPlaceIcon';
 import SwordsIcon from './icons/SwordsIcon';
 import HandshakeIcon from './icons/HandshakeIcon';
-import { addFriend, fetchFriends } from '../services/gameDataService';
-import { AuthService } from '../services/authService';
 
 interface LeaderboardEntry {
     rank: number;
@@ -37,38 +35,6 @@ const LeaderboardView: React.FC<LeaderboardViewProps> = ({ username, weeklyGain,
     const userRowRef = useRef<HTMLDivElement>(null);
     const listContainerRef = useRef<HTMLDivElement>(null);
 
-    const [activeTab, setActiveTab] = useState<'global' | 'friends'>('global');
-    const [friendsList, setFriendsList] = useState<any[]>([]);
-    const [isLoadingFriends, setIsLoadingFriends] = useState(false);
-    const [isAddFriendModalOpen, setIsAddFriendModalOpen] = useState(false);
-    const [friendIdInput, setFriendIdInput] = useState('');
-    const [isAddingFriend, setIsAddingFriend] = useState(false);
-    const [addFriendError, setAddFriendError] = useState<string | null>(null);
-    const [addFriendSuccess, setAddFriendSuccess] = useState<string | null>(null);
-
-    const loadFriends = async () => {
-        try {
-            setIsLoadingFriends(true);
-            const token = await AuthService.getAuthToken();
-            if (token) {
-                const list = await fetchFriends(token);
-                if (list) {
-                    setFriendsList(list);
-                }
-            }
-        } catch (err) {
-            console.error('Error loading friends:', err);
-        } finally {
-            setIsLoadingFriends(false);
-        }
-    };
-
-    useEffect(() => {
-        if (activeTab === 'friends') {
-            loadFriends();
-        }
-    }, [activeTab]);
-
     const allEntries = useMemo(() => {
         // Ensure pool of exactly 20 entries
         const sorted = [...competitors, { 
@@ -82,20 +48,7 @@ const LeaderboardView: React.FC<LeaderboardViewProps> = ({ username, weeklyGain,
         return sorted.slice(0, 20);
     }, [competitors, weeklyGain, username, activeGuardianId]);
 
-    const friendsEntries = useMemo(() => {
-        const sorted = [...friendsList, { 
-            username: username, 
-            weeklyGain: weeklyGain, 
-            guardianId: activeGuardianId, 
-            isUser: true 
-        }].sort((a, b) => b.weeklyGain - a.weeklyGain)
-          .map((entry, idx) => ({ ...entry, rank: idx + 1 }));
-        return sorted;
-    }, [friendsList, weeklyGain, username, activeGuardianId]);
-
-    const displayedEntries = activeTab === 'global' ? allEntries : friendsEntries;
-    const displayedTop3 = displayedEntries.slice(0, 3);
-    const displayedRemaining = displayedEntries.slice(3);
+    const top3 = allEntries.slice(0, 3);
 
     // Intersection Observer to track if the user row is visible in the viewport
     useEffect(() => {
@@ -128,7 +81,7 @@ const LeaderboardView: React.FC<LeaderboardViewProps> = ({ username, weeklyGain,
         }
 
         return () => observer.disconnect();
-    }, [displayedEntries]);
+    }, [allEntries]);
 
     const getPodiumColor = (rank: number) => {
         if (rank === 1) return 'border-yellow-400 bg-yellow-50 text-yellow-700';
@@ -138,7 +91,7 @@ const LeaderboardView: React.FC<LeaderboardViewProps> = ({ username, weeklyGain,
 
     const getRowClass = (rank: number, isUser: boolean) => {
         const base = "px-6 py-4 flex items-center justify-between transition-all border-l-4 ";
-        let color = "bg-secondary/10 border-secondary/30";
+        let color = "bg-surface border-secondary/10";
         
         // Custom ranking colors: Top 5 green, last 3 red
         if (rank <= 5) color = "bg-success/5 border-success/40"; 
@@ -165,77 +118,45 @@ const LeaderboardView: React.FC<LeaderboardViewProps> = ({ username, weeklyGain,
                     <span className="text-[9px] md:text-[10px] bg-primary text-white px-3 py-0.5 rounded-full font-bold uppercase tracking-widest shadow-button animate-subtlePulse">
                         {league} League
                     </span>
-                    <h1 className="font-sans text-lg md:text-xl lg:text-3xl bg-highlight text-text-light px-4 md:px-6 py-2 inline-block rounded-xl shadow-card uppercase tracking-tight animate-slideDown font-bold">
-                        LEADERBOARD
+                    <h1 className="font-sans text-lg md:text-xl lg:text-3xl bg-highlight text-text-light px-4 md:px-6 py-2 inline-block rounded-xl shadow-card uppercase tracking-tight animate-slideDown">
+                        Leaderboard
                     </h1>
                 </div>
-                <p className="text-text-dim mt-2 text-[10px] md:text-xs">
-                    {activeTab === 'global' ? 'League Pool: 20 Scholars' : `Academy Friends: ${friendsList.length} Scholars`}
-                </p>
+                <p className="text-text-dim mt-2 text-[10px] md:text-xs">League Pool: 20 Scholars</p>
                 <p className="text-[9px] md:text-[10px] text-primary font-bold mt-1 uppercase tracking-widest animate-subtlePulse">Resets Monday Morning</p>
             </div>
 
-            {/* Global vs Friends Toggle */}
-            <div className="flex justify-center gap-4 mb-6">
-                <button
-                    onClick={() => setActiveTab('global')}
-                    className={`px-5 py-2 rounded-none text-[9px] md:text-[10px] font-bold uppercase tracking-widest transition-all ${
-                        activeTab === 'global' 
-                            ? 'bg-highlight text-text-light border-2 border-yellow-700 shadow-md font-extrabold' 
-                            : 'bg-secondary/20 text-text-dim border-2 border-transparent hover:bg-secondary/30'
-                    }`}
-                >
-                    Global Pool
-                </button>
-                <button
-                    onClick={() => setActiveTab('friends')}
-                    className={`px-5 py-2 rounded-none text-[9px] md:text-[10px] font-bold uppercase tracking-widest transition-all ${
-                        activeTab === 'friends' 
-                            ? 'bg-highlight text-text-light border-2 border-yellow-700 shadow-md font-extrabold' 
-                            : 'bg-secondary/20 text-text-dim border-2 border-transparent hover:bg-secondary/30'
-                    }`}
-                >
-                    Friends ({friendsList.length})
-                </button>
-            </div>
-
             {/* Podium Section */}
-            {displayedTop3.length > 0 ? (
-                <div className="flex flex-wrap justify-center items-end gap-2 md:gap-4 mb-8 md:mb-10 mt-12 md:mt-16 lg:mt-24 px-2 md:px-4">
-                    {displayedTop3.map((entry) => {
-                        const displayRank = entry.rank;
-                        const order = displayRank === 1 ? 'order-2' : (displayRank === 2 ? 'order-1' : 'order-3');
-                        const scale = displayRank === 1 ? 'md:scale-110 lg:scale-110' : 'scale-90';
-                        const height = displayRank === 1 ? 'h-32 md:h-40 lg:h-56' : (displayRank === 2 ? 'h-24 md:h-32 lg:h-40' : 'h-20 md:h-24 lg:h-32');
-                        return (
-                            <div key={entry.username} className={`${order} flex flex-col items-center ${displayRank === 1 ? '-mt-6 md:-mt-8' : ''}`}>
-                                <div className={`mb-2 md:mb-4 transform ${scale} ${displayRank === 1 ? 'animate-bounce' : ''}`}>
-                                    <PixelCreature
-                                        creature={INITIAL_CREATURES.find(c => c.id === entry.guardianId) || INITIAL_CREATURES[0]}
-                                        evolutionStage={displayRank === 1 ? 3 : 2}
-                                        pixelSize={displayRank === 1 ? 4 : 3}
-                                    />
-                                </div>
-                                <div className={`w-24 md:w-28 lg:w-40 ${height} border-t-4 ${getPodiumColor(displayRank)} flex flex-col items-center pt-3 md:pt-4 rounded-none shadow-lg relative ${displayRank === 1 ? 'z-10' : ''} ${entry.isUser ? 'ring-2 ring-highlight ring-inset bg-highlight/5' : ''}`}>
-                                    {displayRank === 1 && (
-                                        <span className="absolute -top-8 md:-top-10 flex items-center justify-center bg-white dark:bg-slate-800 rounded-full p-1.5 shadow-md border-2 border-secondary/20">
-                                            <CrownIcon className="w-5 h-5 md:w-6 md:h-6 text-yellow-500" />
-                                        </span>
-                                    )}
-                                    <p className="font-bold text-[9px] md:text-[10px] lg:text-xs truncate w-full px-2 text-center tracking-tighter mt-1">
-                                        {entry.username} {entry.isUser ? '(You)' : ''}
-                                    </p>
-                                    <p className="text-[8px] md:text-[9px] lg:text-[10px] font-bold opacity-80 mt-1 flex items-center justify-center gap-0.5">+{entry.weeklyGain} <AuraIcon className="w-2.5 h-2.5" /></p>
-                                </div>
+            <div className="flex flex-wrap justify-center items-end gap-2 md:gap-4 mb-8 md:mb-10 mt-12 md:mt-16 lg:mt-24 px-2 md:px-4">
+                {top3.map((entry) => {
+                    const displayRank = entry.rank;
+                    const order = displayRank === 1 ? 'order-2' : (displayRank === 2 ? 'order-1' : 'order-3');
+                    const scale = displayRank === 1 ? 'md:scale-110 lg:scale-110' : 'scale-90';
+                    const height = displayRank === 1 ? 'h-32 md:h-40 lg:h-56' : (displayRank === 2 ? 'h-24 md:h-32 lg:h-40' : 'h-20 md:h-24 lg:h-32');
+                    return (
+                        <div key={entry.username} className={`${order} flex flex-col items-center ${displayRank === 1 ? '-mt-6 md:-mt-8' : ''}`}>
+                            <div className={`mb-2 md:mb-4 transform ${scale} ${displayRank === 1 ? 'animate-bounce' : ''}`}>
+                                <PixelCreature
+                                    creature={INITIAL_CREATURES.find(c => c.id === entry.guardianId) || INITIAL_CREATURES[0]}
+                                    evolutionStage={displayRank === 1 ? 3 : 2}
+                                    pixelSize={displayRank === 1 ? 4 : 3}
+                                />
                             </div>
-                        );
-                    })}
-                </div>
-            ) : (
-                <div className="text-center py-8 text-text-dim text-xs font-bold uppercase tracking-widest">
-                    No Podium Contenders
-                </div>
-            )}
+                            <div className={`w-24 md:w-28 lg:w-40 ${height} border-t-4 ${getPodiumColor(displayRank)} flex flex-col items-center pt-3 md:pt-4 rounded-t-xl shadow-lg relative ${displayRank === 1 ? 'z-10' : ''} ${entry.isUser ? 'ring-2 ring-highlight ring-inset bg-highlight/5' : ''}`}>
+                                {displayRank === 1 && (
+                                    <span className="absolute -top-8 md:-top-10 flex items-center justify-center bg-white dark:bg-slate-800 rounded-full p-1.5 shadow-md border-2 border-secondary/20">
+                                        <CrownIcon className="w-5 h-5 md:w-6 md:h-6 text-yellow-500" />
+                                    </span>
+                                )}
+                                <p className="font-bold text-[9px] md:text-[10px] lg:text-xs truncate w-full px-2 text-center tracking-tighter mt-1">
+                                    {entry.username} {entry.isUser ? '(You)' : ''}
+                                </p>
+                                <p className="text-[8px] md:text-[9px] lg:text-[10px] font-bold opacity-80 mt-1 flex items-center justify-center gap-0.5">+{entry.weeklyGain} <AuraIcon className="w-2.5 h-2.5" /></p>
+                            </div>
+                        </div>
+                    );
+                })}
+            </div>
 
             {/* Tracking Bubble for off-screen user */}
             {userVisibility !== 'visible' && (
@@ -250,53 +171,47 @@ const LeaderboardView: React.FC<LeaderboardViewProps> = ({ username, weeklyGain,
             )}
 
             {/* Scrollable List Container */}
-            <div ref={listContainerRef} className="genshin-panel border border-secondary/30 rounded-none shadow-card overflow-hidden mx-2 animate-scaleIn">
-                <div className="genshin-panel px-6 py-3 border-b border-highlight/30 flex justify-between text-[10px] font-bold text-primary uppercase tracking-widest">
+            <div ref={listContainerRef} className="bg-surface border-2 border-secondary/30 rounded-xl shadow-card overflow-hidden mx-2 animate-scaleIn">
+                <div className="glass px-6 py-3 border-b-2 border-secondary/20 flex justify-between text-[10px] font-bold text-primary uppercase tracking-widest">
                     <span>Rank / Seeker</span>
                     <span>Weekly Gain</span>
                 </div>
                 <div className="divide-y divide-secondary/10">
-                    {displayedEntries.length > 0 ? (
-                        displayedEntries.map((entry) => (
-                            <div 
-                                key={entry.username}
-                                ref={entry.isUser ? userRowRef : null}
-                                className={getRowClass(entry.rank, !!entry.isUser)}
-                            >
-                                <div className="flex items-center gap-4">
-                                    <span className={`w-6 text-sm font-black ${entry.rank <= 5 ? 'text-success' : (entry.rank >= 18 ? 'text-accent' : 'text-text-dark')}`}>
-                                        {entry.rank}
-                                    </span>
-                                    <div className="w-8 h-8 flex items-center justify-center grayscale group-hover:grayscale-0 transition-all opacity-60">
-                                        <PixelCreature 
-                                            creature={INITIAL_CREATURES.find(c => c.id === entry.guardianId) || INITIAL_CREATURES[0]} 
-                                            evolutionStage={1} 
-                                            pixelSize={2} 
-                                        />
-                                    </div>
-                                    <div className="flex flex-col">
-                                        <p className={`text-[10px] font-bold ${entry.isUser ? 'text-highlight' : 'text-text-main'} uppercase tracking-tighter`}>
-                                            {entry.username} {entry.isUser ? '(You)' : ''}
-                                        </p>
-                                        <div className="flex gap-1.5 items-center">
-                                            {entry.rank <= 5 && <span className="text-[7px] bg-success text-white px-1 rounded-none font-bold">PROMOTING</span>}
-                                            {entry.rank >= 18 && <span className="text-[7px] bg-accent text-white px-1 rounded-none font-bold">DEMOTING</span>}
-                                            {entry.rank > 5 && entry.rank < 18 && <span className="text-[7px] bg-text-dark text-white px-1 rounded-none font-bold">STAYING</span>}
-                                        </div>
-                                    </div>
+                    {allEntries.map((entry) => (
+                        <div 
+                            key={entry.username}
+                            ref={entry.isUser ? userRowRef : null}
+                            className={getRowClass(entry.rank, !!entry.isUser)}
+                        >
+                            <div className="flex items-center gap-4">
+                                <span className={`w-6 text-sm font-black ${entry.rank <= 5 ? 'text-success' : (entry.rank >= 18 ? 'text-accent' : 'text-text-dark')}`}>
+                                    {entry.rank}
+                                </span>
+                                <div className="w-8 h-8 flex items-center justify-center grayscale group-hover:grayscale-0 transition-all opacity-60">
+                                    <PixelCreature 
+                                        creature={INITIAL_CREATURES.find(c => c.id === entry.guardianId) || INITIAL_CREATURES[0]} 
+                                        evolutionStage={1} 
+                                        pixelSize={2} 
+                                    />
                                 </div>
-                                <div className="text-right">
-                                    <span className={`font-mono text-sm font-bold flex items-center justify-end gap-1 ${entry.isUser ? 'text-highlight' : 'text-primary'}`}>
-                                        +{entry.weeklyGain.toLocaleString()} <AuraIcon className="w-3.5 h-3.5" />
-                                    </span>
+                                <div className="flex flex-col">
+                                    <p className={`text-[10px] font-bold ${entry.isUser ? 'text-highlight' : 'text-text-main'} uppercase tracking-tighter`}>
+                                        {entry.username} {entry.isUser ? '(You)' : ''}
+                                    </p>
+                                    <div className="flex gap-1.5 items-center">
+                                        {entry.rank <= 5 && <span className="text-[7px] bg-success text-white px-1 rounded-sm font-bold">PROMOTING</span>}
+                                        {entry.rank >= 18 && <span className="text-[7px] bg-accent text-white px-1 rounded-sm font-bold">DEMOTING</span>}
+                                        {entry.rank > 5 && entry.rank < 18 && <span className="text-[7px] bg-text-dark text-white px-1 rounded-sm font-bold">STAYING</span>}
+                                    </div>
                                 </div>
                             </div>
-                        ))
-                    ) : (
-                        <div className="px-6 py-12 text-center text-text-dim text-xs font-bold uppercase tracking-widest leading-loose">
-                            No Scholars found.
+                            <div className="text-right">
+                                <span className={`font-mono text-sm font-bold flex items-center justify-end gap-1 ${entry.isUser ? 'text-highlight' : 'text-primary'}`}>
+                                    +{entry.weeklyGain.toLocaleString()} <AuraIcon className="w-3.5 h-3.5" />
+                                </span>
+                            </div>
                         </div>
-                    )}
+                    ))}
                 </div>
             </div>
             
@@ -314,7 +229,7 @@ const LeaderboardView: React.FC<LeaderboardViewProps> = ({ username, weeklyGain,
 
             {/* Notification Toast */}
             {lastAction && (
-                <div className="fixed bottom-24 left-1/2 -translate-x-1/2 genshin-panel border border-highlight px-6 py-3 rounded-full shadow-2xl z-50 animate-bounce">
+                <div className="fixed bottom-24 left-1/2 -translate-x-1/2 bg-surface border-2 border-highlight px-6 py-3 rounded-full shadow-2xl z-50 animate-bounce">
                     <p className="text-[10px] font-bold text-highlight uppercase tracking-widest">{lastAction}</p>
                 </div>
             )}
@@ -339,17 +254,12 @@ const LeaderboardView: React.FC<LeaderboardViewProps> = ({ username, weeklyGain,
                         <span className="absolute -top-2 -right-2 bg-highlight text-[7px] text-white px-1.5 py-0.5 rounded-full font-bold shadow-md">SOON</span>
                     </button>
                     <button
-                        onClick={() => {
-                            setIsMenuOpen(false);
-                            setIsAddFriendModalOpen(true);
-                            setFriendIdInput('');
-                            setAddFriendError(null);
-                            setAddFriendSuccess(null);
-                        }}
-                        className="genshin-panel text-text-main px-4 py-2 rounded-full flex items-center gap-3 shadow-xl border border-secondary/50 hover:border-highlight active:scale-95 transition-all relative"
+                        onClick={() => handleAction("Coming Soon!")}
+                        className="bg-surface text-text-main px-4 py-2 rounded-full flex items-center gap-3 shadow-xl border-2 border-secondary/50 cursor-not-allowed relative"
                     >
                         <span className="text-[10px] font-bold uppercase tracking-widest">Add Friend</span>
                         <UserPlusIcon className="h-5 w-5" />
+                        <span className="absolute -top-2 -right-2 bg-highlight text-[7px] text-white px-1.5 py-0.5 rounded-full font-bold shadow-md">SOON</span>
                     </button>
                 </div>
 
@@ -362,101 +272,6 @@ const LeaderboardView: React.FC<LeaderboardViewProps> = ({ username, weeklyGain,
                     </svg>
                 </button>
             </div>
-
-            {/* Add Friend Modal */}
-            {isAddFriendModalOpen && (
-                <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/60 backdrop-blur-sm animate-fadeIn">
-                    <div className="genshin-panel border-2 border-highlight rounded-none shadow-2xl p-6 max-w-md w-full animate-scaleIn relative">
-                        {/* Close button */}
-                        <button 
-                            onClick={() => setIsAddFriendModalOpen(false)}
-                            className="absolute top-4 right-4 text-text-dim hover:text-text-main text-lg font-bold"
-                        >
-                            ✕
-                        </button>
-                        
-                        <h3 className="font-sans text-sm md:text-base bg-highlight text-text-light px-3 py-1 inline-block rounded-none shadow-sm uppercase tracking-wider mb-4 font-bold">
-                            Add Academy Friend
-                        </h3>
-                        
-                        <p className="text-[10px] md:text-xs text-text-dim mb-4 leading-relaxed">
-                            Enter your friend's Academy ID (their unique User ID) or their registered email address to add them.
-                        </p>
-                        
-                        <div className="space-y-3">
-                            <input 
-                                type="text"
-                                value={friendIdInput}
-                                onChange={(e) => setFriendIdInput(e.target.value)}
-                                placeholder="Enter Academy ID or email..."
-                                className="w-full bg-secondary/10 border border-secondary/30 text-text-main placeholder-text-dim/50 px-4 py-2 text-xs focus:outline-none focus:border-highlight rounded-none"
-                                disabled={isAddingFriend}
-                            />
-                            
-                            {addFriendError && (
-                                <p className="text-xs font-bold text-accent animate-shake">
-                                    ⚠️ {addFriendError}
-                                </p>
-                            )}
-                            
-                            {addFriendSuccess && (
-                                <p className="text-xs font-bold text-success animate-fadeIn">
-                                    ✓ {addFriendSuccess}
-                                </p>
-                            )}
-                            
-                            <div className="flex justify-end gap-2 pt-2">
-                                <button
-                                    onClick={() => setIsAddFriendModalOpen(false)}
-                                    className="bg-secondary/20 hover:bg-secondary/30 text-text-main px-4 py-2 text-[10px] font-bold uppercase tracking-wider transition-colors rounded-none"
-                                    disabled={isAddingFriend}
-                                >
-                                    Cancel
-                                </button>
-                                <button
-                                    onClick={async () => {
-                                        if (!friendIdInput.trim()) {
-                                            setAddFriendError("Please enter an Academy ID or email.");
-                                            return;
-                                        }
-                                        try {
-                                            setIsAddingFriend(true);
-                                            setAddFriendError(null);
-                                            setAddFriendSuccess(null);
-                                            
-                                            const token = await AuthService.getAuthToken();
-                                            if (!token) {
-                                                setAddFriendError("Authentication failed. Please log in again.");
-                                                return;
-                                            }
-                                            
-                                            const result = await addFriend(friendIdInput.trim(), token);
-                                            if (result.success) {
-                                                setAddFriendSuccess(result.message || "Friend added successfully!");
-                                                setFriendIdInput('');
-                                                loadFriends();
-                                                setTimeout(() => {
-                                                    setIsAddFriendModalOpen(false);
-                                                }, 2000);
-                                            } else {
-                                                setAddFriendError(result.error || "Failed to add friend.");
-                                            }
-                                        } catch (err: any) {
-                                            setAddFriendError(err.message || "An unexpected error occurred.");
-                                        } finally {
-                                            setIsAddingFriend(false);
-                                        }
-                                    }}
-                                    className="bg-highlight hover:bg-highlight-hover text-text-light px-4 py-2 text-[10px] font-bold uppercase tracking-wider transition-colors rounded-none border border-yellow-700 shadow-button flex items-center gap-2"
-                                    disabled={isAddingFriend}
-                                >
-                                    {isAddingFriend ? "Adding..." : "Add Friend"}
-                                </button>
-                            </div>
-                        </div>
-                    </div>
-                </div>
-            )}
         </div>
     );
 };

@@ -49,7 +49,7 @@ const FirstMissionQuestion: React.FC<FirstMissionQuestionProps> = ({ onComplete 
                 </div>
 
                 {/* Question Card */}
-                <div className="genshin-panel p-6 shadow-card animate-scaleIn">
+                <div className="bg-surface border-2 border-secondary/30 rounded-xl p-6 shadow-card animate-scaleIn">
                     <FormattedText className="text-lg font-medium text-text-main mb-6 text-center" text={question.text} />
 
                     {/* Answer Options */}
@@ -59,7 +59,7 @@ const FirstMissionQuestion: React.FC<FirstMissionQuestionProps> = ({ onComplete 
                             let icon: React.ReactNode = null;
 
                             if (selectedAnswer === null) {
-                                buttonClass += 'genshin-panel hover:border-highlight shadow-card hover:shadow-card-hover';
+                                buttonClass += 'bg-surface hover:bg-secondary/30 border-secondary/30 shadow-card hover:shadow-card-hover';
                             } else {
                                 if (index === question.correctIndex) {
                                     buttonClass += 'bg-success/10 border-success text-success font-bold animate-successPop';
@@ -76,7 +76,7 @@ const FirstMissionQuestion: React.FC<FirstMissionQuestionProps> = ({ onComplete 
                                         </svg>
                                     );
                                 } else {
-                                    buttonClass += 'genshin-panel opacity-50 border-text-dark/20';
+                                    buttonClass += 'bg-surface opacity-50 border-text-dark/20';
                                 }
                             }
 

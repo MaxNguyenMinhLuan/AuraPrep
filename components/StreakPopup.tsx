@@ -66,7 +66,7 @@ const StreakPopup: React.FC<StreakPopupProps> = ({ streak, onClose }) => {
     return (
         <div className="fixed inset-0 z-[100] flex items-center justify-center p-4 bg-black/70 backdrop-blur-md animate-fadeIn">
             <div 
-                className={`relative genshin-modal p-8 max-w-sm w-full text-center transition-all duration-500 overflow-hidden ${
+                className={`relative bg-surface p-8 rounded-2xl shadow-2xl max-w-sm w-full text-center border-4 transition-all duration-500 overflow-hidden ${
                     isMilestone ? 'border-highlight scale-110 animate-shake' : 'border-primary'
                 }`}
             >

@@ -105,13 +105,13 @@ const ReviewView: React.FC<ReviewViewProps> = ({ questions, onAnswer, onExit, us
 
             <div className="mb-4">
                  <p className="text-primary text-center text-[10px]">Mistakes to Fix: {questions.length}</p>
-                 <div className="w-full bg-background/50 h-2 mt-1 border border-text-dark rounded-full overflow-hidden">
+                 <div className="w-full bg-surface h-2 mt-1 border border-text-dark rounded-full overflow-hidden">
                     <div className="bg-accent h-full transition-all duration-500" style={{ width: `${(completedCount / (completedCount + questions.length)) * 100}%` }}></div>
                 </div>
             </div>
 
             <div className={`p-4 border-2 flex flex-col justify-between relative rounded-lg shadow-md transition-all duration-300 ${
-                isCorrect === false ? 'bg-accent/5 border-accent shadow-[0_0_20px_rgba(220,38,38,0.25)] red-flash' : 'genshin-panel border-accent/50'
+                isCorrect === false ? 'bg-accent/5 border-accent shadow-[0_0_20px_rgba(220,38,38,0.25)] red-flash' : 'bg-surface border-accent/50'
             }`}>
                 <div className="absolute top-0 right-0 bg-accent text-white text-[8px] px-2 py-1 font-bold rounded-bl-md">REVIEW</div>
                 <div>
@@ -126,7 +126,7 @@ const ReviewView: React.FC<ReviewViewProps> = ({ questions, onAnswer, onExit, us
                           let icon: React.ReactNode = null;
 
                           if (selectedAnswer === null) {
-                              buttonClass += 'genshin-panel hover:bg-secondary border-primary/20 shadow-sm';
+                              buttonClass += 'bg-surface hover:bg-secondary border-primary/20 shadow-sm';
                           } else {
                               if (index === currentQuestion.answerIndex) {
                                   buttonClass += 'bg-success/10 border-success text-success font-bold';
@@ -143,7 +143,7 @@ const ReviewView: React.FC<ReviewViewProps> = ({ questions, onAnswer, onExit, us
                                     </svg>
                                   );
                               } else {
-                                  buttonClass += 'genshin-panel opacity-50 border-text-dark/20';
+                                  buttonClass += 'bg-surface opacity-50 border-text-dark/20';
                               }
                           }
                           

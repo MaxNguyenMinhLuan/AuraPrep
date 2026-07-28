@@ -48,7 +48,7 @@ const StarterSelection: React.FC<StarterSelectionProps> = ({ onSelect }) => {
 
     return (
         <div className={`fixed inset-0 z-[50] flex items-center justify-center p-3 md:p-4 ${confirmed ? 'animate-fadeOut' : 'animate-fadeIn'} pointer-events-none`}>
-            <div className="genshin-modal max-w-4xl w-full p-4 md:p-8 animate-reveal pointer-events-auto overflow-y-auto max-h-[95vh] scrollbar-thin">
+            <div className="bg-surface border-4 border-highlight rounded-xl shadow-2xl max-w-4xl w-full p-4 md:p-8 animate-reveal pointer-events-auto overflow-y-auto max-h-[95vh] scrollbar-thin">
                 <h2 className="text-2xl md:text-3xl font-serif text-center text-highlight mb-1 md:mb-2">Choose Your Starter!</h2>
                 <p className="text-center text-text-dim text-xs md:text-sm mb-4 md:mb-8">This Guardian will be your first partner on your SAT journey.</p>
 

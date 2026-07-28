@@ -147,7 +147,7 @@ const EmailPreferences: React.FC<EmailPreferencesProps> = ({ onClose, onSave }) 
   if (isLoading) {
     return (
       <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50">
-        <div className="genshin-modal p-8">
+        <div className="bg-surface border-4 border-highlight rounded-2xl p-8">
           <p className="text-text-main">Loading preferences...</p>
         </div>
       </div>
@@ -156,7 +156,7 @@ const EmailPreferences: React.FC<EmailPreferencesProps> = ({ onClose, onSave }) 
 
   return (
     <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50 p-4">
-      <div className="genshin-modal max-w-2xl w-full max-h-[90vh] overflow-y-auto p-6">
+      <div className="bg-surface border-4 border-highlight rounded-2xl max-w-2xl w-full max-h-[90vh] overflow-y-auto p-6 shadow-2xl">
         <h1 className="text-3xl font-serif text-highlight mb-6">Email Preferences</h1>
 
         {error && (
@@ -190,12 +190,12 @@ const EmailPreferences: React.FC<EmailPreferencesProps> = ({ onClose, onSave }) 
         {emailsEnabled && (
           <>
             {/* Nudge Time Preferences */}
-            <div className="mb-8 p-4 genshin-modal rounded-xl">
+            <div className="mb-8 p-4 bg-background rounded-xl">
               <h2 className="text-lg font-bold text-text-main mb-4">Email Times</h2>
               <p className="text-sm text-text-dim mb-4">Choose which nudges to receive:</p>
 
               <div className="space-y-3">
-                <label className="flex items-center gap-4 cursor-pointer p-3 genshin-panel hover:border-highlight">
+                <label className="flex items-center gap-4 cursor-pointer p-3 bg-surface rounded-lg hover:bg-surface/80">
                   <input
                     type="checkbox"
                     checked={morningEnabled}
@@ -208,7 +208,7 @@ const EmailPreferences: React.FC<EmailPreferencesProps> = ({ onClose, onSave }) 
                   </div>
                 </label>
 
-                <label className="flex items-center gap-4 cursor-pointer p-3 genshin-panel hover:border-highlight">
+                <label className="flex items-center gap-4 cursor-pointer p-3 bg-surface rounded-lg hover:bg-surface/80">
                   <input
                     type="checkbox"
                     checked={afternoonEnabled}
@@ -221,7 +221,7 @@ const EmailPreferences: React.FC<EmailPreferencesProps> = ({ onClose, onSave }) 
                   </div>
                 </label>
 
-                <label className="flex items-center gap-4 cursor-pointer p-3 genshin-panel hover:border-highlight">
+                <label className="flex items-center gap-4 cursor-pointer p-3 bg-surface rounded-lg hover:bg-surface/80">
                   <input
                     type="checkbox"
                     checked={eveningEnabled}
@@ -237,13 +237,13 @@ const EmailPreferences: React.FC<EmailPreferencesProps> = ({ onClose, onSave }) 
             </div>
 
             {/* Timezone Selector */}
-            <div className="mb-8 p-4 genshin-modal rounded-xl">
+            <div className="mb-8 p-4 bg-background rounded-xl">
               <h2 className="text-lg font-bold text-text-main mb-2">🌍 Your Timezone</h2>
               <p className="text-sm text-text-dim mb-3">We'll send emails at the right time for your location</p>
               <select
                 value={timezone}
                 onChange={(e) => setTimezone(e.target.value)}
-                className="w-full p-3 genshin-panel border-2 border-secondary rounded-lg text-text-main focus:border-highlight focus:outline-none"
+                className="w-full p-3 bg-surface border-2 border-secondary rounded-lg text-text-main focus:border-highlight focus:outline-none"
               >
                 {TIMEZONES.map((tz) => (
                   <option key={tz.value} value={tz.value}>
@@ -256,14 +256,14 @@ const EmailPreferences: React.FC<EmailPreferencesProps> = ({ onClose, onSave }) 
         )}
 
         {/* Stats */}
-        <div className="mb-8 p-4 genshin-modal rounded-xl">
+        <div className="mb-8 p-4 bg-background rounded-xl">
           <h2 className="text-lg font-bold text-text-main mb-4">📊 Your Email Stats</h2>
           <div className="grid grid-cols-2 gap-4">
-            <div className="p-3 genshin-panel">
+            <div className="p-3 bg-surface rounded-lg">
               <p className="text-2xl font-bold text-highlight">{emailsSent}</p>
               <p className="text-xs text-text-dim">Emails sent</p>
             </div>
-            <div className="p-3 genshin-panel">
+            <div className="p-3 bg-surface rounded-lg">
               <p className="text-2xl font-bold text-primary">{emailsSent > 0 ? Math.round((emailsOpened / emailsSent) * 100) : 0}%</p>
               <p className="text-xs text-text-dim">Open rate</p>
             </div>

@@ -91,7 +91,7 @@ const RewardCelebration: React.FC<RewardCelebrationProps> = ({
 
                 {/* Aura reward display */}
                 {showAura && (
-                    <div className="genshin-modal p-6 mb-8 animate-scaleIn shadow-glow-highlight">
+                    <div className="bg-surface border-4 border-highlight rounded-2xl p-6 mb-8 animate-scaleIn shadow-glow-highlight">
                         <p className="text-text-dim text-sm mb-2">You earned</p>
                         <div className="flex items-center justify-center gap-3">
                             <span className="text-5xl font-bold text-highlight">

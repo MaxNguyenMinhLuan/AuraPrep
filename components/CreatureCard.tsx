@@ -69,21 +69,20 @@ interface CreatureCardProps {
     instance: CreatureInstance;
     isLarge?: boolean;
     showDetails?: boolean;
-    hideCardBg?: boolean;
 }
 
 const getRarityClasses = (rarity: Rarity) => {
     switch (rarity) {
-        case Rarity.Common: return { bg: 'bg-slate-50 dark:bg-slate-800/40', text: 'text-slate-600 dark:text-slate-400 font-bold', border: 'border-slate-300 dark:border-slate-700' };
-        case Rarity.Uncommon: return { bg: 'bg-emerald-50/80 dark:bg-emerald-950/40', text: 'text-emerald-600 dark:text-emerald-400 font-bold', border: 'border-emerald-300 dark:border-emerald-900/60' };
-        case Rarity.Rare: return { bg: 'bg-indigo-50/80 dark:bg-indigo-950/40', text: 'text-indigo-600 dark:text-indigo-400 font-bold', border: 'border-indigo-300 dark:border-indigo-900/60' };
-        case Rarity.UltraRare: return { bg: 'bg-purple-50/80 dark:bg-purple-950/40', text: 'text-purple-600 dark:text-purple-400 font-bold', border: 'border-purple-300 dark:border-purple-900/60' };
-        case Rarity.Legendary: return { bg: 'bg-amber-50/80 dark:bg-amber-950/40', text: 'text-amber-600 dark:text-amber-400 font-bold animate-pulse', border: 'border-highlight border-dashed' };
-        default: return { bg: 'bg-background/80', text: 'text-text-main', border: 'border-text-dim' };
+        case Rarity.Common: return { bg: 'bg-slate-100/50 dark:bg-slate-800/40', text: 'text-slate-500 dark:text-slate-400 font-bold', border: 'border-slate-300 dark:border-slate-700' };
+        case Rarity.Uncommon: return { bg: 'bg-emerald-50 dark:bg-emerald-950/20', text: 'text-emerald-600 dark:text-emerald-400 font-bold', border: 'border-emerald-300 dark:border-emerald-900/60' };
+        case Rarity.Rare: return { bg: 'bg-indigo-50 dark:bg-indigo-950/20', text: 'text-indigo-600 dark:text-indigo-400 font-bold', border: 'border-indigo-300 dark:border-indigo-900/60' };
+        case Rarity.UltraRare: return { bg: 'bg-purple-50 dark:bg-purple-950/20', text: 'text-purple-600 dark:text-purple-400 font-bold', border: 'border-purple-300 dark:border-purple-900/60' };
+        case Rarity.Legendary: return { bg: 'bg-amber-50 dark:bg-amber-950/20', text: 'text-amber-600 dark:text-amber-400 font-bold border-dashed animate-pulse', border: 'border-amber-400 dark:border-amber-900/60' };
+        default: return { bg: 'bg-background dark:bg-slate-900', text: 'text-text-main dark:text-slate-100', border: 'border-text-dim dark:border-slate-700' };
     }
 };
 
-const CreatureCard: React.FC<CreatureCardProps> = ({ instance, isLarge = false, showDetails = false, hideCardBg = false }) => {
+const CreatureCard: React.FC<CreatureCardProps> = ({ instance, isLarge = false, showDetails = false }) => {
     const isCustom = instance.creatureId === 0 && !!instance.customImageUrl;
     const creatureData = INITIAL_CREATURES.find(c => c.id === instance.creatureId);
     
@@ -131,12 +130,8 @@ const CreatureCard: React.FC<CreatureCardProps> = ({ instance, isLarge = false, 
     };
     
     if (isLarge) {
-        const bgClass = hideCardBg ? 'bg-transparent' : rarityClasses.bg;
-        const borderClass = hideCardBg ? 'border-transparent' : rarityClasses.border;
-        const shadowClass = hideCardBg ? '' : 'shadow-inner';
-
         return (
-            <div className={`p-4 w-64 text-center ${bgClass} border ${borderClass} rounded-md ${shadowClass}`}>
+            <div className={`p-4 w-64 text-center ${rarityClasses.bg} border-2 ${rarityClasses.border} rounded-lg shadow-inner`}>
                 <div className="flex justify-center mb-4 min-h-[120px] items-center">
                     {renderSprite(10)}
                 </div>
@@ -154,7 +149,7 @@ const CreatureCard: React.FC<CreatureCardProps> = ({ instance, isLarge = false, 
     
     if (showDetails) {
         return (
-            <div className={`p-2 ${rarityClasses.bg} border ${rarityClasses.border} h-full flex flex-col justify-between text-center rounded-md`}>
+            <div className={`p-2 ${rarityClasses.bg} border-2 ${rarityClasses.border} h-full flex flex-col justify-between text-center rounded-md`}>
                 <div>
                   <div className="flex justify-center items-center mb-1 h-20">
                       {renderSprite(4)}

@@ -29,9 +29,9 @@ export const generateDailyMissions = (profile: UserProfile): DailyMission[] => {
     const selectedSubtopics = shuffleArray(targetPool).slice(0, 3);
 
     const missionTemplates = [
-        { questionCount: 1, reward: 50, xp: 10, title: 'Daily Mission' },
-        { questionCount: 2, reward: 150, xp: 25, title: 'Daily Mission' },
-        { type: 3, questionCount: 3, reward: 300, xp: 40, title: 'Daily Mission' },
+        { questionCount: 1, reward: 50, xp: 10, title: 'Quick Drill' },
+        { questionCount: 2, reward: 150, xp: 25, title: 'Focused Practice' },
+        { questionCount: 3, reward: 300, xp: 40, title: 'Deep Dive' },
     ];
 
     const missions: DailyMission[] = selectedSubtopics.map((subtopic, index) => {

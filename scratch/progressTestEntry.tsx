@@ -9,9 +9,6 @@ import ProgressView from '../components/ProgressView';
 import { UserProfile, LeagueType, SubtopicStat } from '../types';
 import { SUBTOPICS } from '../constants';
 
-// Match the app's primary aesthetic (dark "midnight temple") in the harness
-document.documentElement.classList.add('dark');
-
 const createInitialProfile = (): UserProfile => {
     const stats: { [subtopic: string]: SubtopicStat } = {};
     SUBTOPICS.forEach(s => { stats[s] = { correct: 0, incorrect: 0, level: 'Easy' }; });
@@ -57,6 +54,7 @@ const Harness: React.FC = () => {
                 addToReviewQueue={() => {}}
                 awardAura={(n) => setAura(a => a + n)}
                 addXpToActiveCreature={() => {}}
+                setIsBossFightActive={() => {}}
             />
         </div>
     );

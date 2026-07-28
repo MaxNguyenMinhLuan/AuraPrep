@@ -36,8 +36,6 @@
             --color-legendary: #ca8a04;
             --color-primary: #4338ca;
             --color-accent: #dc2626;
-            --color-secondary: #ddd6fe;
-            --color-secondary-hover: #c4b5fd;
         }
         html.dark {
             --color-background: #0f172a;
@@ -49,8 +47,6 @@
             --color-legendary: #fbbf24; /* amber-400 - bright gold */
             --color-primary: #b388ff; /* light neon purple */
             --color-accent: #ff3b3b; /* bright saturated red */
-            --color-secondary: #ddd6fe;
-            --color-secondary-hover: #c4b5fd;
         }
     </style>
     <script>
@@ -62,14 +58,14 @@
                         sans: ['"Press Start 2P"', 'cursive'],
                         serif: ['"Press Start 2P"', 'cursive'],
                         mono: ['"Press Start 2P"', 'cursive'],
-                        clean: ['"-apple-system"', '"BlinkMacSystemFont"', '"SF Pro"', '"Segoe UI"', '"Roboto"', '"Helvetica Neue"', 'Arial', 'sans-serif'],
+                        clean: ['"Noto Serif"', '"-apple-system"', '"BlinkMacSystemFont"', '"SF Pro"', '"Segoe UI"', '"Roboto"', '"Helvetica Neue"', 'Arial', 'sans-serif'],
                     },
                     colors: {
                         'background': 'var(--color-background)',
                         'surface': 'var(--color-surface)',
                         'primary': 'var(--color-primary)',
-                        'secondary': 'var(--color-secondary)',
-                        'secondary-hover': 'var(--color-secondary-hover)',
+                        'secondary': '#ddd6fe',
+                        'secondary-hover': '#c4b5fd',
                         'accent': 'var(--color-accent)',
                         'accent-dark': '#b91c1c',
                         'highlight': 'var(--color-highlight)',
@@ -197,22 +193,6 @@
                             '0%, 100%': { opacity: '0.4' },
                             '50%': { opacity: '1' }
                         },
-                        auramonAttack: {
-                            '0%': { transform: 'translate(0, 0) scale(1)' },
-                            '30%': { transform: 'translate(100px, -150px) scale(1.2)' },
-                            '70%': { transform: 'translate(100px, -150px) scale(1.2)' },
-                            '100%': { transform: 'translate(0, 0) scale(1)' }
-                        },
-                        bossUltimateAttack: {
-                            '0%': { transform: 'scaleY(0)', opacity: '0', background: 'white' },
-                            '10%': { transform: 'scaleY(1)', opacity: '1', background: '#ff3b3b' },
-                            '90%': { transform: 'scaleY(1)', opacity: '1', background: '#ff3b3b' },
-                            '100%': { transform: 'scaleY(0)', opacity: '0', background: 'white' }
-                        },
-                        auramonDefeat: {
-                            '0%': { transform: 'translate(0, 0) rotate(0deg) scale(1)', opacity: '1' },
-                            '100%': { transform: 'translate(-500px, 500px) rotate(-180deg) scale(0)', opacity: '0' }
-                        },
                         // Genshin-style summon animations
                         meteorShoot: {
                             '0%': { transform: 'translateX(-100vw) translateY(-100vh) rotate(45deg)', opacity: '0' },
@@ -320,9 +300,6 @@
                         textGlow: 'textGlow 1.5s ease-in-out infinite',
                         'gradient-slow': 'gradient 15s ease infinite',
                         fadeOut: 'fadeOut 0.5s ease-out forwards',
-                        auramonAttack: 'auramonAttack 0.8s ease-in-out',
-                        bossUltimateAttack: 'bossUltimateAttack 1s ease-in-out',
-                        auramonDefeat: 'auramonDefeat 1.5s cubic-bezier(0.36, 0, 0.66, -0.56) forwards',
                     },
                     boxShadow: {
                         'card': '0 2px 8px -2px rgba(0, 0, 0, 0.1), 0 4px 12px -4px rgba(0, 0, 0, 0.08)',
@@ -496,68 +473,6 @@
         -webkit-backdrop-filter: blur(10px);
     }
 
-    /* ── UI kit ──────────────────────────────────────────────────────
-       Plain solid-surface cards/modals matching the original pixel
-       theme's flat look - no parchment gradients or gold ornamentation.
-       Component markup still uses these class names, so only what they
-       render as changes here, not any .tsx file. */
-    .genshin-panel {
-        background: var(--color-surface);
-        border: 1px solid var(--color-secondary);
-        border-radius: 8px;
-        position: relative;
-    }
-    html.dark .genshin-panel {
-        background: var(--color-surface);
-        border: 1px solid var(--color-secondary);
-    }
-
-    .genshin-modal {
-        background: var(--color-surface);
-        border: 2px solid var(--color-secondary);
-        border-radius: 12px;
-        position: relative;
-    }
-    html.dark .genshin-modal {
-        background: var(--color-surface);
-        border: 2px solid var(--color-secondary);
-    }
-
-    .genshin-modal::before {
-        display: none;
-    }
-
-    /* Title divider: plain hairline, no gold ornamentation */
-    .genshin-divider {
-        height: 1px;
-        background: var(--color-secondary);
-    }
-
-    /* Buttons: match the site's original bottom-border button style */
-    .genshin-btn-light {
-        border-radius: 12px;
-        background: var(--color-secondary);
-        color: var(--color-primary) !important;
-        border: none;
-        border-bottom: 4px solid var(--color-secondary-hover);
-        transition: filter 0.2s ease, transform 0.1s ease;
-    }
-    .genshin-btn-light:hover:not(:disabled) {
-        filter: brightness(1.05);
-    }
-    .genshin-btn-dark {
-        border-radius: 12px;
-        background: var(--color-accent);
-        color: #ffffff !important;
-        border: none;
-        border-bottom: 4px solid var(--color-accent-dark, #b91c1c);
-        transition: filter 0.2s ease, transform 0.1s ease;
-    }
-    .genshin-btn-dark:hover:not(:disabled) {
-        filter: brightness(1.05);
-    }
-    .genshin-btn-light:active, .genshin-btn-dark:active { transform: scale(0.97); }
-
     /* Smooth transitions */
     .transition-premium {
         transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
@@ -621,9 +536,6 @@
         background: var(--color-surface);
     }
 
-    /* Never let default white html peek out around the themed body */
-    html { background-color: var(--color-background); }
-
     /* Focus ring for accessibility */
     .focus-ring:focus {
         outline: none;
@@ -645,32 +557,20 @@
     }
 
     /* Tables styling inside formatted text */
-    /* Passage/question separation: react-markdown turns the \n\n between
-       a R/W passage and its question into two <p> tags, but Tailwind's
-       preflight reset zeroes all default <p> margin — so the blank line
-       was being generated correctly and then visually erased. This is
-       what users were seeing as "the passage and question run together." */
-    .formatted-text p {
-        margin: 0 0 1.1em 0;
-    }
-    .formatted-text p:last-child {
-        margin-bottom: 0;
-    }
-
     .formatted-text table {
         width: 100%;
         border-collapse: collapse;
         margin: 1rem 0;
         font-size: 11px;
         text-align: left;
-        background: var(--color-surface);
-        border: 2px solid var(--color-secondary);
+        background: rgba(255, 255, 255, 0.7);
+        border: 2px solid #ddd6fe;
         border-radius: 8px;
         overflow: hidden;
         box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.05);
     }
     .formatted-text th {
-        background-color: var(--color-primary);
+        background-color: #4338ca;
         color: #ffffff;
         font-weight: 600;
         padding: 8px 12px;
@@ -678,15 +578,15 @@
     }
     .formatted-text td {
         padding: 6px 12px;
-        border-bottom: 1px solid var(--color-secondary);
+        border-bottom: 1px solid #ddd6fe;
         font-family: '"Press Start 2P"', cursive;
-        color: var(--color-text-main);
+        color: #111827;
     }
     .formatted-text tr:last-child td {
         border-bottom: none;
     }
     .formatted-text tr:nth-child(even) {
-        background-color: rgba(148, 128, 208, 0.08);
+        background-color: rgba(221, 214, 254, 0.15);
     }
     .formatted-text tr:hover {
         background-color: rgba(221, 214, 254, 0.3);
@@ -709,7 +609,7 @@
   }
 }
 </script>
-  <script type="module" crossorigin src="/assets/index-C3S3mAPF.js"></script>
+  <script type="module" crossorigin src="/assets/index-C1-cVC7E.js"></script>
 </head>
 <body class="bg-background text-text-main font-sans text-[10px]">
     <div id="root"></div>

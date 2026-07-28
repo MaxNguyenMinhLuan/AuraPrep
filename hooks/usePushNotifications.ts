@@ -109,26 +109,46 @@ export function usePushNotifications(): PushNotificationState {
     const enableNotifications = useCallback(async (): Promise<{ enabled: boolean; testSent: boolean }> => {
         setError(null);
 
-        if (!isSupported || !VAPID_PUBLIC_KEY) {
-            console.warn('[Push] Not supported or VAPID key missing');
-            setError(!isSupported ? "This browser doesn't support notifications." : 'Notifications are misconfigured for this deployment.');
+        if (!('Notification' in window)) {
+            console.warn('[Push] Notification API missing in window');
+            setError("This browser doesn't support notifications.");
             return { enabled: false, testSent: false };
         }
 
-        setIsLoading(true);
-
         try {
             // 1. Request notification permission IMMEDIATELY on user gesture for iOS WebKit
-            const perm = await Notification.requestPermission();
+            // Support both Promise syntax and legacy callback syntax
+            let perm: NotificationPermission = Notification.permission;
+            if (perm === 'default') {
+                try {
+                    const reqResult = Notification.requestPermission();
+                    if (reqResult && typeof reqResult.then === 'function') {
+                        perm = await reqResult;
+                    } else {
+                        perm = await new Promise((resolve) => Notification.requestPermission(resolve));
+                    }
+                } catch (_err) {
+                    perm = await new Promise((resolve) => Notification.requestPermission(resolve));
+                }
+            }
+
             setPermission(perm);
 
             if (perm !== 'granted') {
+                console.warn('[Push] Notification permission not granted:', perm);
                 if (perm === 'denied') {
                     setError("Notifications are blocked for this site in your browser's settings.");
                 }
-                setIsLoading(false);
                 return { enabled: false, testSent: false };
             }
+
+            if (!VAPID_PUBLIC_KEY) {
+                console.warn('[Push] VAPID public key missing');
+                setError('Notifications are misconfigured for this deployment.');
+                return { enabled: false, testSent: false };
+            }
+
+            setIsLoading(true);
 
             // 2. Ensure service worker is registered and active
             let registration = await navigator.serviceWorker.getRegistration('/sw.js');

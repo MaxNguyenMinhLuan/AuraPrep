@@ -1,18 +1,11 @@
-import sgMail from '@sendgrid/mail';
 import jwt from 'jsonwebtoken';
 import { config } from '../config';
 import UserGameData from '../models/UserGameData';
 import { User } from '../models/User';
-import { generateGuardianCopy } from '../shared/generateGuardianCopy';
-import { CreatureType, NudgeLevel } from '../shared/guardianPersonalities';
+import { NudgeLevel } from '../shared/guardianPersonalities';
 import { PushSubscription } from '../models/PushSubscription';
 import { sendNotificationToUser } from './push.service';
-
-if (config.sendgrid.apiKey) {
-    sgMail.setApiKey(config.sendgrid.apiKey);
-} else {
-    console.warn('⚠️ SENDGRID_API_KEY is not configured. Nudge emails will be logged to the console instead of sent.');
-}
+import { PushCategory, pickRandomTemplate, pickRival, renderPushTemplate } from '../shared/pushNotificationTemplates';
 
 export class NudgeService {
     /**
@@ -80,20 +73,33 @@ export class NudgeService {
     }
 
     /**
-     * Process hourly checks across all active users.
+     * Decide which push-notification category to pull from for this send.
+     * Morning leans on the daily-missions set, afternoon on aura-farming,
+     * evening on the streak-at-risk set (or leaderboard on Sundays, ahead of
+     * the weekly league reset) - falling back to daily-missions whenever the
+     * more specific category wouldn't make sense (e.g. no streak to lose).
+     */
+    static selectPushCategory(level: NudgeLevel, localDateStr: string, streakCount: number): PushCategory {
+        if (level === 'evening') {
+            const dayOfWeek = new Date(`${localDateStr}T12:00:00Z`).getUTCDay(); // 0 = Sunday
+            if (dayOfWeek === 0) return 'leaderboard';
+            if (streakCount > 0) return 'streak';
+            return 'dailyMissions';
+        }
+        if (level === 'afternoon') return 'auraFarming';
+        return 'dailyMissions';
+    }
+
+    /**
+     * Process hourly checks across all active users. Push is the only nudge
+     * channel - a saved Web Push subscription is the only opt-in a user needs.
      */
     static async processHourlyNudges(): Promise<void> {
         console.log(`[${new Date().toISOString()}] Starting hourly nudge sweep...`);
         try {
-            // Find all users who have either email notifications enabled or active push subscriptions
             const pushUserIds = await PushSubscription.distinct('userId');
-            const records = await UserGameData.find({
-                $or: [
-                    { 'emailNotifications.enabled': true },
-                    { userId: { $in: pushUserIds } }
-                ]
-            });
-            console.log(`Found ${records.length} users eligible for nudges (email or push).`);
+            const records = await UserGameData.find({ userId: { $in: pushUserIds } });
+            console.log(`Found ${records.length} users with an active push subscription.`);
 
             let nudgesSentCount = 0;
 
@@ -120,23 +126,11 @@ export class NudgeService {
 
                 // 3. Determine if the current local hour is a nudge target: 8 (Morning), 14 (Afternoon), or 20 (Evening)
                 let level: NudgeLevel | null = null;
-                let isPrefEnabled = false;
+                if (localHour === 8) level = 'morning';
+                else if (localHour === 14) level = 'afternoon';
+                else if (localHour === 20) level = 'evening';
 
-                if (localHour === 8) {
-                    level = 'morning';
-                    isPrefEnabled = gameData.emailNotifications.morning === true;
-                } else if (localHour === 14) {
-                    level = 'afternoon';
-                    isPrefEnabled = gameData.emailNotifications.afternoon === true;
-                } else if (localHour === 20) {
-                    level = 'evening';
-                    isPrefEnabled = gameData.emailNotifications.evening === true;
-                }
-
-                const hasPushSub = pushUserIds.includes(gameData.userId.toString());
-
-                if (!level || (!isPrefEnabled && !hasPushSub)) {
-                    // Not a nudge hour, or the user has neither email pref nor push sub for this tier
+                if (!level) {
                     continue;
                 }
 
@@ -148,7 +142,7 @@ export class NudgeService {
                     continue;
                 }
 
-                // 5. Fetch User details for email & name
+                // 5. Fetch User details for the deep link
                 const user = await User.findById(gameData.userId);
                 if (!user) {
                     console.warn(`User document not found for user ID: ${gameData.userId}`);
@@ -157,80 +151,41 @@ export class NudgeService {
 
                 // 6. Generate deep link autologin token
                 const token = jwt.sign(
-                    { userId: user._id.toString(), email: user.email, purpose: 'email-nudge' },
+                    { userId: user._id.toString(), email: user.email, purpose: 'push-nudge' },
                     config.jwt.accessTokenSecret,
                     { expiresIn: '7d' }
                 );
                 const deepLink = `${config.appUrl}?token=${token}`;
 
-                // 7. Generate Guardian Copy
-                const copy = generateGuardianCopy({
-                    guardianType: (gameData.activeCreature.type as CreatureType) || 'Fire',
-                    guardianName: gameData.activeCreature.name || 'Guardian',
-                    nudgeLevel: level,
-                    userName: user.name || 'Adventurer',
-                    currentStreak: gameData.currentStreak || 0,
-                    deepLink
+                // 7. Pick a category + template and render it with the user's real state
+                const streakCount = (gameData.profile as any)?.dailyStreak ?? 0;
+                const leagueName = (gameData.profile as any)?.league ?? 'Bronze';
+                const pushCategory = this.selectPushCategory(level, localDateStr, streakCount);
+                const pushContent = renderPushTemplate(pickRandomTemplate(pushCategory), {
+                    partnerName: gameData.activeCreature?.name || 'your Auramon',
+                    streakCount,
+                    rival: pickRival(),
+                    leagueName,
                 });
 
-                // 8. Dispatch Email via SendGrid or log
-                const emailHtml = copy.body;
-                const emailText = copy.body.replace(/<[^>]*>/g, ''); // Basic HTML stripper
+                const pushResult = await sendNotificationToUser(user._id.toString(), {
+                    title: pushContent.title,
+                    body: pushContent.body,
+                    url: deepLink,
+                });
 
-                let emailSent = false;
-                if (isPrefEnabled && gameData.emailNotifications.enabled) {
-                    if (config.sendgrid.apiKey) {
-                        try {
-                            await sgMail.send({
-                                to: user.email,
-                                from: config.sendgrid.fromEmail,
-                                subject: copy.subject,
-                                html: emailHtml,
-                                text: emailText
-                            });
-                            console.log(`✉️ Email nudge (${level}) sent to ${user.email} from ${gameData.activeCreature.name} (${gameData.activeCreature.type})`);
-                            emailSent = true;
-                        } catch (error) {
-                            console.error(`Failed to send email nudge to ${user.email} via SendGrid:`, error);
-                        }
-                    } else {
-                        console.log(`[MOCK EMAIL NUDGE]
-To: ${user.email}
-From: ${config.sendgrid.fromEmail}
-Subject: ${copy.subject}
-Body:
----------------------------------------------
-${emailText}
----------------------------------------------`);
-                        emailSent = true;
-                    }
+                if (pushResult.sent > 0) {
+                    console.log(`🔔 Push nudge (${level}/${pushCategory}) sent to ${user.email} on ${pushResult.sent} device(s).`);
+                } else if (pushResult.failed > 0) {
+                    console.warn(`Push nudge (${level}/${pushCategory}) could not be delivered to ${user.email}.`);
                 }
 
-                let pushSent = false;
-                if (hasPushSub) {
-                    try {
-                        const { sent } = await sendNotificationToUser(gameData.userId.toString(), {
-                            title: copy.subject,
-                            body: emailText,
-                            url: deepLink
-                        });
-                        if (sent > 0) {
-                            pushSent = true;
-                            console.log(`📱 Push nudge (${level}) sent to ${user.email}`);
-                        }
-                    } catch (error) {
-                        console.error(`Failed to send push nudge to ${user.email}:`, error);
-                    }
-                }
+                // 8. Update Database stats
+                gameData.dailyMissions.nudgesSent = Math.min(3, gameData.dailyMissions.nudgesSent + 1);
+                gameData.dailyMissions.lastNudgeSentAt = new Date();
+                await gameData.save();
 
-                // 9. Update Database stats
-                if (emailSent || pushSent) {
-                    gameData.dailyMissions.nudgesSent = Math.min(3, gameData.dailyMissions.nudgesSent + 1);
-                    gameData.dailyMissions.lastNudgeSentAt = new Date();
-                    if (emailSent) gameData.metrics.emailsSent += 1;
-                    await gameData.save();
-                    nudgesSentCount++;
-                }
+                nudgesSentCount++;
             }
 
             console.log(`[${new Date().toISOString()}] Hourly nudge sweep finished. Dispatched ${nudgesSentCount} nudges.`);
