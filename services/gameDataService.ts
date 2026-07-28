@@ -500,7 +500,7 @@ export async function respondToFriendRequest(friendId: string, accept: boolean, 
 }
 
 /**
- * Fetch user's incoming friend requests
+ * Fetch incoming friend requests
  */
 export async function fetchFriendRequests(authToken: string): Promise<any[] | null> {
   try {
@@ -511,10 +511,9 @@ export async function fetchFriendRequests(authToken: string): Promise<any[] | nu
     });
     if (!res.ok) throw new Error('Failed to fetch friend requests');
     const data = await res.json();
-    return data.requests || [];
+    return data.requests || null;
   } catch (error) {
     console.error('Error fetching friend requests:', error);
     return null;
   }
 }
-

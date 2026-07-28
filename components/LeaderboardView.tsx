@@ -39,7 +39,7 @@ const LeaderboardView: React.FC<LeaderboardViewProps> = ({ username, weeklyGain,
 
     const [activeTab, setActiveTab] = useState<'global' | 'friends'>('global');
     const [friendsList, setFriendsList] = useState<any[]>([]);
-    const [requestsList, setRequestsList] = useState<any[]>([]);
+    const [friendRequests, setFriendRequests] = useState<any[]>([]);
     const [isLoadingFriends, setIsLoadingFriends] = useState(false);
     const [isAddFriendModalOpen, setIsAddFriendModalOpen] = useState(false);
     const [friendIdInput, setFriendIdInput] = useState('');
@@ -52,12 +52,12 @@ const LeaderboardView: React.FC<LeaderboardViewProps> = ({ username, weeklyGain,
             setIsLoadingFriends(true);
             const token = await AuthService.getAuthToken();
             if (token) {
-                const [fList, rList] = await Promise.all([
+                const [list, requests] = await Promise.all([
                     fetchFriends(token),
-                    fetchFriendRequests(token) // Assuming this is imported
+                    fetchFriendRequests(token)
                 ]);
-                if (fList) setFriendsList(fList);
-                if (rList) setRequestsList(rList);
+                if (list) setFriendsList(list);
+                if (requests) setFriendRequests(requests);
             }
         } catch (err) {
             console.error('Error loading friends/requests:', err);
@@ -161,25 +161,6 @@ const LeaderboardView: React.FC<LeaderboardViewProps> = ({ username, weeklyGain,
         userRowRef.current?.scrollIntoView({ behavior: 'smooth', block: 'center' });
     };
 
-    const handleRespondRequest = async (friendId: string, accept: boolean) => {
-        try {
-            const token = await AuthService.getAuthToken();
-            if (token) {
-                const res = await respondToFriendRequest(friendId, accept, token);
-                if (res.success) {
-                    setLastAction(accept ? "Request Accepted!" : "Request Declined");
-                    setTimeout(() => setLastAction(null), 3000);
-                    loadFriends();
-                } else {
-                    setLastAction("Error responding");
-                    setTimeout(() => setLastAction(null), 3000);
-                }
-            }
-        } catch (e) {
-            console.error(e);
-        }
-    };
-
     return (
         <div className="animate-fadeIn max-w-4xl mx-auto pb-32 relative">
             <div className="text-center mb-6 md:mb-8">
@@ -221,7 +202,61 @@ const LeaderboardView: React.FC<LeaderboardViewProps> = ({ username, weeklyGain,
                 </button>
             </div>
 
-            {/* Podium Section */}
+    {/* Pending Friend Requests Section */}
+    {activeTab === 'friends' && friendRequests.length > 0 && (
+        <div className="mx-2 md:mx-4 mb-8">
+            <h3 className="font-sans text-xs md:text-sm bg-highlight text-text-light px-3 py-1 inline-block rounded-none shadow-sm uppercase tracking-wider mb-2 font-bold">
+                Pending Requests
+            </h3>
+            <div className="flex flex-col gap-2">
+                {friendRequests.map(req => (
+                    <div key={req.id} className="genshin-panel p-3 border border-highlight/30 flex items-center justify-between">
+                        <div className="flex items-center gap-3">
+                            <div className="w-10 h-10 border border-secondary/20 bg-secondary/10 flex items-center justify-center p-1">
+                                <PixelCreature 
+                                    creature={INITIAL_CREATURES.find(c => c.id === (req.activeCreature?.creatureId || 1)) || INITIAL_CREATURES[0]} 
+                                    evolutionStage={1} 
+                                    pixelSize={2} 
+                                />
+                            </div>
+                            <div>
+                                <p className="text-[11px] font-bold tracking-tighter">{req.name}</p>
+                                <p className="text-[9px] text-text-dim mt-0.5">Lvl {req.activeCreature?.level || 1} • {req.currentStreak || 0} Streak</p>
+                            </div>
+                        </div>
+                        <div className="flex gap-2">
+                            <button
+                                onClick={async () => {
+                                    const token = await AuthService.getAuthToken();
+                                    if (token) {
+                                        await respondToFriendRequest(req.id, true, token);
+                                        loadFriends();
+                                    }
+                                }}
+                                className="w-8 h-8 rounded-full bg-success text-white flex items-center justify-center shadow-md active:scale-95 transition-all"
+                            >
+                                ✓
+                            </button>
+                            <button
+                                onClick={async () => {
+                                    const token = await AuthService.getAuthToken();
+                                    if (token) {
+                                        await respondToFriendRequest(req.id, false, token);
+                                        loadFriends();
+                                    }
+                                }}
+                                className="w-8 h-8 rounded-full bg-accent text-white flex items-center justify-center shadow-md active:scale-95 transition-all"
+                            >
+                                ✕
+                            </button>
+                        </div>
+                    </div>
+                ))}
+            </div>
+        </div>
+    )}
+
+    {/* Podium Section */}
             {displayedTop3.length > 0 ? (
                 <div className="flex flex-wrap justify-center items-end gap-2 md:gap-4 mb-8 md:mb-10 mt-12 md:mt-16 lg:mt-24 px-2 md:px-4">
                     {displayedTop3.map((entry) => {
@@ -268,48 +303,6 @@ const LeaderboardView: React.FC<LeaderboardViewProps> = ({ username, weeklyGain,
                     >
                         {userVisibility === 'above' ? '▲' : '▼'} YOU
                     </button>
-                </div>
-            )}
-
-            {/* Pending Requests Section */}
-            {activeTab === 'friends' && requestsList.length > 0 && (
-                <div className="genshin-panel border-2 border-highlight/50 rounded-xl shadow-card overflow-hidden mx-2 mb-6 animate-fadeIn">
-                    <div className="bg-highlight/20 px-4 py-2 border-b border-highlight/30 text-[10px] font-bold text-highlight uppercase tracking-widest flex items-center justify-between">
-                        <span>Pending Requests ({requestsList.length})</span>
-                    </div>
-                    <div className="divide-y divide-highlight/20">
-                        {requestsList.map((req) => (
-                            <div key={req.id} className="px-4 py-3 flex items-center justify-between hover:bg-white/5 transition-colors">
-                                <div className="flex items-center gap-3">
-                                    <div className="w-8 h-8 flex items-center justify-center">
-                                        <PixelCreature 
-                                            creature={INITIAL_CREATURES.find(c => c.id === req.guardianId) || INITIAL_CREATURES[0]} 
-                                            evolutionStage={1} 
-                                            pixelSize={2} 
-                                        />
-                                    </div>
-                                    <div>
-                                        <p className="text-[10px] font-bold text-text-main uppercase tracking-tighter">{req.username}</p>
-                                        <p className="text-[8px] font-bold text-text-dim uppercase tracking-tighter">Wants to be your friend</p>
-                                    </div>
-                                </div>
-                                <div className="flex gap-2">
-                                    <button 
-                                        onClick={() => handleRespondRequest(req.id, true)}
-                                        className="w-8 h-8 rounded-full bg-success/20 text-success border border-success/50 flex items-center justify-center hover:bg-success hover:text-white transition-colors"
-                                    >
-                                        ✓
-                                    </button>
-                                    <button 
-                                        onClick={() => handleRespondRequest(req.id, false)}
-                                        className="w-8 h-8 rounded-full bg-accent/20 text-accent border border-accent/50 flex items-center justify-center hover:bg-accent hover:text-white transition-colors"
-                                    >
-                                        ✕
-                                    </button>
-                                </div>
-                            </div>
-                        ))}
-                    </div>
                 </div>
             )}
 
@@ -496,14 +489,14 @@ const LeaderboardView: React.FC<LeaderboardViewProps> = ({ username, weeklyGain,
                                             
                                             const result = await addFriend(friendIdInput.trim(), token);
                                             if (result.success) {
-                                                setAddFriendSuccess(result.message || "Friend request sent!");
+                                                setAddFriendSuccess(result.message || "Friend added successfully!");
                                                 setFriendIdInput('');
                                                 loadFriends();
                                                 setTimeout(() => {
                                                     setIsAddFriendModalOpen(false);
                                                 }, 2000);
                                             } else {
-                                                setAddFriendError(result.error || "Failed to send request.");
+                                                setAddFriendError(result.error || "Failed to add friend.");
                                             }
                                         } catch (err: any) {
                                             setAddFriendError(err.message || "An unexpected error occurred.");
@@ -514,7 +507,7 @@ const LeaderboardView: React.FC<LeaderboardViewProps> = ({ username, weeklyGain,
                                     className="bg-highlight hover:bg-highlight-hover text-text-light px-4 py-2 text-[10px] font-bold uppercase tracking-wider transition-colors rounded-none border border-yellow-700 shadow-button flex items-center gap-2"
                                     disabled={isAddingFriend}
                                 >
-                                    {isAddingFriend ? "Sending..." : "Send Request"}
+                                    {isAddingFriend ? "Adding..." : "Add Friend"}
                                 </button>
                             </div>
                         </div>
