@@ -485,7 +485,7 @@ const SummonView: React.FC<SummonViewProps> = ({ auraPoints, setAuraPoints, user
             {!isAnimating && (
                 <>
                     <h1 className="font-sans text-base md:text-lg bg-highlight text-text-light px-4 md:px-6 py-2 inline-block mb-2 mt-2 md:mt-4 shadow-lg rounded-sm transform -rotate-1 font-bold uppercase">DIVINE PORTAL</h1>
-                    <p className="text-text-dim mb-4 md:mb-8 text-[9px] md:text-[10px] uppercase tracking-widest font-bold">Bridge the gap between worlds</p>
+                    <p className="text-text-dim mb-4 md:mb-8 text-[9px] md:text-[10px] uppercase tracking-widest font-bold">Summon companion Auramons to expand your collection</p>
                 </>
             )}
 

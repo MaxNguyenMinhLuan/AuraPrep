@@ -412,3 +412,65 @@ export async function migrateLocalStorageToBackend(
     return false;
   }
 }
+
+/**
+ * Fetch leaderboard competitors (actual users + dummy fill-ins)
+ */
+export async function fetchLeaderboard(authToken: string): Promise<any[] | null> {
+  try {
+    const res = await fetch(`${API_URL}/game-data/leaderboard`, {
+      headers: {
+        'Authorization': `Bearer ${authToken}`
+      }
+    });
+    if (!res.ok) throw new Error('Failed to fetch leaderboard');
+    const data = await res.json();
+    return data.competitors || null;
+  } catch (error) {
+    console.error('Error fetching leaderboard:', error);
+    return null;
+  }
+}
+
+/**
+ * Add a friend by Academy ID or email
+ */
+export async function addFriend(friendId: string, authToken: string): Promise<{ success: boolean; message?: string; error?: string }> {
+  try {
+    const res = await fetch(`${API_URL}/game-data/friends`, {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+        'Authorization': `Bearer ${authToken}`
+      },
+      body: JSON.stringify({ friendId })
+    });
+    const data = await res.json();
+    if (!res.ok) {
+      return { success: false, error: data.error || 'Failed to add friend' };
+    }
+    return { success: true, message: data.message };
+  } catch (error: any) {
+    console.error('Error adding friend:', error);
+    return { success: false, error: error.message || 'Server connection error' };
+  }
+}
+
+/**
+ * Fetch user's friends details
+ */
+export async function fetchFriends(authToken: string): Promise<any[] | null> {
+  try {
+    const res = await fetch(`${API_URL}/game-data/friends`, {
+      headers: {
+        'Authorization': `Bearer ${authToken}`
+      }
+    });
+    if (!res.ok) throw new Error('Failed to fetch friends');
+    const data = await res.json();
+    return data.friends || null;
+  } catch (error) {
+    console.error('Error fetching friends:', error);
+    return null;
+  }
+}

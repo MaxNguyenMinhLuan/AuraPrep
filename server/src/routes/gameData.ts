@@ -1,4 +1,5 @@
 import express, { Router, Request, Response } from 'express';
+import mongoose from 'mongoose';
 import { AuthenticatedRequest } from '../types';
 import { authMiddleware } from '../middleware/auth.middleware';
 import UserGameData from '../models/UserGameData';
@@ -333,6 +334,184 @@ router.patch('/metrics', async (req: Request, res: Response) => {
     });
   } catch (error) {
     console.error('Error updating metrics:', error);
+    return res.status(500).json({ error: 'Internal server error' });
+  }
+});
+
+/**
+ * GET /api/game-data/leaderboard
+ * Get leaderboard competitors (actual users + dummy fill-ins to reach exactly 19)
+ */
+router.get('/leaderboard', async (req: AuthenticatedRequest, res: Response) => {
+  try {
+    const userId = req.user?.id;
+    if (!userId) {
+      return res.status(401).json({ error: 'Unauthorized' });
+    }
+
+    const userGameData = await UserGameData.findOne({ userId });
+    const currentLeague = userGameData?.profile?.league || 'Bronze';
+
+    // Find other actual users in the same league
+    const competitorsGameData = await UserGameData.find({
+      userId: { $ne: new mongoose.Types.ObjectId(userId) },
+      'profile.league': currentLeague
+    }).populate('userId', 'name').lean();
+
+    const actualCompetitors = competitorsGameData.map((doc: any) => ({
+      username: doc.userId?.name || doc.email.split('@')[0],
+      weeklyGain: doc.profile?.weeklyAuraGain || 0,
+      guardianId: doc.activeCreature?.creatureId || 1,
+      isUser: false
+    }));
+
+    // Generate dummy fill-ins if there are fewer than 19 actual users
+    const LEAGUES = ['Bronze', 'Silver', 'Gold', 'Platinum', 'Diamond', 'Master'];
+    const leagueIndex = LEAGUES.indexOf(currentLeague);
+    const baseAura = (leagueIndex !== -1 ? leagueIndex + 1 : 1) * 800;
+
+    const dummyNames = [
+      "ShadowStep", "StarGazer", "PixelLord", "MathWhiz24", "StudyBeast", 
+      "AuraHunter", "ExamSlayer", "QuestMaster", "LogicKing", "ProDigy",
+      "NerdLord", "BookWorm", "Summoner7", "EvoExpert", "ScribeX",
+      "Gladiator", "OwlEye", "Thinker", "GrindSet", "PixelKnight",
+      "QuestSeeker", "StudyNinja", "MathMagician", "AuraWeaver", "ExamBuster"
+    ];
+
+    const usedNames = new Set(actualCompetitors.map(c => c.username));
+    const availableDummyNames = dummyNames.filter(name => !usedNames.has(name));
+
+    const finalCompetitors = [...actualCompetitors];
+    const needed = 19 - actualCompetitors.length;
+
+    for (let i = 0; i < needed; i++) {
+      const name = availableDummyNames[i % availableDummyNames.length] || `Scholar${i + 1}`;
+      finalCompetitors.push({
+        username: name,
+        weeklyGain: Math.floor(Math.random() * baseAura) + (baseAura / 2),
+        guardianId: Math.floor(Math.random() * 10) + 1,
+        isUser: false
+      });
+    }
+
+    const limitedCompetitors = finalCompetitors.slice(0, 19);
+
+    return res.status(200).json({
+      success: true,
+      competitors: limitedCompetitors
+    });
+  } catch (error) {
+    console.error('Error fetching leaderboard:', error);
+    return res.status(500).json({ error: 'Internal server error' });
+  }
+});
+
+/**
+ * POST /api/game-data/friends
+ * Add a friend by Academy ID (User ID or Google ID) or email
+ */
+router.post('/friends', async (req: AuthenticatedRequest, res: Response) => {
+  try {
+    const userId = req.user?.id;
+    if (!userId) {
+      return res.status(401).json({ error: 'Unauthorized' });
+    }
+
+    const { friendId } = req.body;
+    if (!friendId) {
+      return res.status(400).json({ error: 'Academy ID or email is required' });
+    }
+
+    const query: any = { email: friendId.toLowerCase().trim() };
+    if (mongoose.isValidObjectId(friendId)) {
+      query._id = friendId;
+    } else {
+      query.googleId = friendId;
+    }
+
+    // Try to find the friend in the User collection
+    const friendUser = await User.findOne({
+      $or: [
+        mongoose.isValidObjectId(friendId) ? { _id: friendId } : null,
+        { googleId: friendId },
+        { email: friendId.toLowerCase().trim() }
+      ].filter(Boolean) as any[]
+    });
+
+    if (!friendUser) {
+      return res.status(404).json({ error: 'Seeker not found. Double check the Academy ID or email.' });
+    }
+
+    if (friendUser._id.toString() === userId) {
+      return res.status(400).json({ error: 'You cannot add yourself as a friend.' });
+    }
+
+    // Find current user's game data
+    let userGameData = await UserGameData.findOne({ userId });
+    if (!userGameData) {
+      return res.status(404).json({ error: 'Your game data was not found.' });
+    }
+
+    // Initialize friends array if not exists
+    if (!userGameData.friends) {
+      userGameData.friends = [];
+    }
+
+    const friendUserIdStr = friendUser._id.toString();
+
+    if (userGameData.friends.includes(friendUserIdStr)) {
+      return res.status(400).json({ error: `You are already friends with ${friendUser.name}.` });
+    }
+
+    // Add friend
+    userGameData.friends.push(friendUserIdStr);
+    await userGameData.save();
+
+    return res.status(200).json({
+      success: true,
+      message: `Successfully added ${friendUser.name} as a friend!`,
+      friends: userGameData.friends
+    });
+  } catch (error) {
+    console.error('Error adding friend:', error);
+    return res.status(500).json({ error: 'Internal server error' });
+  }
+});
+
+/**
+ * GET /api/game-data/friends
+ * Get all friends details
+ */
+router.get('/friends', async (req: AuthenticatedRequest, res: Response) => {
+  try {
+    const userId = req.user?.id;
+    if (!userId) {
+      return res.status(401).json({ error: 'Unauthorized' });
+    }
+
+    const userGameData = await UserGameData.findOne({ userId });
+    if (!userGameData || !userGameData.friends || userGameData.friends.length === 0) {
+      return res.status(200).json({ success: true, friends: [] });
+    }
+
+    // Query UserGameData for all friends
+    const friendsGameData = await UserGameData.find({
+      userId: { $in: userGameData.friends }
+    }).populate('userId', 'name').lean();
+
+    const friendsList = friendsGameData.map((doc: any) => ({
+      username: doc.userId?.name || doc.email.split('@')[0],
+      weeklyGain: doc.profile?.weeklyAuraGain || 0,
+      guardianId: doc.activeCreature?.creatureId || 1,
+      isUser: false
+    }));
+
+    return res.status(200).json({
+      success: true,
+      friends: friendsList
+    });
+  } catch (error) {
+    console.error('Error fetching friends:', error);
     return res.status(500).json({ error: 'Internal server error' });
   }
 });

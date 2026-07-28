@@ -295,7 +295,7 @@ export async function generateDailyMissions(
         const bonusMission = await generateAdaptiveMission(
             uid,
             `daily-${date}-bonus`,
-            'Quick Practice',
+            'Daily Mission',
             3
         );
         missions.push(bonusMission);
@@ -307,7 +307,7 @@ export async function generateDailyMissions(
         const weakMission = await generateAdaptiveMission(
             uid,
             `daily-${date}-1`,
-            'Skill Builder',
+            'Daily Mission',
             5
         );
         missions.push(weakMission);
@@ -316,7 +316,7 @@ export async function generateDailyMissions(
         const challengeMission = await generateAdaptiveMission(
             uid,
             `daily-${date}-2`,
-            'Daily Challenge',
+            'Daily Mission',
             5
         );
         missions.push(challengeMission);
@@ -325,7 +325,7 @@ export async function generateDailyMissions(
         const reviewMission = await generateAdaptiveMission(
             uid,
             `daily-${date}-3`,
-            'Quick Review',
+            'Daily Mission',
             3
         );
         missions.push(reviewMission);
