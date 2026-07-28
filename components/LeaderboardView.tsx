@@ -10,6 +10,8 @@ import SecondPlaceIcon from './icons/SecondPlaceIcon';
 import ThirdPlaceIcon from './icons/ThirdPlaceIcon';
 import SwordsIcon from './icons/SwordsIcon';
 import HandshakeIcon from './icons/HandshakeIcon';
+import { addFriend, fetchFriends } from '../services/gameDataService';
+import { AuthService } from '../services/authService';
 
 interface LeaderboardEntry {
     rank: number;
@@ -35,6 +37,38 @@ const LeaderboardView: React.FC<LeaderboardViewProps> = ({ username, weeklyGain,
     const userRowRef = useRef<HTMLDivElement>(null);
     const listContainerRef = useRef<HTMLDivElement>(null);
 
+    const [activeTab, setActiveTab] = useState<'global' | 'friends'>('global');
+    const [friendsList, setFriendsList] = useState<any[]>([]);
+    const [isLoadingFriends, setIsLoadingFriends] = useState(false);
+    const [isAddFriendModalOpen, setIsAddFriendModalOpen] = useState(false);
+    const [friendIdInput, setFriendIdInput] = useState('');
+    const [isAddingFriend, setIsAddingFriend] = useState(false);
+    const [addFriendError, setAddFriendError] = useState<string | null>(null);
+    const [addFriendSuccess, setAddFriendSuccess] = useState<string | null>(null);
+
+    const loadFriends = async () => {
+        try {
+            setIsLoadingFriends(true);
+            const token = await AuthService.getAuthToken();
+            if (token) {
+                const list = await fetchFriends(token);
+                if (list) {
+                    setFriendsList(list);
+                }
+            }
+        } catch (err) {
+            console.error('Error loading friends:', err);
+        } finally {
+            setIsLoadingFriends(false);
+        }
+    };
+
+    useEffect(() => {
+        if (activeTab === 'friends') {
+            loadFriends();
+        }
+    }, [activeTab]);
+
     const allEntries = useMemo(() => {
         // Ensure pool of exactly 20 entries
         const sorted = [...competitors, { 
@@ -48,7 +82,20 @@ const LeaderboardView: React.FC<LeaderboardViewProps> = ({ username, weeklyGain,
         return sorted.slice(0, 20);
     }, [competitors, weeklyGain, username, activeGuardianId]);
 
-    const top3 = allEntries.slice(0, 3);
+    const friendsEntries = useMemo(() => {
+        const sorted = [...friendsList, { 
+            username: username, 
+            weeklyGain: weeklyGain, 
+            guardianId: activeGuardianId, 
+            isUser: true 
+        }].sort((a, b) => b.weeklyGain - a.weeklyGain)
+          .map((entry, idx) => ({ ...entry, rank: idx + 1 }));
+        return sorted;
+    }, [friendsList, weeklyGain, username, activeGuardianId]);
+
+    const displayedEntries = activeTab === 'global' ? allEntries : friendsEntries;
+    const displayedTop3 = displayedEntries.slice(0, 3);
+    const displayedRemaining = displayedEntries.slice(3);
 
     // Intersection Observer to track if the user row is visible in the viewport
     useEffect(() => {
@@ -81,7 +128,7 @@ const LeaderboardView: React.FC<LeaderboardViewProps> = ({ username, weeklyGain,
         }
 
         return () => observer.disconnect();
-    }, [allEntries]);
+    }, [displayedEntries]);
 
     const getPodiumColor = (rank: number) => {
         if (rank === 1) return 'border-yellow-400 bg-yellow-50 text-yellow-700';
@@ -122,41 +169,73 @@ const LeaderboardView: React.FC<LeaderboardViewProps> = ({ username, weeklyGain,
                         Leaderboard
                     </h1>
                 </div>
-                <p className="text-text-dim mt-2 text-[10px] md:text-xs">League Pool: 20 Scholars</p>
+                <p className="text-text-dim mt-2 text-[10px] md:text-xs">
+                    {activeTab === 'global' ? 'League Pool: 20 Scholars' : `Academy Friends: ${friendsList.length} Scholars`}
+                </p>
                 <p className="text-[9px] md:text-[10px] text-primary font-bold mt-1 uppercase tracking-widest animate-subtlePulse">Resets Monday Morning</p>
             </div>
 
-            {/* Podium Section */}
-            <div className="flex flex-wrap justify-center items-end gap-2 md:gap-4 mb-8 md:mb-10 mt-12 md:mt-16 lg:mt-24 px-2 md:px-4">
-                {top3.map((entry) => {
-                    const displayRank = entry.rank;
-                    const order = displayRank === 1 ? 'order-2' : (displayRank === 2 ? 'order-1' : 'order-3');
-                    const scale = displayRank === 1 ? 'md:scale-110 lg:scale-110' : 'scale-90';
-                    const height = displayRank === 1 ? 'h-32 md:h-40 lg:h-56' : (displayRank === 2 ? 'h-24 md:h-32 lg:h-40' : 'h-20 md:h-24 lg:h-32');
-                    return (
-                        <div key={entry.username} className={`${order} flex flex-col items-center ${displayRank === 1 ? '-mt-6 md:-mt-8' : ''}`}>
-                            <div className={`mb-2 md:mb-4 transform ${scale} ${displayRank === 1 ? 'animate-bounce' : ''}`}>
-                                <PixelCreature
-                                    creature={INITIAL_CREATURES.find(c => c.id === entry.guardianId) || INITIAL_CREATURES[0]}
-                                    evolutionStage={displayRank === 1 ? 3 : 2}
-                                    pixelSize={displayRank === 1 ? 4 : 3}
-                                />
-                            </div>
-                            <div className={`w-24 md:w-28 lg:w-40 ${height} border-t-4 ${getPodiumColor(displayRank)} flex flex-col items-center pt-3 md:pt-4 rounded-t-xl shadow-lg relative ${displayRank === 1 ? 'z-10' : ''} ${entry.isUser ? 'ring-2 ring-highlight ring-inset bg-highlight/5' : ''}`}>
-                                {displayRank === 1 && (
-                                    <span className="absolute -top-8 md:-top-10 flex items-center justify-center bg-white dark:bg-slate-800 rounded-full p-1.5 shadow-md border-2 border-secondary/20">
-                                        <CrownIcon className="w-5 h-5 md:w-6 md:h-6 text-yellow-500" />
-                                    </span>
-                                )}
-                                <p className="font-bold text-[9px] md:text-[10px] lg:text-xs truncate w-full px-2 text-center tracking-tighter mt-1">
-                                    {entry.username} {entry.isUser ? '(You)' : ''}
-                                </p>
-                                <p className="text-[8px] md:text-[9px] lg:text-[10px] font-bold opacity-80 mt-1 flex items-center justify-center gap-0.5">+{entry.weeklyGain} <AuraIcon className="w-2.5 h-2.5" /></p>
-                            </div>
-                        </div>
-                    );
-                })}
+            {/* Global vs Friends Toggle */}
+            <div className="flex justify-center gap-4 mb-6">
+                <button
+                    onClick={() => setActiveTab('global')}
+                    className={`px-5 py-2 rounded-full text-[9px] md:text-[10px] font-bold uppercase tracking-widest transition-all ${
+                        activeTab === 'global' 
+                            ? 'bg-highlight text-text-light border-2 border-yellow-700 shadow-md font-extrabold' 
+                            : 'bg-secondary/20 text-text-dim border-2 border-transparent hover:bg-secondary/30'
+                    }`}
+                >
+                    Global Pool
+                </button>
+                <button
+                    onClick={() => setActiveTab('friends')}
+                    className={`px-5 py-2 rounded-full text-[9px] md:text-[10px] font-bold uppercase tracking-widest transition-all ${
+                        activeTab === 'friends' 
+                            ? 'bg-highlight text-text-light border-2 border-yellow-700 shadow-md font-extrabold' 
+                            : 'bg-secondary/20 text-text-dim border-2 border-transparent hover:bg-secondary/30'
+                    }`}
+                >
+                    Friends ({friendsList.length})
+                </button>
             </div>
+
+            {/* Podium Section */}
+            {displayedTop3.length > 0 ? (
+                <div className="flex flex-wrap justify-center items-end gap-2 md:gap-4 mb-8 md:mb-10 mt-12 md:mt-16 lg:mt-24 px-2 md:px-4">
+                    {displayedTop3.map((entry) => {
+                        const displayRank = entry.rank;
+                        const order = displayRank === 1 ? 'order-2' : (displayRank === 2 ? 'order-1' : 'order-3');
+                        const scale = displayRank === 1 ? 'md:scale-110 lg:scale-110' : 'scale-90';
+                        const height = displayRank === 1 ? 'h-32 md:h-40 lg:h-56' : (displayRank === 2 ? 'h-24 md:h-32 lg:h-40' : 'h-20 md:h-24 lg:h-32');
+                        return (
+                            <div key={entry.username} className={`${order} flex flex-col items-center ${displayRank === 1 ? '-mt-6 md:-mt-8' : ''}`}>
+                                <div className={`mb-2 md:mb-4 transform ${scale} ${displayRank === 1 ? 'animate-bounce' : ''}`}>
+                                    <PixelCreature
+                                        creature={INITIAL_CREATURES.find(c => c.id === entry.guardianId) || INITIAL_CREATURES[0]}
+                                        evolutionStage={displayRank === 1 ? 3 : 2}
+                                        pixelSize={displayRank === 1 ? 4 : 3}
+                                    />
+                                </div>
+                                <div className={`w-24 md:w-28 lg:w-40 ${height} border-t-4 ${getPodiumColor(displayRank)} flex flex-col items-center pt-3 md:pt-4 rounded-t-xl shadow-lg relative ${displayRank === 1 ? 'z-10' : ''} ${entry.isUser ? 'ring-2 ring-highlight ring-inset bg-highlight/5' : ''}`}>
+                                    {displayRank === 1 && (
+                                        <span className="absolute -top-8 md:-top-10 flex items-center justify-center bg-white dark:bg-slate-800 rounded-full p-1.5 shadow-md border-2 border-secondary/20">
+                                            <CrownIcon className="w-5 h-5 md:w-6 md:h-6 text-yellow-500" />
+                                        </span>
+                                    )}
+                                    <p className="font-bold text-[9px] md:text-[10px] lg:text-xs truncate w-full px-2 text-center tracking-tighter mt-1">
+                                        {entry.username} {entry.isUser ? '(You)' : ''}
+                                    </p>
+                                    <p className="text-[8px] md:text-[9px] lg:text-[10px] font-bold opacity-80 mt-1 flex items-center justify-center gap-0.5">+{entry.weeklyGain} <AuraIcon className="w-2.5 h-2.5" /></p>
+                                </div>
+                            </div>
+                        );
+                    })}
+                </div>
+            ) : (
+                <div className="text-center py-8 text-text-dim text-xs font-bold uppercase tracking-widest">
+                    No Podium Contenders
+                </div>
+            )}
 
             {/* Tracking Bubble for off-screen user */}
             {userVisibility !== 'visible' && (

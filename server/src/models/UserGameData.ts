@@ -53,6 +53,7 @@ interface IUserGameData extends Document {
   tutorialState?: any;
   reviewQueue?: any[];
   dailyActivity?: any;
+  friends: string[];
   createdAt: Date;
   updatedAt: Date;
 }
@@ -110,7 +111,8 @@ const UserGameDataSchema = new Schema<IUserGameData>(
     userTeam: [{ type: Number }],
     tutorialState: { type: Schema.Types.Mixed },
     reviewQueue: [{ type: Schema.Types.Mixed }],
-    dailyActivity: { type: Schema.Types.Mixed }
+    dailyActivity: { type: Schema.Types.Mixed },
+    friends: [{ type: String, default: [] }]
   },
   { timestamps: true }
 );

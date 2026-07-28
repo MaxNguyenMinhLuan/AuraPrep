@@ -46,7 +46,7 @@ import { INITIAL_TUTORIAL_STATE, TUTORIAL_DIALOGUE, STARTER_IDS, PROGRESS_UNLOCK
 // import BaselineResults from './components/Tutorial/BaselineResults';
 // import { processBaselineResults, baselineResultsToStats } from './utils/baselineScoring';
 import { hasCompletedStealthPlacement, processStealthMissionAnswer } from './services/stealthMissionService';
-import { migrateLocalStorageToBackend, syncGameDataToBackend, fetchGameData } from './services/gameDataService';
+import { migrateLocalStorageToBackend, syncGameDataToBackend, fetchGameData, fetchLeaderboard } from './services/gameDataService';
 import { DifficultyTier } from './types/stealthDiagnostic';
 
 const App: React.FC = () => {
@@ -580,6 +580,27 @@ const App: React.FC = () => {
             setMockCompetitors(generateCompetitors(profile.league));
         }
     }, [dailyActivity.date, profile.lastStreakDate, user, tutorialState.currentPhase, currentView]);
+
+    // Fetch leaderboard competitors from the server
+    useEffect(() => {
+        const loadLeaderboard = async () => {
+            if (!user) return;
+            try {
+                const token = await AuthService.getAuthToken();
+                if (token) {
+                    const list = await fetchLeaderboard(token);
+                    if (list && list.length > 0) {
+                        setMockCompetitors(list);
+                    }
+                }
+            } catch (err) {
+                console.error('Failed to load leaderboard from server:', err);
+            }
+        };
+        if (currentView === View.LEADERBOARD) {
+            loadLeaderboard();
+        }
+    }, [user, currentView, profile.league, profile.weeklyAuraGain]);
 
     // Continuous spawning of missions during onboarding diagnostic phase
     useEffect(() => {
