@@ -62,7 +62,7 @@ const LoginView: React.FC<LoginViewProps> = ({ onLogin }) => {
                 {/* Google Sign-In Button */}
                 <button
                     onClick={handleGoogleSignIn}
-                    className="w-full bg-white hover:bg-gray-50 text-[#2c2438] font-bold py-3.5 px-6 rounded-xl transition-all active:scale-95 shadow-md border border-secondary/50 flex items-center justify-center gap-3 touch-target"
+                    className="w-full bg-white hover:bg-gray-50 text-text-main font-bold py-3.5 px-6 rounded-xl transition-all active:scale-95 shadow-md border border-secondary/50 flex items-center justify-center gap-3 touch-target"
                 >
                     <svg className="w-5 h-5" viewBox="0 0 24 24">
                         <path
@@ -96,23 +96,16 @@ const LoginView: React.FC<LoginViewProps> = ({ onLogin }) => {
 
     return (
         <div className="min-h-screen w-full flex flex-col items-center justify-center bg-gradient-to-tr from-[#f5d0fe] via-[#fef9c3] to-[#a5f3fc] dark:from-[#311042] dark:via-[#0f172a] dark:to-[#083344] text-text-main font-sans text-sm p-6 relative overflow-hidden">
-            {/* Temple ruins backdrop (dark mode) — the portal awaits beyond the login gate */}
-            <img
-                src="/temple-backdrop.jpg"
-                alt=""
-                aria-hidden="true"
-                className="absolute inset-0 w-full h-full object-cover opacity-0 dark:opacity-60 pointer-events-none select-none"
-            />
             {/* Ambient Background Elements */}
             <div className="absolute top-[-10%] left-[-10%] w-96 h-96 bg-primary/10 rounded-full blur-3xl animate-pulse"></div>
             <div className="absolute bottom-[-10%] right-[-10%] w-96 h-96 bg-highlight/10 rounded-full blur-3xl animate-pulse delay-700"></div>
 
-            <div className="z-10 w-full max-w-md bg-white/80 dark:bg-[#0f1730]/90 backdrop-blur-md rounded-2xl shadow-2xl border-2 border-secondary/30 dark:border-[#e3b34c]/25 p-8 text-center animate-reveal">
+            <div className="z-10 w-full max-w-md bg-white/80 backdrop-blur-md rounded-2xl shadow-2xl border-2 border-secondary/30 p-8 text-center animate-reveal">
                 <div className="mb-8">
-                    <div className="w-20 h-20 bg-white dark:bg-[#1a2342] rounded-2xl flex items-center justify-center mx-auto mb-4 border-2 border-highlight/30 shadow-lg group hover:rotate-12 transition-transform overflow-hidden">
+                    <div className="w-20 h-20 bg-white rounded-2xl flex items-center justify-center mx-auto mb-4 border-2 border-highlight/30 shadow-lg group hover:rotate-12 transition-transform overflow-hidden">
                         <img src="/app-icon.png?v=2" alt="AuraPrep Logo" className="w-full h-full object-cover" />
                     </div>
-                    <h1 className="font-serif text-5xl md:text-6xl bg-gradient-to-tr from-[#c084fc] via-[#fcd34d] to-[#22d3ee] bg-clip-text text-transparent font-bold tracking-tight mb-2 dark:drop-shadow-[0_0_12px_rgba(192,132,252,0.7)]">AuraPrep</h1>
+                    <h1 className="font-sans text-4xl bg-gradient-to-tr from-[#c084fc] via-[#fcd34d] to-[#22d3ee] bg-clip-text text-transparent font-bold tracking-tighter mb-2 dark:drop-shadow-[0_0_12px_rgba(192,132,252,0.7)]">AuraPrep</h1>
                     <p className="text-text-dim text-sm px-4">Gamified SAT Prep</p>
                 </div>
 

@@ -730,7 +730,7 @@ const SummonView: React.FC<SummonViewProps> = ({ auraPoints, setAuraPoints, user
                                 className="flex-1 genshin-btn-light font-bold py-3 md:py-4 px-4 md:px-6 disabled:opacity-40 disabled:cursor-not-allowed flex items-center justify-center gap-2 md:gap-3 uppercase tracking-widest text-[9px] md:text-[10px] touch-target"
                             >
                                 <span>Summon x10</span>
-                                <span className="bg-[#3b4255]/10 px-2.5 py-1 rounded-full font-mono flex items-center gap-1">{SUMMON_COST * 10} <AuraIcon className="w-3.5 h-3.5" /></span>
+                                <span className="bg-primary/10 text-primary px-2.5 py-1 rounded-full font-mono flex items-center gap-1">{SUMMON_COST * 10} <AuraIcon className="w-3.5 h-3.5 text-primary" /></span>
                             </button>
                         </div>
                     </div>
