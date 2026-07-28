@@ -1,7 +1,11 @@
 import dotenv from 'dotenv';
 import path from 'path';
 
+dotenv.config({ path: path.resolve(__dirname, '../.env') });
 dotenv.config({ path: path.resolve(__dirname, '../../.env') });
+dotenv.config({ path: path.resolve(__dirname, '../../server/.env') });
+dotenv.config({ path: path.resolve(process.cwd(), '.env') });
+dotenv.config({ path: path.resolve(process.cwd(), 'server/.env') });
 
 // Parse CORS origins (comma-separated for multiple origins)
 const parseCorsOrigins = (): string | string[] => {
@@ -17,7 +21,6 @@ const parseCorsOrigins = (): string | string[] => {
         'http://localhost:5173',
         'http://localhost:3001',
         'https://auraprep.academy',
-        'https://www.auraprep.academy',
         'https://auraprep.web.app',
         'https://auraprep-da99c.web.app',
         'https://auraprep-da99c.firebaseapp.com'

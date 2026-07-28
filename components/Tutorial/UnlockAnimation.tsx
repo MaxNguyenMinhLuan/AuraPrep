@@ -53,7 +53,7 @@ const UnlockAnimation: React.FC<UnlockAnimationProps> = ({ features, onComplete 
                 </div>
 
                 {/* Feature name */}
-                <div className="bg-surface border-4 border-highlight rounded-xl p-8 shadow-2xl animate-reveal">
+                <div className="genshin-modal p-8 animate-reveal">
                     <h2 className="text-3xl font-bold text-highlight mb-2">
                         {currentFeature} UNLOCKED!
                     </h2>

@@ -27,7 +27,6 @@ interface DashboardProps {
     onUpdateUser: (updates: Partial<User>) => void;
     onLogout: () => void;
     tutorialState?: TutorialState;
-    onResumeBaseline?: () => void;
     onStartWelcomeMission?: () => void;
     onOpenProfile: () => void;
 }
@@ -84,12 +83,12 @@ const Dashboard: React.FC<DashboardProps> = ({
                 {/* Stats Header (Mobile: Top, Desktop: Top of Left Col) */}
                 <div className="hidden lg:flex w-full justify-between items-center px-2 md:px-0 gap-2">
                     <div className="flex gap-2">
-                        <div className="glass px-3 py-2 md:px-4 md:py-2.5 rounded-lg border border-secondary/50 text-xs md:text-sm font-bold text-primary shadow-card flex items-center gap-2 touch-target hover-lift">
+                        <div className="genshin-panel px-3 py-2 md:px-4 md:py-2.5 text-xs md:text-sm font-bold text-primary shadow-card flex items-center gap-2 touch-target hover-lift">
                             <AuraIcon className="w-4 h-4 animate-gentleBounce text-primary" />
                             <span>{auraPoints.toLocaleString()}</span>
                         </div>
                         {dailyStreak > 0 && (
-                            <div className="glass px-3 py-2 md:px-4 md:py-2.5 rounded-lg border border-accent/30 text-xs md:text-sm font-bold text-accent shadow-card flex items-center gap-1 animate-popIn touch-target hover-lift">
+                            <div className="genshin-panel px-3 py-2 md:px-4 md:py-2.5 border-accent/30 text-xs md:text-sm font-bold text-accent shadow-card flex items-center gap-1 animate-popIn touch-target hover-lift">
                                 <FireIcon className="w-5 h-5 animate-subtlePulse text-accent" />
                                 <span>{dailyStreak}</span>
                             </div>
@@ -98,7 +97,7 @@ const Dashboard: React.FC<DashboardProps> = ({
 
                     <button
                         onClick={onOpenProfile}
-                        className="w-11 h-11 md:w-12 md:h-12 rounded-full border-2 border-highlight bg-white overflow-hidden shadow-card hover:shadow-card-hover hover:scale-105 transition-premium active:scale-95 flex items-center justify-center touch-target press-effect"
+                        className="w-11 h-11 md:w-12 md:h-12 rounded-full border-2 border-highlight genshin-panel overflow-hidden shadow-card hover:shadow-card-hover hover:scale-105 transition-premium active:scale-95 flex items-center justify-center touch-target press-effect"
                     >
                         {user.photoUrl && !imageError ? (
                             <img 
@@ -117,24 +116,16 @@ const Dashboard: React.FC<DashboardProps> = ({
 
                 {/* Partner Auramon Display */}
                 <div className="w-full flex flex-col items-center">
-                    <h2 className="text-xs text-highlight mb-2 font-bold uppercase tracking-wide font-sans text-center animate-fadeIn">
-                        Partner Auramon
+                    <h2 className="text-sm md:text-base text-highlight mb-2 font-bold uppercase tracking-wide font-sans text-center animate-fadeIn">
+                        -- Partner Auramon --
                     </h2>
-                    <div className="flex flex-col items-center justify-center w-full bg-surface p-4 md:p-6 lg:p-8 lg:border-2 lg:border-secondary/30 lg:rounded-xl lg:shadow-card gradient-subtle">
+                    <div className="flex flex-col items-center justify-center w-full genshin-panel border-2 md:border-[3px] border-highlight p-4 md:p-6 lg:p-8">
                         {activeCreatureInstance && activeCreatureData ? (
                             <div className="relative transform lg:scale-125 transition-premium hover:scale-[1.02] lg:hover:scale-[1.28]">
-                                 <CreatureCard instance={activeCreatureInstance} isLarge={true} />
-                                 {reviewQueueCount > 0 && (
-                                     <div 
-                                         title={`You have ${reviewQueueCount} incorrect question(s) in your training queue. Click "Training" below to review them and level up your Auramon!`}
-                                         className="absolute -top-4 -right-4 bg-accent text-white rounded-full w-8 h-8 flex items-center justify-center text-sm font-bold animate-gentleBounce shadow-glow-success border-2 border-white cursor-help"
-                                     >
-                                         !
-                                     </div>
-                                  )}
+                                 <CreatureCard instance={activeCreatureInstance} isLarge={true} hideCardBg={true} />
                             </div>
                         ) : (
-                            <div className="text-center p-8 bg-background/50 border-2 border-text-dark w-full max-w-xs border-dashed rounded-xl animate-subtlePulse">
+                            <div className="text-center p-8 genshin-panel border-dashed border-text-dark w-full max-w-xs animate-subtlePulse">
                                <p className="text-text-dim text-xs">No partner Auramon.</p>
                                <p className="text-[10px] text-text-dark mt-2">Select one from your collection!</p>
                             </div>
@@ -146,12 +137,12 @@ const Dashboard: React.FC<DashboardProps> = ({
                 <div className="w-full flex-grow lg:flex-grow-0">
                     <h3 className="text-xs text-text-dim mb-2 text-left pl-1 uppercase font-bold">Your Auramons</h3>
                     {sortedCreatures.length > 0 ? (
-                        <div className="flex flex-wrap gap-2 justify-center lg:justify-start p-3 bg-background/50 border-2 border-secondary/30 max-h-32 lg:max-h-64 overflow-y-auto shadow-inner-soft rounded-lg scrollbar-thin scrollbar-hide">
+                        <div className="grid grid-cols-4 sm:grid-cols-5 gap-2 p-3 genshin-panel max-h-32 lg:max-h-64 overflow-y-auto shadow-inner-soft scrollbar-thin scrollbar-hide justify-items-center">
                             {sortedCreatures.map((c, index) => (
                                  <button
                                     key={c.id}
                                     onClick={() => setActiveCreatureId(c.id)}
-                                    className={`p-1 transition-premium border-2 rounded-lg relative press-effect animate-fadeInScale ${activeCreatureId === c.id ? 'bg-highlight/20 border-highlight scale-105 shadow-card' : 'bg-surface border-transparent hover:border-secondary/50 hover:shadow-card'}`}
+                                    className={`p-1 transition-premium border rounded-md relative press-effect animate-fadeInScale ${activeCreatureId === c.id ? 'bg-highlight/20 border-highlight scale-105 shadow-card' : 'genshin-panel border-transparent hover:border-highlight hover:shadow-card'}`}
                                     style={{ animationDelay: `${index * 0.03}s` }}
                                  >
                                     {c.isFavorite && (
@@ -166,7 +157,7 @@ const Dashboard: React.FC<DashboardProps> = ({
                             ))}
                         </div>
                     ) : (
-                        <div className="p-4 bg-background/50 border-2 border-text-dark text-center border-dashed rounded-lg animate-subtlePulse">
+                        <div className="p-4 genshin-panel border-dashed border-text-dark text-center animate-subtlePulse">
                             <p className="text-text-dark text-xs">Visit the Summoner to get your first Auramon!</p>
                         </div>
                     )}
@@ -177,11 +168,12 @@ const Dashboard: React.FC<DashboardProps> = ({
             <div className="flex flex-col gap-4 md:gap-6 md:col-span-1 lg:col-span-8">
                 
                 {/* Daily Missions */}
-                <div className="w-full bg-surface border-2 border-primary/80 p-4 md:p-5 lg:p-6 space-y-4 shadow-card rounded-xl flex-grow animate-scaleIn">
+                <div className="w-full genshin-panel p-4 md:p-5 lg:p-6 space-y-4 shadow-card flex-grow animate-scaleIn">
                     <div className="flex justify-between items-center mb-2">
-                        <h2 className="text-base md:text-lg lg:text-xl text-highlight font-sans">Daily Missions</h2>
+                        <h2 className="text-base md:text-lg lg:text-xl text-highlight font-sans font-bold uppercase">DAILY MISSIONS</h2>
                         <span className="text-[10px] md:text-xs bg-primary text-white px-2.5 py-1 rounded-full uppercase tracking-wider font-bold shadow-button animate-subtlePulse">Today</span>
                     </div>
+                    
                     <div className="h-px w-full bg-gradient-to-r from-transparent via-primary/30 to-transparent mb-4"></div>
 
                     <div className="grid grid-cols-1 gap-3 md:gap-4">
@@ -226,7 +218,7 @@ const Dashboard: React.FC<DashboardProps> = ({
                                     key={mission.id}
                                     onClick={handleClick}
                                     disabled={mission.completed || isPreparing}
-                                    className={`w-full text-left bg-surface hover:bg-secondary/10 text-text-main font-bold p-4 shadow-card hover:shadow-card-hover transition-premium border-2 hover:border-primary/50 active:translate-y-0.5 disabled:bg-background disabled:opacity-60 disabled:cursor-not-allowed disabled:border-none rounded-xl group press-effect ${
+                                    className={`w-full text-left genshin-panel hover:bg-secondary/10 text-text-main font-bold p-4 shadow-card hover:shadow-card-hover transition-premium hover:border-highlight active:translate-y-0.5 disabled:bg-background disabled:opacity-60 disabled:cursor-not-allowed disabled:border-none group press-effect ${
                                         isWelcomeMission
                                             ? 'border-highlight animate-glowPulse'
                                             : isBaselineMission && baselineProgress?.currentIndex
@@ -288,12 +280,12 @@ const Dashboard: React.FC<DashboardProps> = ({
                         onClick={isBaselineComplete ? onOpenReview : undefined}
                         disabled={!isBaselineComplete || reviewQueueCount === 0}
                         title={!isBaselineComplete ? 'Complete Welcome Mission to unlock' : undefined}
-                        className={`group flex-1 p-4 md:p-5 lg:p-6 border-2 flex flex-col items-center justify-center gap-2 md:gap-3 transition-premium shadow-card hover:shadow-card-hover rounded-xl relative touch-target press-effect ${
+                        className={`group flex-1 p-4 md:p-5 lg:p-6 border flex flex-col items-center justify-center gap-2 md:gap-3 transition-premium shadow-card hover:shadow-card-hover rounded-md relative touch-target press-effect ${
                             !isBaselineComplete
-                                ? 'bg-background border-text-dark text-text-dark opacity-60 cursor-not-allowed border-b-4'
+                                ? 'bg-background border-text-dark text-text-dark opacity-60 cursor-not-allowed border-b-2'
                                 : reviewQueueCount > 0
-                                    ? 'bg-surface border-accent text-accent hover:bg-accent/5 border-b-4 active:border-b-2 active:translate-y-0.5'
-                                    : 'bg-background border-text-dark text-text-dark opacity-60 cursor-not-allowed border-b-4'
+                                    ? 'genshin-panel border-accent text-accent hover:bg-accent/5 border-b-2 active:translate-y-0.5'
+                                    : 'bg-background border-text-dark text-text-dark opacity-60 cursor-not-allowed border-b-2'
                         }`}
                     >
                         {!isBaselineComplete && <LockIcon className="absolute top-2.5 right-2.5 w-4 h-4 text-text-dark/50" />}
@@ -316,10 +308,10 @@ const Dashboard: React.FC<DashboardProps> = ({
                         onClick={isBaselineComplete ? onOpenShop : undefined}
                         disabled={!isBaselineComplete}
                         title={!isBaselineComplete ? 'Complete Welcome Mission to unlock' : undefined}
-                        className={`group flex-1 p-4 md:p-5 lg:p-6 border-2 flex flex-col items-center justify-center gap-2 md:gap-3 transition-premium shadow-card hover:shadow-card-hover rounded-xl relative touch-target press-effect ${
+                        className={`group flex-1 p-4 md:p-5 lg:p-6 border flex flex-col items-center justify-center gap-2 md:gap-3 transition-premium shadow-card hover:shadow-card-hover rounded-md relative touch-target press-effect ${
                             !isBaselineComplete
-                                ? 'bg-background border-text-dark text-text-dark opacity-60 cursor-not-allowed border-b-4'
-                                : 'bg-surface border-highlight text-text-main hover:bg-highlight/5 border-b-4 border-highlight active:border-b-2 active:translate-y-0.5'
+                                ? 'bg-background border-text-dark text-text-dark opacity-60 cursor-not-allowed border-b-2'
+                                : 'genshin-panel border-highlight text-text-main hover:bg-highlight/5 border-b-2 active:translate-y-0.5'
                         }`}
                     >
                         {!isBaselineComplete && <LockIcon className="absolute top-2.5 right-2.5 w-4 h-4 text-text-dark/50" />}

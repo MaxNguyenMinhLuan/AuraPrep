@@ -6,22 +6,11 @@ import { PushSubscription } from '../models/PushSubscription';
 // VAPID Configuration
 // ─────────────────────────────────────────────────────────────
 
-const vapidPublicKey = config.vapid.publicKey;
-const vapidPrivateKey = config.vapid.privateKey;
-const vapidContactEmail = config.vapid.contactEmail;
+const vapidPublicKey = process.env.VAPID_PUBLIC_KEY || '';
+const vapidPrivateKey = process.env.VAPID_PRIVATE_KEY || '';
+const vapidContactEmail = process.env.VAPID_CONTACT_EMAIL || 'mailto:admin@auraprep.academy';
 
-export const isPushConfigured = (): boolean => Boolean(vapidPublicKey && vapidPrivateKey);
-
-/**
- * VAPID's public key is intentionally safe to expose to the browser. The
- * private key remains only on the API server and signs outgoing push requests.
- */
-export const getPushPublicConfiguration = (): { enabled: boolean; publicKey: string | null } => ({
-    enabled: isPushConfigured(),
-    publicKey: isPushConfigured() ? vapidPublicKey : null,
-});
-
-if (isPushConfigured()) {
+if (vapidPublicKey && vapidPrivateKey) {
     webpush.setVapidDetails(vapidContactEmail, vapidPublicKey, vapidPrivateKey);
 } else {
     console.warn('⚠️  VAPID keys not configured — Web Push will not work.');
@@ -67,11 +56,6 @@ export async function sendNotificationToUser(
     userId: string,
     payload: PushPayload
 ): Promise<{ sent: number; failed: number }> {
-    if (!isPushConfigured()) {
-        console.error('Push send skipped: VAPID keys are not configured.');
-        return { sent: 0, failed: 0 };
-    }
-
     const subscriptions = await PushSubscription.find({ userId });
 
     if (subscriptions.length === 0) {
@@ -110,11 +94,6 @@ export async function sendNotificationToUser(
 export async function broadcastNotification(
     payload: PushPayload
 ): Promise<{ sent: number; failed: number }> {
-    if (!isPushConfigured()) {
-        console.error('Push broadcast skipped: VAPID keys are not configured.');
-        return { sent: 0, failed: 0 };
-    }
-
     const allSubscriptions = await PushSubscription.find({});
     const payloadString = JSON.stringify(payload);
     let sent = 0;

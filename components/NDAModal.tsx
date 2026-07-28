@@ -107,7 +107,7 @@ const NDAModal: React.FC<NDAModalProps> = ({ user, onAccept, onDecline }) => {
 
     return (
         <div className="fixed inset-0 z-[100] flex items-center justify-center p-4 bg-black/60 backdrop-blur-sm animate-fadeIn">
-            <div className="bg-surface w-full max-w-lg rounded-2xl shadow-2xl border-2 border-secondary overflow-hidden animate-reveal flex flex-col max-h-[85vh]">
+            <div className="genshin-modal w-full max-w-lg overflow-hidden animate-reveal flex flex-col max-h-[85vh]">
 
                 {/* ─── Header ─── */}
                 <div className="bg-primary p-4 sm:p-5 text-center flex-shrink-0">
@@ -266,7 +266,7 @@ const NDAModal: React.FC<NDAModalProps> = ({ user, onAccept, onDecline }) => {
                             value={legalName}
                             onChange={(e) => setLegalName(e.target.value)}
                             disabled={!hasScrolledToBottom || !isChecked || isSubmitting}
-                            className="w-full px-3 sm:px-4 py-2.5 sm:py-3 bg-surface text-text-main border-2 border-secondary/50 rounded-xl focus:outline-none focus:border-primary/60 text-xs sm:text-sm font-sans placeholder-text-dim/40 disabled:opacity-40 disabled:cursor-not-allowed transition-all shadow-inner-soft"
+                            className="w-full px-3 sm:px-4 py-2.5 sm:py-3 genshin-panel text-text-main focus:outline-none focus:border-highlight text-xs sm:text-sm font-sans placeholder-text-dim/40 disabled:opacity-40 disabled:cursor-not-allowed transition-all shadow-inner-soft"
                         />
                     </div>
 

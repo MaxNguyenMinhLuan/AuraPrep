@@ -24,7 +24,7 @@ const ReportQuestionModal: React.FC<ReportQuestionModalProps> = ({ onClose, onSu
             onClick={onClose}
         >
             <div
-                className="bg-surface border-4 border-accent p-6 max-w-sm w-full shadow-card-hover animate-scaleIn rounded-xl"
+                className="genshin-modal p-6 max-w-sm w-full animate-scaleIn"
                 onClick={(e) => e.stopPropagation()}
             >
                 {submitted ? (
@@ -38,9 +38,10 @@ const ReportQuestionModal: React.FC<ReportQuestionModalProps> = ({ onClose, onSu
                     </div>
                 ) : (
                     <>
-                        <h2 className="text-lg font-bold text-highlight mb-2 flex items-center gap-2">
+                        <h2 className="text-lg font-bold text-highlight mb-1 text-center">
                             Report This Question
                         </h2>
+                        <div className="genshin-divider mb-3" />
                         <p className="text-xs text-text-dim mb-3 leading-relaxed">
                             What's wrong with it? (typo, wrong answer marked correct, confusing wording, etc.)
                         </p>
@@ -50,19 +51,19 @@ const ReportQuestionModal: React.FC<ReportQuestionModalProps> = ({ onClose, onSu
                             onChange={(e) => setReason(e.target.value)}
                             placeholder="Describe the issue..."
                             rows={4}
-                            className="w-full p-3 bg-background border-2 border-secondary/30 rounded-lg text-sm text-text-main resize-none focus:outline-none focus:border-accent"
+                            className="w-full p-3 bg-background border-2 border-secondary/40 rounded-lg text-sm text-text-main resize-none focus:outline-none focus:border-highlight/70 focus:shadow-[0_0_0_2px_rgba(232,200,131,0.25)]"
                         />
                         <div className="flex gap-3 mt-4">
                             <button
                                 onClick={onClose}
-                                className="flex-1 bg-secondary text-primary font-bold py-2.5 border-b-4 border-secondary-hover rounded-xl press-effect transition-premium"
+                                className="flex-1 genshin-btn-dark font-bold py-2.5 uppercase tracking-widest text-[11px]"
                             >
                                 Cancel
                             </button>
                             <button
                                 onClick={handleSubmit}
                                 disabled={!reason.trim()}
-                                className="flex-1 bg-accent text-white font-bold py-2.5 border-b-4 border-accent-dark rounded-xl press-effect transition-premium disabled:opacity-50"
+                                className="flex-1 genshin-btn-light font-bold py-2.5 uppercase tracking-widest text-[11px] disabled:opacity-50"
                             >
                                 Submit
                             </button>

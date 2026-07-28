@@ -19,8 +19,8 @@ async function startServer(): Promise<void> {
         console.log(`MongoDB URI: ${mongoUri.replace(/\/\/[^:]+:[^@]+@/, '//***:***@')}`); // Hide credentials in logs
 
         try {
-            if (process.env.USE_IN_MEMORY_DB === 'true') {
-                throw new Error('Forcing in-memory DB due to USE_IN_MEMORY_DB flag');
+            if (process.env.USE_IN_MEMORY_DB === 'true' || mongoUri.includes('auraprep.gkuuvix.mongodb.net')) {
+                throw new Error('Forcing in-memory DB due to flag or paused cluster');
             }
             await mongoose.connect(mongoUri, config.mongodb.options);
             console.log(`Connected to MongoDB (pool size: ${config.mongodb.options.maxPoolSize})`);

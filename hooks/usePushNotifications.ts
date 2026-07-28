@@ -32,14 +32,8 @@ export interface PushNotificationState {
     isIOS: boolean;
     /** True if the web app is running in Standalone mode (added to Home Screen) */
     isStandalone: boolean;
-    /** True once we know the browser can subscribe and a VAPID key is present - gates the "Allow notifications" button */
-    isConfigured: boolean;
-    /** True when the platform (iOS Safari, not installed) can't show push permissions until the user adds AuraPrep to their Home Screen */
-    requiresInstallation: boolean;
-    /** Last error message from a failed enable/subscribe attempt, if any */
-    error: string | null;
     /** Call this from a user-gesture handler (button tap) to request permission + subscribe */
-    enableNotifications: () => Promise<{ enabled: boolean; testSent: boolean }>;
+    enableNotifications: () => Promise<boolean>;
     /** Unsubscribe from push notifications */
     disableNotifications: () => Promise<void>;
 }
@@ -51,13 +45,6 @@ export function usePushNotifications(): PushNotificationState {
     const [permission, setPermission] = useState<NotificationPermission | 'unsupported'>('unsupported');
     const [isIOS, setIsIOS] = useState(false);
     const [isStandalone, setIsStandalone] = useState(false);
-    const [error, setError] = useState<string | null>(null);
-
-    // iOS Safari only exposes Web Push to an installed (Home Screen) PWA.
-    // Everywhere else, "configured" just means the browser API exists and a
-    // VAPID key shipped with this build.
-    const requiresInstallation = isIOS && !isStandalone;
-    const isConfigured = requiresInstallation ? false : isSupported && !!VAPID_PUBLIC_KEY;
 
     // Check browser support, iOS PWA mode, and existing subscription on mount
     useEffect(() => {
@@ -106,13 +93,10 @@ export function usePushNotifications(): PushNotificationState {
         checkSupport();
     }, []);
 
-    const enableNotifications = useCallback(async (): Promise<{ enabled: boolean; testSent: boolean }> => {
-        setError(null);
-
+    const enableNotifications = useCallback(async (): Promise<boolean> => {
         if (!('Notification' in window)) {
             console.warn('[Push] Notification API missing in window');
-            setError("This browser doesn't support notifications.");
-            return { enabled: false, testSent: false };
+            return false;
         }
 
         try {
@@ -136,16 +120,12 @@ export function usePushNotifications(): PushNotificationState {
 
             if (perm !== 'granted') {
                 console.warn('[Push] Notification permission not granted:', perm);
-                if (perm === 'denied') {
-                    setError("Notifications are blocked for this site in your browser's settings.");
-                }
-                return { enabled: false, testSent: false };
+                return false;
             }
 
             if (!VAPID_PUBLIC_KEY) {
                 console.warn('[Push] VAPID public key missing');
-                setError('Notifications are misconfigured for this deployment.');
-                return { enabled: false, testSent: false };
+                return false;
             }
 
             setIsLoading(true);
@@ -178,9 +158,8 @@ export function usePushNotifications(): PushNotificationState {
             const authToken = await auth.currentUser?.getIdToken();
             if (!authToken) {
                 console.warn('[Push] No auth token — cannot register subscription on server');
-                setError('You need to be signed in to enable notifications.');
                 setIsLoading(false);
-                return { enabled: false, testSent: false };
+                return false;
             }
 
             const response = await fetch(`${API_URL}/push/subscribe`, {
@@ -194,41 +173,17 @@ export function usePushNotifications(): PushNotificationState {
 
             if (!response.ok) {
                 console.error('[Push] Server rejected subscription:', await response.text());
-                setError('Something went wrong saving your subscription. Please try again.');
                 setIsLoading(false);
-                return { enabled: false, testSent: false };
+                return false;
             }
 
             setIsSubscribed(true);
             setIsLoading(false);
-
-            // 6. Fire an immediate test push so the user gets instant feedback
-            // that it actually works, instead of waiting for the next
-            // scheduled 8am/2pm/8pm nudge window.
-            let testSent = false;
-            try {
-                const testResponse = await fetch(`${API_URL}/push/send`, {
-                    method: 'POST',
-                    headers: {
-                        'Content-Type': 'application/json',
-                        Authorization: `Bearer ${authToken}`,
-                    },
-                    body: JSON.stringify({
-                        title: '🔔 Notifications enabled!',
-                        body: "You're all set. AuraPrep will remind you about your daily missions.",
-                    }),
-                });
-                testSent = testResponse.ok;
-            } catch (testErr) {
-                console.warn('[Push] Test notification failed to send:', testErr);
-            }
-
-            return { enabled: true, testSent };
+            return true;
         } catch (err) {
             console.error('[Push] Error enabling notifications:', err);
-            setError('Something went wrong enabling notifications. Please try again.');
             setIsLoading(false);
-            return { enabled: false, testSent: false };
+            return false;
         }
     }, [isSupported]);
 
@@ -273,9 +228,6 @@ export function usePushNotifications(): PushNotificationState {
         permission,
         isIOS,
         isStandalone,
-        isConfigured,
-        requiresInstallation,
-        error,
         enableNotifications,
         disableNotifications,
     };

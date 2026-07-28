@@ -25,7 +25,7 @@ export class AnalyticsScheduler {
     // Hourly nudge efficacy recalculation - runs every hour
     this.scheduleHourlyNudgeMetrics();
 
-    // Hourly email and Web Push reminder job - runs every hour
+    // Hourly email nudge job - runs every hour
     this.scheduleHourlyNudgeJob();
 
     // Weekly retention cohort analysis - runs Sunday at 2 AM UTC
@@ -109,12 +109,12 @@ export class AnalyticsScheduler {
   }
 
   /**
-   * Schedule hourly reminder job
-   * Checks local timezones and sends morning/afternoon/evening email and Web Push nudges
+   * Schedule hourly email nudge job
+   * Checks local timezones and sends morning/afternoon/evening nudges
    */
   private static scheduleHourlyNudgeJob(): void {
     cron.schedule('0 * * * *', async () => {
-      console.log(`[${new Date().toISOString()}] Starting scheduled hourly reminder job...`);
+      console.log(`[${new Date().toISOString()}] Starting scheduled hourly email nudge job...`);
       try {
         await NudgeService.processHourlyNudges();
       } catch (error) {
@@ -319,3 +319,4 @@ export async function runHourlyNudgesNow(): Promise<void> {
     throw error;
   }
 }
+
