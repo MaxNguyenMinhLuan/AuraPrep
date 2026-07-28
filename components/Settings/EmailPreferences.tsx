@@ -187,37 +187,6 @@ const EmailPreferences: React.FC<EmailPreferencesProps> = ({ onClose, onSave }) 
           </label>
         </div>
 
-        {/* Push & Lock Screen Notifications Section */}
-        <div className="mb-8 p-4 bg-background rounded-xl">
-          <div className="flex justify-between items-center">
-            <div>
-              <p className="text-lg font-bold text-text-main">Lock Screen Push Notifications</p>
-              <p className="text-sm text-text-dim">Test lock screen reminders on your device</p>
-            </div>
-            <button
-              type="button"
-              onClick={async () => {
-                try {
-                  if ('Notification' in window && Notification.permission === 'granted') {
-                    new Notification('AuraPrep', {
-                      body: 'this is a test for notification now',
-                      icon: '/app-icon.png'
-                    });
-                    setSuccess(true);
-                  } else {
-                    setError('Notifications not permitted yet. Click "Enable" on the banner first!');
-                  }
-                } catch (_err) {
-                  setError('Failed to trigger notification.');
-                }
-              }}
-              className="bg-primary hover:brightness-110 text-white font-bold py-2 px-4 rounded-lg text-xs uppercase tracking-wider transition-all"
-            >
-              Send Test Push
-            </button>
-          </div>
-        </div>
-
         {emailsEnabled && (
           <>
             {/* Nudge Time Preferences */}

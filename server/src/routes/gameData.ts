@@ -452,172 +452,28 @@ router.post('/friends', async (req: AuthenticatedRequest, res: Response) => {
       return res.status(404).json({ error: 'Your game data was not found.' });
     }
 
+    // Initialize friends array if not exists
+    if (!userGameData.friends) {
+      userGameData.friends = [];
+    }
+
     const friendUserIdStr = friendUser._id.toString();
 
-    // Check if they are already friends
-    if (userGameData.friends && userGameData.friends.includes(friendUserIdStr)) {
+    if (userGameData.friends.includes(friendUserIdStr)) {
       return res.status(400).json({ error: `You are already friends with ${friendUser.name}.` });
     }
 
-    // Check if a request was already sent
-    if (userGameData.outgoingFriendRequests && userGameData.outgoingFriendRequests.includes(friendUserIdStr)) {
-      return res.status(400).json({ error: `You already sent a request to ${friendUser.name}.` });
-    }
-
-    let friendGameData = await UserGameData.findOne({ userId: friendUser._id });
-    if (!friendGameData) {
-      // Initialize if missing
-      friendGameData = new UserGameData({
-        userId: friendUser._id,
-        email: friendUser.email,
-        dailyMissions: { date: new Date(), completed: false, nudgesSent: 0 },
-        activeCreature: { creatureId: 1, name: 'Pikachu', type: 'Electric', level: 1 },
-        emailNotifications: { enabled: true, morning: true, afternoon: true, evening: true },
-        metrics: { emailsSent: 0, emailsOpened: 0, emailsClicked: 0, conversions: { morning: 0, afternoon: 0, evening: 0 } },
-        friends: [],
-        incomingFriendRequests: [],
-        outgoingFriendRequests: []
-      });
-    }
-
-    // Check if friend already sent US a request. If so, auto-accept it!
-    if (userGameData.incomingFriendRequests && userGameData.incomingFriendRequests.includes(friendUserIdStr)) {
-      // Auto-accept
-      userGameData.incomingFriendRequests = userGameData.incomingFriendRequests.filter(id => id !== friendUserIdStr);
-      friendGameData.outgoingFriendRequests = (friendGameData.outgoingFriendRequests || []).filter(id => id !== userId);
-      
-      if (!userGameData.friends) userGameData.friends = [];
-      if (!friendGameData.friends) friendGameData.friends = [];
-      
-      userGameData.friends.push(friendUserIdStr);
-      friendGameData.friends.push(userId);
-      
-      await userGameData.save();
-      await friendGameData.save();
-      
-      return res.status(200).json({
-        success: true,
-        message: `You are now friends with ${friendUser.name}!`,
-        friends: userGameData.friends
-      });
-    }
-
-    // Otherwise, send a request
-    if (!userGameData.outgoingFriendRequests) userGameData.outgoingFriendRequests = [];
-    userGameData.outgoingFriendRequests.push(friendUserIdStr);
-
-    if (!friendGameData.incomingFriendRequests) friendGameData.incomingFriendRequests = [];
-    friendGameData.incomingFriendRequests.push(userId);
-
+    // Add friend
+    userGameData.friends.push(friendUserIdStr);
     await userGameData.save();
-    await friendGameData.save();
 
     return res.status(200).json({
       success: true,
-      message: `Friend request sent to ${friendUser.name}!`,
-      outgoingRequests: userGameData.outgoingFriendRequests
+      message: `Successfully added ${friendUser.name} as a friend!`,
+      friends: userGameData.friends
     });
   } catch (error) {
     console.error('Error adding friend:', error);
-    return res.status(500).json({ error: 'Internal server error' });
-  }
-});
-
-/**
- * POST /api/game-data/friends/respond
- * Accept or reject a friend request
- */
-router.post('/friends/respond', async (req: AuthenticatedRequest, res: Response) => {
-  try {
-    const userId = req.user?.id;
-    if (!userId) {
-      return res.status(401).json({ error: 'Unauthorized' });
-    }
-
-    const { friendId, accept } = req.body;
-    if (!friendId) {
-      return res.status(400).json({ error: 'friendId is required' });
-    }
-
-    const userGameData = await UserGameData.findOne({ userId });
-    const friendGameData = await UserGameData.findOne({ userId: friendId });
-
-    if (!userGameData || !friendGameData) {
-      return res.status(404).json({ error: 'Game data not found' });
-    }
-
-    // Remove from requests
-    userGameData.incomingFriendRequests = (userGameData.incomingFriendRequests || []).filter(id => id !== friendId);
-    friendGameData.outgoingFriendRequests = (friendGameData.outgoingFriendRequests || []).filter(id => id !== userId);
-
-    if (accept) {
-      if (!userGameData.friends) userGameData.friends = [];
-      if (!friendGameData.friends) friendGameData.friends = [];
-
-      if (!userGameData.friends.includes(friendId)) userGameData.friends.push(friendId);
-      if (!friendGameData.friends.includes(userId)) friendGameData.friends.push(userId);
-    }
-
-    await userGameData.save();
-    await friendGameData.save();
-
-    return res.status(200).json({
-      success: true,
-      message: accept ? 'Friend request accepted!' : 'Friend request rejected.',
-      friends: userGameData.friends,
-      incomingFriendRequests: userGameData.incomingFriendRequests
-    });
-  } catch (error) {
-    console.error('Error responding to friend request:', error);
-    return res.status(500).json({ error: 'Internal server error' });
-  }
-});
-
-/**
- * GET /api/game-data/friends/requests
- * Get all incoming friend requests
- */
-router.get('/friends/requests', async (req: AuthenticatedRequest, res: Response) => {
-  try {
-    const userId = req.user?.id;
-    if (!userId) {
-      return res.status(401).json({ error: 'Unauthorized' });
-    }
-
-    const userGameData = await UserGameData.findOne({ userId });
-    if (!userGameData || !userGameData.incomingFriendRequests || userGameData.incomingFriendRequests.length === 0) {
-      return res.status(200).json({ success: true, requests: [] });
-    }
-
-    const requestGameData = await UserGameData.find({
-      userId: { $in: userGameData.incomingFriendRequests }
-    });
-    
-    // Also get user objects to get names
-    const requestUsers = await User.find({
-      _id: { $in: userGameData.incomingFriendRequests }
-    });
-
-    const requestsList = requestGameData.map((doc: any) => {
-      const userObj = requestUsers.find(u => u._id.toString() === doc.userId.toString());
-      return {
-        id: doc.userId.toString(),
-        name: userObj ? userObj.name : 'Unknown Seeker',
-        email: userObj ? userObj.email : '',
-        activeCreature: doc.activeCreature,
-        profile: doc.profile,
-        currentStreak: doc.currentStreak,
-        auraBalance: doc.auraBalance,
-        totalQuestionsAnswered: doc.totalQuestionsAnswered
-      };
-    });
-
-    return res.status(200).json({
-      success: true,
-      requests: requestsList
-    });
-  } catch (error) {
-    console.error('Error fetching friend requests:', error);
     return res.status(500).json({ error: 'Internal server error' });
   }
 });

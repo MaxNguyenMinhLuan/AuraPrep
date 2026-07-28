@@ -54,8 +54,6 @@ interface IUserGameData extends Document {
   reviewQueue?: any[];
   dailyActivity?: any;
   friends: string[];
-  incomingFriendRequests: string[];
-  outgoingFriendRequests: string[];
   createdAt: Date;
   updatedAt: Date;
 }
@@ -112,15 +110,11 @@ const UserGameDataSchema = new Schema<IUserGameData>(
     creatures: [{ type: Schema.Types.Mixed }],
     userTeam: [{ type: Number }],
     tutorialState: { type: Schema.Types.Mixed },
-    reviewQueue: { type: [Schema.Types.Mixed] },
+    reviewQueue: [{ type: Schema.Types.Mixed }],
     dailyActivity: { type: Schema.Types.Mixed },
-    friends: { type: [String], default: [] },
-    incomingFriendRequests: { type: [String], default: [] },
-    outgoingFriendRequests: { type: [String], default: [] }
+    friends: [{ type: String, default: [] }]
   },
-  {
-    timestamps: true
-  }
+  { timestamps: true }
 );
 
 // Index for efficient querying by timezone and email notifications

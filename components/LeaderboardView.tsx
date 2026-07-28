@@ -10,7 +10,7 @@ import SecondPlaceIcon from './icons/SecondPlaceIcon';
 import ThirdPlaceIcon from './icons/ThirdPlaceIcon';
 import SwordsIcon from './icons/SwordsIcon';
 import HandshakeIcon from './icons/HandshakeIcon';
-import { addFriend, fetchFriends, fetchFriendRequests, respondToFriendRequest } from '../services/gameDataService';
+import { addFriend, fetchFriends } from '../services/gameDataService';
 import { AuthService } from '../services/authService';
 
 interface LeaderboardEntry {
@@ -39,7 +39,6 @@ const LeaderboardView: React.FC<LeaderboardViewProps> = ({ username, weeklyGain,
 
     const [activeTab, setActiveTab] = useState<'global' | 'friends'>('global');
     const [friendsList, setFriendsList] = useState<any[]>([]);
-    const [friendRequests, setFriendRequests] = useState<any[]>([]);
     const [isLoadingFriends, setIsLoadingFriends] = useState(false);
     const [isAddFriendModalOpen, setIsAddFriendModalOpen] = useState(false);
     const [friendIdInput, setFriendIdInput] = useState('');
@@ -52,15 +51,13 @@ const LeaderboardView: React.FC<LeaderboardViewProps> = ({ username, weeklyGain,
             setIsLoadingFriends(true);
             const token = await AuthService.getAuthToken();
             if (token) {
-                const [list, requests] = await Promise.all([
-                    fetchFriends(token),
-                    fetchFriendRequests(token)
-                ]);
-                if (list) setFriendsList(list);
-                if (requests) setFriendRequests(requests);
+                const list = await fetchFriends(token);
+                if (list) {
+                    setFriendsList(list);
+                }
             }
         } catch (err) {
-            console.error('Error loading friends/requests:', err);
+            console.error('Error loading friends:', err);
         } finally {
             setIsLoadingFriends(false);
         }
@@ -202,61 +199,7 @@ const LeaderboardView: React.FC<LeaderboardViewProps> = ({ username, weeklyGain,
                 </button>
             </div>
 
-    {/* Pending Friend Requests Section */}
-    {activeTab === 'friends' && friendRequests.length > 0 && (
-        <div className="mx-2 md:mx-4 mb-8">
-            <h3 className="font-sans text-xs md:text-sm bg-highlight text-text-light px-3 py-1 inline-block rounded-none shadow-sm uppercase tracking-wider mb-2 font-bold">
-                Pending Requests
-            </h3>
-            <div className="flex flex-col gap-2">
-                {friendRequests.map(req => (
-                    <div key={req.id} className="genshin-panel p-3 border border-highlight/30 flex items-center justify-between">
-                        <div className="flex items-center gap-3">
-                            <div className="w-10 h-10 border border-secondary/20 bg-secondary/10 flex items-center justify-center p-1">
-                                <PixelCreature 
-                                    creature={INITIAL_CREATURES.find(c => c.id === (req.activeCreature?.creatureId || 1)) || INITIAL_CREATURES[0]} 
-                                    evolutionStage={1} 
-                                    pixelSize={2} 
-                                />
-                            </div>
-                            <div>
-                                <p className="text-[11px] font-bold tracking-tighter">{req.name}</p>
-                                <p className="text-[9px] text-text-dim mt-0.5">Lvl {req.activeCreature?.level || 1} • {req.currentStreak || 0} Streak</p>
-                            </div>
-                        </div>
-                        <div className="flex gap-2">
-                            <button
-                                onClick={async () => {
-                                    const token = await AuthService.getAuthToken();
-                                    if (token) {
-                                        await respondToFriendRequest(req.id, true, token);
-                                        loadFriends();
-                                    }
-                                }}
-                                className="w-8 h-8 rounded-full bg-success text-white flex items-center justify-center shadow-md active:scale-95 transition-all"
-                            >
-                                ✓
-                            </button>
-                            <button
-                                onClick={async () => {
-                                    const token = await AuthService.getAuthToken();
-                                    if (token) {
-                                        await respondToFriendRequest(req.id, false, token);
-                                        loadFriends();
-                                    }
-                                }}
-                                className="w-8 h-8 rounded-full bg-accent text-white flex items-center justify-center shadow-md active:scale-95 transition-all"
-                            >
-                                ✕
-                            </button>
-                        </div>
-                    </div>
-                ))}
-            </div>
-        </div>
-    )}
-
-    {/* Podium Section */}
+            {/* Podium Section */}
             {displayedTop3.length > 0 ? (
                 <div className="flex flex-wrap justify-center items-end gap-2 md:gap-4 mb-8 md:mb-10 mt-12 md:mt-16 lg:mt-24 px-2 md:px-4">
                     {displayedTop3.map((entry) => {
@@ -391,7 +334,7 @@ const LeaderboardView: React.FC<LeaderboardViewProps> = ({ username, weeklyGain,
                         onClick={() => handleAction("Coming Soon!")}
                         className="bg-primary text-white px-4 py-2 rounded-full flex items-center gap-3 shadow-xl cursor-not-allowed border-2 border-primary/50 relative"
                     >
-                        <span className="text-[10px] font-bold uppercase tracking-widest">Challenge Friend</span>
+                        <span className="text-[10px] font-bold uppercase tracking-widest">Friend PvP</span>
                         <HandshakeIcon className="w-4 h-4 text-white" />
                         <span className="absolute -top-2 -right-2 bg-highlight text-[7px] text-white px-1.5 py-0.5 rounded-full font-bold shadow-md">SOON</span>
                     </button>
