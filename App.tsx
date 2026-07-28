@@ -262,6 +262,30 @@ const App: React.FC = () => {
         }
     }, [user?.uid]);
 
+    // Check for stale mission titles in local state and sanitize them immediately
+    useEffect(() => {
+        if (!user || isHydrating) return;
+        
+        if (dailyActivity?.missions && Array.isArray(dailyActivity.missions)) {
+            let needsUpdate = false;
+            const sanitizedMissions = dailyActivity.missions.map((m: any) => {
+                if (m.title && m.title !== 'Daily Mission') {
+                    needsUpdate = true;
+                    return { ...m, title: 'Daily Mission' };
+                }
+                return m;
+            });
+            
+            if (needsUpdate) {
+                console.log('[Sanitization] Cleaning up old mission titles in local state');
+                setDailyActivity({
+                    ...dailyActivity,
+                    missions: sanitizedMissions
+                });
+            }
+        }
+    }, [user, isHydrating, dailyActivity, setDailyActivity]);
+
     // On login: fetch the authoritative cloud copy BEFORE the app renders.
     // We show a loading spinner during this time so stale localStorage data
     // is never presented to the user as if it were their real progress.
@@ -286,7 +310,17 @@ const App: React.FC = () => {
                     if (cloudData.creatures) setCreatures(cloudData.creatures);
                     if (cloudData.activeCreature?.creatureId !== undefined) setActiveCreatureId(cloudData.activeCreature.creatureId);
                     if (cloudData.auraBalance !== undefined) setAuraPoints(cloudData.auraBalance);
-                    if (cloudData.dailyActivity) setDailyActivity(cloudData.dailyActivity);
+                    if (cloudData.dailyActivity) {
+                        // Sanitize old arbitrary mission titles that were previously generated
+                        const sanitizedActivity = { ...cloudData.dailyActivity };
+                        if (Array.isArray(sanitizedActivity.missions)) {
+                            sanitizedActivity.missions = sanitizedActivity.missions.map((m: any) => ({
+                                ...m,
+                                title: 'Daily Mission'
+                            }));
+                        }
+                        setDailyActivity(sanitizedActivity);
+                    }
                     if (cloudData.reviewQueue) setReviewQueue(cloudData.reviewQueue);
                     if (cloudData.userTeam) setUserTeam(cloudData.userTeam);
                     if (cloudData.tutorialState) setTutorialState(cloudData.tutorialState);

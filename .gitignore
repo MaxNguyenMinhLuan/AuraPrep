@@ -32,7 +32,12 @@ build/
 server/node_modules/
 node_modules
 node_modules
- 
+
+# Cloud Functions build output (was accidentally committed - see functions/src/index.ts
+# header comment for why the leaked Gmail App Password baked into old builds means that
+# credential must be treated as compromised regardless of this file's removal)
+functions/lib/
+
 # Ignore accidental Windows device filename created in repo root
 nul
 .vercel

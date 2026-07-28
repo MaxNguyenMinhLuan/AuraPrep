@@ -60,7 +60,7 @@ const FormattedText: React.FC<FormattedTextProps> = ({ text, className = '' }) =
     }).join('');
 
     return (
-        <div className={`formatted-text leading-relaxed select-text font-medium ${className}`}>
+        <div className={`formatted-text leading-relaxed select-text font-medium [&>p+p]:mt-5 ${className}`}>
             <ReactMarkdown
                 remarkPlugins={[remarkGfm, remarkMath]}
                 rehypePlugins={[rehypeKatex]}

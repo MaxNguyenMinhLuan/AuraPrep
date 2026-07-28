@@ -10,7 +10,7 @@ import SecondPlaceIcon from './icons/SecondPlaceIcon';
 import ThirdPlaceIcon from './icons/ThirdPlaceIcon';
 import SwordsIcon from './icons/SwordsIcon';
 import HandshakeIcon from './icons/HandshakeIcon';
-import { addFriend, fetchFriends } from '../services/gameDataService';
+import { addFriend, fetchFriends, fetchFriendRequests, respondToFriendRequest } from '../services/gameDataService';
 import { AuthService } from '../services/authService';
 
 interface LeaderboardEntry {
@@ -39,6 +39,7 @@ const LeaderboardView: React.FC<LeaderboardViewProps> = ({ username, weeklyGain,
 
     const [activeTab, setActiveTab] = useState<'global' | 'friends'>('global');
     const [friendsList, setFriendsList] = useState<any[]>([]);
+    const [requestsList, setRequestsList] = useState<any[]>([]);
     const [isLoadingFriends, setIsLoadingFriends] = useState(false);
     const [isAddFriendModalOpen, setIsAddFriendModalOpen] = useState(false);
     const [friendIdInput, setFriendIdInput] = useState('');
@@ -51,13 +52,15 @@ const LeaderboardView: React.FC<LeaderboardViewProps> = ({ username, weeklyGain,
             setIsLoadingFriends(true);
             const token = await AuthService.getAuthToken();
             if (token) {
-                const list = await fetchFriends(token);
-                if (list) {
-                    setFriendsList(list);
-                }
+                const [fList, rList] = await Promise.all([
+                    fetchFriends(token),
+                    fetchFriendRequests(token) // Assuming this is imported
+                ]);
+                if (fList) setFriendsList(fList);
+                if (rList) setRequestsList(rList);
             }
         } catch (err) {
-            console.error('Error loading friends:', err);
+            console.error('Error loading friends/requests:', err);
         } finally {
             setIsLoadingFriends(false);
         }
@@ -158,6 +161,25 @@ const LeaderboardView: React.FC<LeaderboardViewProps> = ({ username, weeklyGain,
         userRowRef.current?.scrollIntoView({ behavior: 'smooth', block: 'center' });
     };
 
+    const handleRespondRequest = async (friendId: string, accept: boolean) => {
+        try {
+            const token = await AuthService.getAuthToken();
+            if (token) {
+                const res = await respondToFriendRequest(friendId, accept, token);
+                if (res.success) {
+                    setLastAction(accept ? "Request Accepted!" : "Request Declined");
+                    setTimeout(() => setLastAction(null), 3000);
+                    loadFriends();
+                } else {
+                    setLastAction("Error responding");
+                    setTimeout(() => setLastAction(null), 3000);
+                }
+            }
+        } catch (e) {
+            console.error(e);
+        }
+    };
+
     return (
         <div className="animate-fadeIn max-w-4xl mx-auto pb-32 relative">
             <div className="text-center mb-6 md:mb-8">
@@ -249,6 +271,48 @@ const LeaderboardView: React.FC<LeaderboardViewProps> = ({ username, weeklyGain,
                 </div>
             )}
 
+            {/* Pending Requests Section */}
+            {activeTab === 'friends' && requestsList.length > 0 && (
+                <div className="genshin-panel border-2 border-highlight/50 rounded-xl shadow-card overflow-hidden mx-2 mb-6 animate-fadeIn">
+                    <div className="bg-highlight/20 px-4 py-2 border-b border-highlight/30 text-[10px] font-bold text-highlight uppercase tracking-widest flex items-center justify-between">
+                        <span>Pending Requests ({requestsList.length})</span>
+                    </div>
+                    <div className="divide-y divide-highlight/20">
+                        {requestsList.map((req) => (
+                            <div key={req.id} className="px-4 py-3 flex items-center justify-between hover:bg-white/5 transition-colors">
+                                <div className="flex items-center gap-3">
+                                    <div className="w-8 h-8 flex items-center justify-center">
+                                        <PixelCreature 
+                                            creature={INITIAL_CREATURES.find(c => c.id === req.guardianId) || INITIAL_CREATURES[0]} 
+                                            evolutionStage={1} 
+                                            pixelSize={2} 
+                                        />
+                                    </div>
+                                    <div>
+                                        <p className="text-[10px] font-bold text-text-main uppercase tracking-tighter">{req.username}</p>
+                                        <p className="text-[8px] font-bold text-text-dim uppercase tracking-tighter">Wants to be your friend</p>
+                                    </div>
+                                </div>
+                                <div className="flex gap-2">
+                                    <button 
+                                        onClick={() => handleRespondRequest(req.id, true)}
+                                        className="w-8 h-8 rounded-full bg-success/20 text-success border border-success/50 flex items-center justify-center hover:bg-success hover:text-white transition-colors"
+                                    >
+                                        ✓
+                                    </button>
+                                    <button 
+                                        onClick={() => handleRespondRequest(req.id, false)}
+                                        className="w-8 h-8 rounded-full bg-accent/20 text-accent border border-accent/50 flex items-center justify-center hover:bg-accent hover:text-white transition-colors"
+                                    >
+                                        ✕
+                                    </button>
+                                </div>
+                            </div>
+                        ))}
+                    </div>
+                </div>
+            )}
+
             {/* Scrollable List Container */}
             <div ref={listContainerRef} className="genshin-panel border border-secondary/30 rounded-none shadow-card overflow-hidden mx-2 animate-scaleIn">
                 <div className="genshin-panel px-6 py-3 border-b border-highlight/30 flex justify-between text-[10px] font-bold text-primary uppercase tracking-widest">
@@ -334,7 +398,7 @@ const LeaderboardView: React.FC<LeaderboardViewProps> = ({ username, weeklyGain,
                         onClick={() => handleAction("Coming Soon!")}
                         className="bg-primary text-white px-4 py-2 rounded-full flex items-center gap-3 shadow-xl cursor-not-allowed border-2 border-primary/50 relative"
                     >
-                        <span className="text-[10px] font-bold uppercase tracking-widest">Friend PvP</span>
+                        <span className="text-[10px] font-bold uppercase tracking-widest">Challenge Friend</span>
                         <HandshakeIcon className="w-4 h-4 text-white" />
                         <span className="absolute -top-2 -right-2 bg-highlight text-[7px] text-white px-1.5 py-0.5 rounded-full font-bold shadow-md">SOON</span>
                     </button>
@@ -432,14 +496,14 @@ const LeaderboardView: React.FC<LeaderboardViewProps> = ({ username, weeklyGain,
                                             
                                             const result = await addFriend(friendIdInput.trim(), token);
                                             if (result.success) {
-                                                setAddFriendSuccess(result.message || "Friend added successfully!");
+                                                setAddFriendSuccess(result.message || "Friend request sent!");
                                                 setFriendIdInput('');
                                                 loadFriends();
                                                 setTimeout(() => {
                                                     setIsAddFriendModalOpen(false);
                                                 }, 2000);
                                             } else {
-                                                setAddFriendError(result.error || "Failed to add friend.");
+                                                setAddFriendError(result.error || "Failed to send request.");
                                             }
                                         } catch (err: any) {
                                             setAddFriendError(err.message || "An unexpected error occurred.");
@@ -450,7 +514,7 @@ const LeaderboardView: React.FC<LeaderboardViewProps> = ({ username, weeklyGain,
                                     className="bg-highlight hover:bg-highlight-hover text-text-light px-4 py-2 text-[10px] font-bold uppercase tracking-wider transition-colors rounded-none border border-yellow-700 shadow-button flex items-center gap-2"
                                     disabled={isAddingFriend}
                                 >
-                                    {isAddingFriend ? "Adding..." : "Add Friend"}
+                                    {isAddingFriend ? "Sending..." : "Send Request"}
                                 </button>
                             </div>
                         </div>

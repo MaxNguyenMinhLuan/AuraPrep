@@ -94,22 +94,41 @@ export function usePushNotifications(): PushNotificationState {
     }, []);
 
     const enableNotifications = useCallback(async (): Promise<boolean> => {
-        if (!isSupported || !VAPID_PUBLIC_KEY) {
-            console.warn('[Push] Not supported or VAPID key missing');
+        if (!('Notification' in window)) {
+            console.warn('[Push] Notification API missing in window');
             return false;
         }
 
-        setIsLoading(true);
-
         try {
             // 1. Request notification permission IMMEDIATELY on user gesture for iOS WebKit
-            const perm = await Notification.requestPermission();
+            // Support both Promise syntax and legacy callback syntax
+            let perm: NotificationPermission = Notification.permission;
+            if (perm === 'default') {
+                try {
+                    const reqResult = Notification.requestPermission();
+                    if (reqResult && typeof reqResult.then === 'function') {
+                        perm = await reqResult;
+                    } else {
+                        perm = await new Promise((resolve) => Notification.requestPermission(resolve));
+                    }
+                } catch (_err) {
+                    perm = await new Promise((resolve) => Notification.requestPermission(resolve));
+                }
+            }
+
             setPermission(perm);
 
             if (perm !== 'granted') {
-                setIsLoading(false);
+                console.warn('[Push] Notification permission not granted:', perm);
                 return false;
             }
+
+            if (!VAPID_PUBLIC_KEY) {
+                console.warn('[Push] VAPID public key missing');
+                return false;
+            }
+
+            setIsLoading(true);
 
             // 2. Ensure service worker is registered and active
             let registration = await navigator.serviceWorker.getRegistration('/sw.js');
