@@ -17,6 +17,7 @@ const parseCorsOrigins = (): string | string[] => {
         'http://localhost:5173',
         'http://localhost:3001',
         'https://auraprep.academy',
+        'https://www.auraprep.academy',
         'https://auraprep.web.app',
         'https://auraprep-da99c.web.app',
         'https://auraprep-da99c.firebaseapp.com'
