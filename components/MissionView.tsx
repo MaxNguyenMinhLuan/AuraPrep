@@ -167,7 +167,6 @@ const MissionView: React.FC<MissionViewProps> = ({ mission, onAnswer, onExit, in
 
             <div className="text-center mb-3 md:mb-4">
                  <button onClick={onExit} className="text-text-dim hover:text-highlight float-left p-2 -ml-2 touch-target">&larr; Back</button>
-                <h1 className="font-serif text-xl md:text-2xl text-highlight leading-tight">{mission.title}</h1>
             </div>
 
             <div className="mb-3 md:mb-4">
