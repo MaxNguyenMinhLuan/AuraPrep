@@ -50,6 +50,11 @@ import { hasCompletedStealthPlacement, processStealthMissionAnswer } from './ser
 import { migrateLocalStorageToBackend, syncGameDataToBackend, fetchGameData, fetchLeaderboard } from './services/gameDataService';
 import { DifficultyTier } from './types/stealthDiagnostic';
 
+// Apply pixel aesthetic for public (production) builds
+if (!import.meta.env.DEV) {
+    document.documentElement.classList.add('pixel-theme');
+}
+
 const App: React.FC = () => {
     const [user, setUser] = useLocalStorage<User | null>('user', null);
     const [currentView, setCurrentView] = useState<View>(View.DASHBOARD);
@@ -138,6 +143,22 @@ const App: React.FC = () => {
         }
         localStorage.setItem('theme', theme);
     }, [theme]);
+
+    // Sanitize cached mission titles
+    useEffect(() => {
+        if (dailyActivity?.missions && dailyActivity.missions.length > 0) {
+            const hasStaleTitles = dailyActivity.missions.some(m => m.title !== 'Daily Mission');
+            if (hasStaleTitles) {
+                setDailyActivity({
+                    ...dailyActivity,
+                    missions: dailyActivity.missions.map(m => ({
+                        ...m,
+                        title: 'Daily Mission'
+                    }))
+                });
+            }
+        }
+    }, [dailyActivity, setDailyActivity]);
 
     // Check for valid session on app load
     useEffect(() => {

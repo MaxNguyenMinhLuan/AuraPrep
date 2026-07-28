@@ -112,13 +112,15 @@ const UserGameDataSchema = new Schema<IUserGameData>(
     creatures: [{ type: Schema.Types.Mixed }],
     userTeam: [{ type: Number }],
     tutorialState: { type: Schema.Types.Mixed },
-    reviewQueue: [{ type: Schema.Types.Mixed }],
+    reviewQueue: { type: [Schema.Types.Mixed] },
     dailyActivity: { type: Schema.Types.Mixed },
     friends: { type: [String], default: [] },
     incomingFriendRequests: { type: [String], default: [] },
-    outgoingFriendRequests: { type: [String], default: [] },
+    outgoingFriendRequests: { type: [String], default: [] }
   },
-  { timestamps: true }
+  {
+    timestamps: true
+  }
 );
 
 // Index for efficient querying by timezone and email notifications
