@@ -14,6 +14,9 @@ const preProcessMath = (text: string): string => {
 
     let processed = text;
 
+    // Convert raw \pi or \\pi to pi symbol π
+    processed = processed.replace(/\\+pi\b/gi, 'π');
+
     // 1. Convert LaTeX display math delimiters \[ ... \] or \\[ ... \\] to $$
     processed = processed.replace(/\\+\[([\s\S]*?)\\+\]/g, '$$$$$1$$$$');
 
@@ -64,11 +67,6 @@ const FormattedText: React.FC<FormattedTextProps> = ({ text, className = '' }) =
             <ReactMarkdown
                 remarkPlugins={[remarkGfm, remarkMath]}
                 rehypePlugins={[rehypeKatex]}
-                components={{
-                    // Tailwind's preflight removes paragraph margins. Restore a
-                    // deliberate gap so a passage and its prompt never run together.
-                    p: ({ children }) => <p style={{ marginBottom: '1.25rem' }}>{children}</p>
-                }}
             >
                 {doubleSpacedText}
             </ReactMarkdown>
