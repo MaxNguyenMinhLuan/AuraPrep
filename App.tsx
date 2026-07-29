@@ -444,69 +444,91 @@ const App: React.FC = () => {
     // Uses refs to track dirty-checking and prevent infinite sync loops
     const lastSyncedAtRef = React.useRef<string | undefined>(undefined);
     const lastSyncedDataStrRef = React.useRef<string>('');
+    // Always-current snapshot of the syncable state, so the visibility/pagehide
+    // handlers below (registered once) can flush the latest data instead of
+    // whatever was in scope when they were attached.
+    const latestSyncStateRef = React.useRef({ profile, creatures, activeCreatureId, auraPoints, dailyActivity, reviewQueue, userTeam, tutorialState });
+    latestSyncStateRef.current = { profile, creatures, activeCreatureId, auraPoints, dailyActivity, reviewQueue, userTeam, tutorialState };
+
+    const flushSync = React.useCallback(async () => {
+        if (!user || !hasHydratedRef.current) return;
+        try {
+            const token = await AuthService.getAuthToken();
+            if (!token) return;
+
+            const currentData = latestSyncStateRef.current;
+            const currentDataStr = JSON.stringify(currentData);
+            if (currentDataStr === lastSyncedDataStrRef.current) {
+                return; // No changes to sync
+            }
+
+            console.log('Syncing updated game data to backend...');
+            const result = await syncGameDataToBackend(
+                currentData.profile,
+                currentData.creatures,
+                currentData.activeCreatureId,
+                currentData.auraPoints,
+                currentData.dailyActivity,
+                currentData.reviewQueue,
+                currentData.userTeam,
+                currentData.tutorialState,
+                token,
+                lastSyncedAtRef.current
+            );
+
+            if (result?.status === 'conflict' && result.data) {
+                console.warn('Sync conflict: Pulling newer data from backend');
+                const conflictData = result.data;
+                setProfile(conflictData.profile);
+                if (conflictData.creatures) setCreatures(conflictData.creatures);
+                if (conflictData.activeCreature?.creatureId !== undefined) setActiveCreatureId(conflictData.activeCreature.creatureId);
+                if (conflictData.auraBalance !== undefined) setAuraPoints(conflictData.auraBalance);
+                if (conflictData.dailyActivity) setDailyActivity(conflictData.dailyActivity);
+                if (conflictData.reviewQueue) setReviewQueue(conflictData.reviewQueue);
+                if (conflictData.userTeam) setUserTeam(conflictData.userTeam);
+                if (conflictData.tutorialState) setTutorialState(conflictData.tutorialState);
+
+                lastSyncedAtRef.current = conflictData.updatedAt;
+            } else if (result?.gameData?.updatedAt) {
+                lastSyncedAtRef.current = result.gameData.updatedAt;
+                lastSyncedDataStrRef.current = currentDataStr;
+            }
+        } catch (error) {
+            console.error('Auto-sync failed:', error);
+        }
+    }, [user]);
 
     useEffect(() => {
         if (!user || !hasHydratedRef.current) return;
-
-        const timer = setTimeout(async () => {
-            try {
-                const token = await AuthService.getAuthToken();
-                if (!token) return;
-
-                const currentData = {
-                    profile,
-                    creatures,
-                    activeCreatureId,
-                    auraPoints,
-                    dailyActivity,
-                    reviewQueue,
-                    userTeam,
-                    tutorialState
-                };
-
-                const currentDataStr = JSON.stringify(currentData);
-                if (currentDataStr === lastSyncedDataStrRef.current) {
-                    return; // No changes to sync
-                }
-
-                console.log('Syncing updated game data to backend...');
-                const result = await syncGameDataToBackend(
-                    currentData.profile,
-                    currentData.creatures,
-                    currentData.activeCreatureId,
-                    currentData.auraPoints,
-                    currentData.dailyActivity,
-                    currentData.reviewQueue,
-                    currentData.userTeam,
-                    currentData.tutorialState,
-                    token,
-                    lastSyncedAtRef.current
-                );
-
-                if (result?.status === 'conflict' && result.data) {
-                    console.warn('Sync conflict: Pulling newer data from backend');
-                    const conflictData = result.data;
-                    setProfile(conflictData.profile);
-                    if (conflictData.creatures) setCreatures(conflictData.creatures);
-                    if (conflictData.activeCreature?.creatureId !== undefined) setActiveCreatureId(conflictData.activeCreature.creatureId);
-                    if (conflictData.auraBalance !== undefined) setAuraPoints(conflictData.auraBalance);
-                    if (conflictData.dailyActivity) setDailyActivity(conflictData.dailyActivity);
-                    if (conflictData.reviewQueue) setReviewQueue(conflictData.reviewQueue);
-                    if (conflictData.userTeam) setUserTeam(conflictData.userTeam);
-                    if (conflictData.tutorialState) setTutorialState(conflictData.tutorialState);
-                    
-                    lastSyncedAtRef.current = conflictData.updatedAt;
-                } else if (result?.gameData?.updatedAt) {
-                    lastSyncedAtRef.current = result.gameData.updatedAt;
-                    lastSyncedDataStrRef.current = currentDataStr;
-                }
-            } catch (error) {
-                console.error('Auto-sync failed:', error);
-            }
-        }, 3000); // 3-second debounce
-
+        const timer = setTimeout(flushSync, 3000); // 3-second debounce
         return () => clearTimeout(timer);
-    }, [user, profile, creatures, activeCreatureId, auraPoints, dailyActivity, reviewQueue, userTeam, tutorialState]);
+    }, [user, profile, creatures, activeCreatureId, auraPoints, dailyActivity, reviewQueue, userTeam, tutorialState, flushSync]);
+
+    // The debounce above is cancelled if the user backgrounds/closes the app
+    // before the 3s timer fires, silently dropping the pending write — the
+    // change is real on this device but never reaches Firestore, so no other
+    // device ever sees it. Force an immediate flush the moment the page is
+    // hidden or being torn down (covers mobile app-switch, tab close, and
+    // desktop navigation-away), in addition to the debounced path.
+    useEffect(() => {
+        if (!user) return;
+
+        const handleVisibilityChange = () => {
+            if (document.hidden) {
+                flushSync();
+            }
+        };
+        const handlePageHide = () => {
+            flushSync();
+        };
+
+        document.addEventListener('visibilitychange', handleVisibilityChange);
+        window.addEventListener('pagehide', handlePageHide);
+        return () => {
+            document.removeEventListener('visibilitychange', handleVisibilityChange);
+            window.removeEventListener('pagehide', handlePageHide);
+        };
+    }, [user, flushSync]);
 
     // Scroll window to top on view changes
     useEffect(() => {
