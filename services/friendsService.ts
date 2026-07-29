@@ -1,4 +1,4 @@
-import { User, PublicProfile, FriendRequest, FriendRequestStatus } from '../types';
+import { User, PublicProfile, PublicTeamMember, FriendRequest, FriendRequestStatus, LeagueType } from '../types';
 import { db } from './firebase';
 import {
     doc,
@@ -9,10 +9,25 @@ import {
     collection,
     query,
     where,
+    orderBy,
+    limit,
     getDocs,
     addDoc,
     arrayUnion
 } from 'firebase/firestore';
+
+function toPublicProfile(uid: string, data: any): PublicProfile {
+    return {
+        uid,
+        name: data.name,
+        photoUrl: data.photoUrl ?? undefined,
+        weeklyGain: typeof data.weeklyGain === 'number' ? data.weeklyGain : 0,
+        guardianId: typeof data.guardianId === 'number' ? data.guardianId : 1,
+        league: data.league ?? undefined,
+        team: Array.isArray(data.team) ? data.team : [],
+        streak: typeof data.streak === 'number' ? data.streak : 0
+    };
+}
 
 /**
  * Keep the public directory doc (`users/{uid}`) in sync with the user's
@@ -29,12 +44,62 @@ export async function ensurePublicProfile(user: User): Promise<void> {
     }, { merge: true });
 }
 
+/**
+ * Sync the fields the League leaderboard and friend profile cards need
+ * (weeklyGain, active guardian, league, team snapshot, streak). Kept
+ * separate from ensurePublicProfile so it can be called more often (e.g.
+ * whenever the user's weekly aura gain changes) without re-touching
+ * name/photo.
+ */
+export async function syncPublicLeaderboardStats(
+    uid: string,
+    stats: { weeklyGain: number; guardianId: number; league: LeagueType; team: PublicTeamMember[]; streak: number }
+): Promise<void> {
+    await setDoc(doc(db, 'users', uid), {
+        weeklyGain: stats.weeklyGain,
+        guardianId: stats.guardianId,
+        league: stats.league,
+        team: stats.team,
+        streak: stats.streak,
+        updatedAt: new Date().toISOString()
+    }, { merge: true });
+}
+
 export async function lookupPublicProfile(uid: string): Promise<PublicProfile | null> {
     const docRef = doc(db, 'users', uid);
     const snap = await getDoc(docRef);
     if (!snap.exists()) return null;
-    const data = snap.data();
-    return { uid: snap.id, name: data.name, photoUrl: data.photoUrl ?? undefined };
+    return toPublicProfile(snap.id, snap.data());
+}
+
+/**
+ * Real users in the same league, ranked by weekly aura gain, for
+ * populating the League leaderboard before falling back to mock
+ * competitors. Fails soft (returns []) so a missing composite index or
+ * a transient Firestore error never breaks the leaderboard — it just
+ * falls back to mocks that round.
+ */
+export async function getLeagueCompetitors(
+    league: LeagueType,
+    excludeUid: string,
+    limitCount: number
+): Promise<PublicProfile[]> {
+    try {
+        const q = query(
+            collection(db, 'users'),
+            where('league', '==', league),
+            orderBy('weeklyGain', 'desc'),
+            limit(limitCount + 1)
+        );
+        const snap = await getDocs(q);
+        return snap.docs
+            .map(d => toPublicProfile(d.id, d.data()))
+            .filter(p => p.uid !== excludeUid)
+            .slice(0, limitCount);
+    } catch (error) {
+        console.error('[Friends] Failed to fetch league competitors, falling back to mocks:', error);
+        return [];
+    }
 }
 
 function toFriendRequest(id: string, data: any): FriendRequest {

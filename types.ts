@@ -6,12 +6,30 @@ export interface User {
     photoUrl?: string;
 }
 
+// A read-only snapshot of one active-team slot, enough to render the
+// creature (species + evolution/level/shiny) without exposing the owner's
+// full private CreatureInstance.
+export interface PublicTeamMember {
+    creatureId: number;
+    evolutionStage: 1 | 2 | 3;
+    level: number;
+    isShiny?: boolean;
+}
+
 // Minimal public-facing profile, looked up by Academy ID (uid) so a user
-// can be found and shown before a friend request is sent.
+// can be found and shown before a friend request is sent. Also doubles as
+// the leaderboard-display record: weeklyGain/guardianId/league/team/streak
+// are synced here by each user's own client so the League leaderboard can
+// be populated with real users, and a friend's profile card can be shown.
 export interface PublicProfile {
     uid: string;
     name: string;
     photoUrl?: string;
+    weeklyGain: number;
+    guardianId: number;
+    league?: LeagueType;
+    team: PublicTeamMember[];
+    streak: number;
 }
 
 export type FriendRequestStatus = 'pending' | 'accepted' | 'rejected';

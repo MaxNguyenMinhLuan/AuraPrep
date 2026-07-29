@@ -47,7 +47,8 @@ import { INITIAL_TUTORIAL_STATE, TUTORIAL_DIALOGUE, STARTER_IDS, PROGRESS_UNLOCK
 // import { processBaselineResults, baselineResultsToStats } from './utils/baselineScoring';
 import { hasCompletedStealthPlacement, processStealthMissionAnswer } from './services/stealthMissionService';
 import { migrateLocalStorageToBackend, syncGameDataToBackend, fetchGameData } from './services/gameDataService';
-import { ensurePublicProfile, reconcileAcceptedRequests, getIncomingRequests } from './services/friendsService';
+import { ensurePublicProfile, reconcileAcceptedRequests, getIncomingRequests, syncPublicLeaderboardStats } from './services/friendsService';
+import { logDailyEvent } from './services/dailyStatsService';
 import { DifficultyTier } from './types/stealthDiagnostic';
 
 const App: React.FC = () => {
@@ -225,6 +226,15 @@ const App: React.FC = () => {
 
     const hasHydratedRef = React.useRef(false);
 
+    // Log one "login" event per app session (fires once per mount, whether
+    // the session was just established or resumed from a persisted user).
+    const hasLoggedLoginRef = React.useRef(false);
+    useEffect(() => {
+        if (!user || isCheckingSession || hasLoggedLoginRef.current) return;
+        hasLoggedLoginRef.current = true;
+        logDailyEvent('login');
+    }, [user, isCheckingSession]);
+
     // Check NDA compliance status after login — reads from localStorage (instant, no permissions needed)
     useEffect(() => {
         if (!user || isCheckingSession) {
@@ -284,6 +294,29 @@ const App: React.FC = () => {
         })();
         return () => { cancelled = true; };
     }, [user?.uid, friendRequestsRefreshKey]);
+
+    // Leaderboard + friend profile cards: keep this user's public
+    // weeklyGain/guardian/league/team/streak fresh so the League leaderboard
+    // can rank real users instead of only mocks, and friends can view this
+    // user's team. Debounced since these change on every correct answer.
+    useEffect(() => {
+        if (!user) return;
+        const guardianId = creatures.find(c => c.id === activeCreatureId)?.creatureId || 1;
+        const team = userTeam
+            .map(instanceId => creatures.find(c => c.id === instanceId))
+            .filter((c): c is CreatureInstance => !!c)
+            .map(c => ({ creatureId: c.creatureId, evolutionStage: c.evolutionStage, level: c.level, isShiny: c.isShiny }));
+        const timer = setTimeout(() => {
+            syncPublicLeaderboardStats(user.uid, {
+                weeklyGain: profile.weeklyAuraGain,
+                guardianId,
+                league: profile.league,
+                team,
+                streak: profile.dailyStreak
+            }).catch(error => console.error('[Friends] Failed to sync leaderboard stats:', error));
+        }, 800);
+        return () => clearTimeout(timer);
+    }, [user?.uid, profile.weeklyAuraGain, profile.league, profile.dailyStreak, activeCreatureId, creatures, userTeam]);
 
     // On login: fetch the authoritative cloud copy BEFORE the app renders.
     // We show a loading spinner during this time so stale localStorage data
@@ -766,6 +799,7 @@ const App: React.FC = () => {
 
             // Track question for milestone unlocks (Progress at 60, Leaderboard at 120)
             incrementQuestionsAnswered();
+            logDailyEvent('question');
         }
 
         // Streak implementation: progress resets to 0 on incorrect answer unless Double Jeopardy saves it (handled by forceEarlyEnd/loseAllRewards flag)
@@ -813,7 +847,8 @@ const App: React.FC = () => {
         
         if (isNowComplete && !mission.completed) {
             const today = new Date().toLocaleDateString('en-CA');
-            
+            logDailyEvent('mission');
+
             if (profile.lastStreakDate !== today) {
                 const newStreak = profile.dailyStreak + 1;
                 setProfile(prev => ({
