@@ -396,20 +396,21 @@ const App: React.FC = () => {
 
             if (!hasSpecialAuramons && creatures.length < 10) {
                 // Add the 6 special max-level Auramons
+                const maxId = Math.max(0, ...creatures.map(c => c.id), 0);
                 const newCreatures = [
-                    { id: Math.max(0, ...creatures.map(c => c.id), 0) + 1, creatureId: 2, xp: (100 - 5) * 30, level: 100, evolutionStage: 3 as const, isShiny: false },
-                    { id: Math.max(0, ...creatures.map(c => c.id), 0) + 2, creatureId: 74, xp: (100 - 5) * 30, level: 100, evolutionStage: 1 as const, isShiny: false },
-                    { id: Math.max(0, ...creatures.map(c => c.id), 0) + 3, creatureId: 20, xp: (100 - 5) * 30, level: 100, evolutionStage: 2 as const, isShiny: false },
-                    { id: Math.max(0, ...creatures.map(c => c.id), 0) + 4, creatureId: 51, xp: (100 - 5) * 30, level: 100, evolutionStage: 2 as const, isShiny: true },
-                    { id: Math.max(0, ...creatures.map(c => c.id), 0) + 5, creatureId: 16, xp: (100 - 5) * 30, level: 100, evolutionStage: 2 as const, isShiny: false },
-                    { id: Math.max(0, ...creatures.map(c => c.id), 0) + 6, creatureId: 80, xp: (100 - 5) * 30, level: 100, evolutionStage: 1 as const, isShiny: false },
+                    { id: maxId + 1, creatureId: 2, xp: (100 - 5) * 30, level: 100, evolutionStage: 3 as const, isShiny: false },
+                    { id: maxId + 2, creatureId: 74, xp: (100 - 5) * 30, level: 100, evolutionStage: 1 as const, isShiny: false },
+                    { id: maxId + 3, creatureId: 20, xp: (100 - 5) * 30, level: 100, evolutionStage: 2 as const, isShiny: false },
+                    { id: maxId + 4, creatureId: 51, xp: (100 - 5) * 30, level: 100, evolutionStage: 2 as const, isShiny: true },
+                    { id: maxId + 5, creatureId: 16, xp: (100 - 5) * 30, level: 100, evolutionStage: 2 as const, isShiny: false },
+                    { id: maxId + 6, creatureId: 80, xp: (100 - 5) * 30, level: 100, evolutionStage: 1 as const, isShiny: false },
                 ];
 
                 setCreatures(prev => [...prev, ...newCreatures]);
                 console.log('[Dev] Added 6 special Auramons to maxidea2008@gmail.com');
             }
         }
-    }, [user?.email, hasHydratedRef.current]);
+    }, [user?.email, creatures]);
 
     // Dev account enforcer - runs independently of sync hydration
     useEffect(() => {
