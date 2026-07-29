@@ -119,8 +119,10 @@ export const addSpecialAuramons = functions.https.onCall(async (data, context) =
 });
 
 /**
- * Redeem a gift code to receive a special Auramon.
- * Gift codes are one-time use and can only be redeemed once per user.
+ * Redeem a gift code to receive rewards (Auramons, aura, power-ups, etc.)
+ * Supports two code types:
+ * 1. Single-use codes: Only the first user to claim gets it
+ * 2. Multi-use codes: Each user can redeem once (with optional pro requirement)
  */
 export const redeemGiftCode = functions.https.onCall(async (data, context) => {
   // Check if user is authenticated
@@ -152,22 +154,47 @@ export const redeemGiftCode = functions.https.onCall(async (data, context) => {
       throw new functions.https.HttpsError('not-found', 'Invalid gift code');
     }
 
-    // Check if code is still active
-    if (giftCodeData.isUsed) {
-      throw new functions.https.HttpsError('permission-denied', 'This gift code has already been used');
-    }
-
+    // Check if code is expired
     if (giftCodeData.expiresAt && new Date(giftCodeData.expiresAt) < new Date()) {
       throw new functions.https.HttpsError('permission-denied', 'This gift code has expired');
     }
 
-    // Check if user already redeemed this code
-    const userRedemptionRef = db.collection('users_gift_code_redemptions')
-      .doc(`${uid}_${trimmedCode}`);
-    const userRedemptionSnap = await userRedemptionRef.get();
+    // Handle single-use codes (only first user wins)
+    if (giftCodeData.type === 'single-use') {
+      if (giftCodeData.claimedBy) {
+        throw new functions.https.HttpsError('permission-denied', 'This gift code has already been claimed by another user');
+      }
 
-    if (userRedemptionSnap.exists) {
-      throw new functions.https.HttpsError('permission-denied', 'You have already redeemed this gift code');
+      // Claim the code for this user
+      await giftCodeRef.update({
+        claimedBy: uid,
+        claimedAt: new Date().toISOString()
+      });
+    } else if (giftCodeData.type === 'multi-use') {
+      // Check if user already redeemed this code
+      const userRedemptionRef = db.collection('users_gift_code_redemptions')
+        .doc(`${uid}_${trimmedCode}`);
+      const userRedemptionSnap = await userRedemptionRef.get();
+
+      if (userRedemptionSnap.exists) {
+        throw new functions.https.HttpsError('permission-denied', 'You have already redeemed this gift code');
+      }
+
+      // Check if code requires pro account
+      if (giftCodeData.requiresPro) {
+        const userDoc = await db.collection('users').doc(uid).get();
+        const userData = userDoc.data();
+        if (!userData?.isPro) {
+          throw new functions.https.HttpsError('permission-denied', 'This code requires a Pro account');
+        }
+      }
+
+      // Mark the code as redeemed by this user
+      await userRedemptionRef.set({
+        userId: uid,
+        giftCode: trimmedCode,
+        redeemedAt: new Date().toISOString()
+      });
     }
 
     // Get user's game data
@@ -177,49 +204,68 @@ export const redeemGiftCode = functions.https.onCall(async (data, context) => {
     const gameData = gameDataSnap.data() || {};
     const currentCreatures = gameData.creatures || [];
 
-    // Find the max ID to assign unique instance IDs
-    let maxId = 0;
-    currentCreatures.forEach((c: any) => {
-      if (c.id > maxId) maxId = c.id;
-    });
-
-    // Create the new Auramon instance
-    const newCreature = {
-      id: maxId + 1,
-      creatureId: giftCodeData.auramonId,
-      xp: (giftCodeData.level || 5 - 5) * 30,
-      level: giftCodeData.level || 5,
-      evolutionStage: giftCodeData.evolutionStage || 1,
-      isShiny: giftCodeData.isShiny || false
-    };
-
-    // Update the document with new creature
-    const updatedCreatures = [...currentCreatures, newCreature];
-    await gameDataRef.set({
-      ...gameData,
-      creatures: updatedCreatures,
+    // Apply rewards based on code type
+    const rewards = giftCodeData.rewards;
+    const gameDataUpdates: any = {
       updatedAt: new Date().toISOString()
-    }, { merge: true });
-
-    // Mark the code as redeemed by this user
-    await userRedemptionRef.set({
-      userId: uid,
-      giftCode: trimmedCode,
-      redeemedAt: new Date().toISOString(),
-      auramonId: giftCodeData.auramonId,
-      auramonName: giftCodeData.auramonName
-    });
-
-    return {
-      success: true,
-      auramon: {
-        id: giftCodeData.auramonId,
-        name: giftCodeData.auramonName,
-        level: giftCodeData.level || 5,
-        evolutionStage: giftCodeData.evolutionStage || 1,
-        isShiny: giftCodeData.isShiny || false
-      }
     };
+
+    let rewardSummary: any = {
+      success: true,
+      rewards: []
+    };
+
+    // Process Auramons
+    if (rewards.auramons && Array.isArray(rewards.auramons)) {
+      let maxId = Math.max(0, ...currentCreatures.map((c: any) => c.id), 0);
+      const newCreatures = rewards.auramons.map((auramon: any, index: number) => ({
+        id: maxId + index + 1,
+        creatureId: auramon.id,
+        xp: (auramon.level - 5) * 30,
+        level: auramon.level,
+        evolutionStage: auramon.evolutionStage || 1,
+        isShiny: auramon.isShiny || false
+      }));
+
+      gameDataUpdates.creatures = [...currentCreatures, ...newCreatures];
+      rewardSummary.rewards.push({
+        type: 'auramons',
+        count: newCreatures.length,
+        items: rewards.auramons.map((a: any) => a.name)
+      });
+    }
+
+    // Process Aura points
+    if (rewards.aura) {
+      gameDataUpdates.auraPoints = (gameData.auraPoints || 0) + rewards.aura;
+      rewardSummary.rewards.push({
+        type: 'aura',
+        amount: rewards.aura
+      });
+    }
+
+    // Process power-ups
+    if (rewards.powerUps) {
+      const newInventory = { ...gameData.profile?.inventory || {} };
+      Object.entries(rewards.powerUps).forEach(([powerUpType, amount]: [string, any]) => {
+        newInventory[powerUpType] = (newInventory[powerUpType] || 0) + amount;
+      });
+      if (gameData.profile) {
+        gameDataUpdates.profile = {
+          ...gameData.profile,
+          inventory: newInventory
+        };
+      }
+      rewardSummary.rewards.push({
+        type: 'powerUps',
+        items: rewards.powerUps
+      });
+    }
+
+    // Update game data with rewards
+    await gameDataRef.set(gameDataUpdates, { merge: true });
+
+    return rewardSummary;
   } catch (error: any) {
     console.error('Error redeeming gift code:', error);
     if (error.code && error.message) {

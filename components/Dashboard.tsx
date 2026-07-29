@@ -181,7 +181,7 @@ const Dashboard: React.FC<DashboardProps> = ({
 
                     <div className="flex justify-between items-center">
                         <h2 className="text-base md:text-lg font-serif text-highlight">Daily Missions</h2>
-                        <span className="text-[10px] md:text-xs font-bold bg-primary text-light px-3 py-1.5 rounded-full shadow-button uppercase tracking-wide">
+                        <span className="text-[10px] md:text-xs font-bold bg-primary !text-white px-3 py-1.5 rounded-full shadow-button uppercase tracking-wide">
                             Today
                         </span>
                     </div>
