@@ -146,23 +146,8 @@ export class NudgeService {
         console.log(`[${new Date().toISOString()}] Starting nudge sweep...`);
         try {
             const pushUserIds = await PushSubscription.distinct('userId');
-            console.log(`[debug] Raw PushSubscription.distinct('userId') = ${JSON.stringify(pushUserIds)}`);
             const records = await UserGameData.find({ userId: { $in: pushUserIds } });
             console.log(`Found ${records.length} users with an active push subscription.`);
-
-            if (records.length === 0 && pushUserIds.length > 0) {
-                const directLookup = await Promise.all(
-                    pushUserIds.map(async (id) => {
-                        const doc = await UserGameData.findOne({ userId: id }).select('_id userId').lean();
-                        return { pushUserId: id, matchedDirectly: !!doc, matchedUserIdValue: doc?.userId };
-                    })
-                );
-                console.log(`[debug] Direct findOne per pushUserId = ${JSON.stringify(directLookup)}`);
-                const sampleGameData = await UserGameData.findOne({}).select('_id userId').lean();
-                console.log(`[debug] Sample UserGameData doc = ${JSON.stringify(sampleGameData)}`);
-                const gameDataCount = await UserGameData.countDocuments({});
-                console.log(`[debug] Total UserGameData documents = ${gameDataCount}`);
-            }
 
             let nudgesSentCount = 0;
 

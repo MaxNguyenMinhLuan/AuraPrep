@@ -66,7 +66,12 @@ app.use(cors({
 }));
 
 // Body parser
-app.use(express.json({ limit: '10kb' })); // Limit body size
+// gameData/sync payloads (creatures, profile, tutorialState, dailyActivity)
+// routinely exceed 10kb once a user has real progress - the old limit was
+// silently rejecting those syncs with a 413, so UserGameData was never
+// created/updated for real users even though auth and push subscriptions
+// (small payloads) went through fine.
+app.use(express.json({ limit: '2mb' }));
 
 // Request logging in development
 if (config.nodeEnv === 'development') {
