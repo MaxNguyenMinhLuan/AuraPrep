@@ -6,6 +6,12 @@ interface IDailyMissions {
   completedAt?: Date;
   nudgesSent: number;
   lastNudgeSentAt?: Date;
+  // Which nudge slots ('morning', 'afternoon', 'evening', 'lastChance',
+  // 'evolutionSoon') have already fired today, in the user's local day.
+  // Needed because jittered send times no longer line up with a single
+  // hourly tick, so "already sent this slot" can't be inferred from the
+  // hour alone.
+  nudgeSlotsSent: string[];
 }
 
 interface IActiveCreature {
@@ -62,7 +68,8 @@ const DailyMissionsSchema = new Schema<IDailyMissions>({
   completed: { type: Boolean, required: true, default: false },
   completedAt: { type: Date },
   nudgesSent: { type: Number, required: true, default: 0 },
-  lastNudgeSentAt: { type: Date }
+  lastNudgeSentAt: { type: Date },
+  nudgeSlotsSent: { type: [String], required: true, default: [] }
 });
 
 const ActiveCreatureSchema = new Schema<IActiveCreature>({

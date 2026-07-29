@@ -8,7 +8,7 @@
  * state; this module only owns the copy and the substitution mechanics.
  */
 
-export type PushCategory = 'dailyMissions' | 'streak' | 'leaderboard' | 'auraFarming';
+export type PushCategory = 'dailyMissions' | 'streak' | 'leaderboard' | 'auraFarming' | 'beyondMissions' | 'lastChance' | 'evolutionSoon';
 
 export interface PushTemplate {
     id: string;
@@ -21,6 +21,7 @@ export interface PushVariables {
     streakCount: number;
     rival: string;
     leagueName: string;
+    levelsToEvolve: number;
 }
 
 // Flavor names for the leaderboard's fictional competitors. There is no real
@@ -45,7 +46,8 @@ export function renderPushTemplate(template: PushTemplate, vars: PushVariables):
             .replace(/\{PARTNER_NAME\}/g, vars.partnerName)
             .replace(/\{STREAK_COUNT\}/g, String(vars.streakCount))
             .replace(/\{RIVAL\}/g, vars.rival)
-            .replace(/\{LEAGUE_NAME\}/g, vars.leagueName);
+            .replace(/\{LEAGUE_NAME\}/g, vars.leagueName)
+            .replace(/\{LEVELS_TO_EVOLVE\}/g, String(vars.levelsToEvolve));
 
     return { title: substitute(template.title), body: substitute(template.body) };
 }
@@ -272,6 +274,173 @@ export const PUSH_TEMPLATES: Record<PushCategory, PushTemplate[]> = {
             id: 'the-ultimate-flex',
             title: '👑 Maximize your Aura',
             body: "Want to auramaxx and flex on the leaderboard? Complete today's missions and claim the high-tier pulls you deserve.",
+        },
+    ],
+
+    // 5. Beyond Missions - sent for the guaranteed morning/evening slots when
+    // today's daily missions are ALREADY done. Redirects the nudge toward
+    // Practice/Boss Fights instead of repeating a "do your missions" message
+    // that no longer applies.
+    beyondMissions: [
+        {
+            id: 'the-minimum-is-not-enough',
+            title: '📊 The daily minimum? Cute.',
+            body: "You cleared today's missions. Top preppers stop there. Top scorers don't. A Boss Fight is still standing.",
+        },
+        {
+            id: 'aura-still-warm',
+            title: '🔥 Your Aura is still warm',
+            body: "Missions: done. But {PARTNER_NAME} knows a fresh Practice session while you're locked in beats one tomorrow when you're not.",
+        },
+        {
+            id: 'overachiever-energy',
+            title: '💪 Show-off behavior detected',
+            body: "You finished early. Either you're built different, or you're stalling before the real test. Go find out in a Boss Fight.",
+        },
+        {
+            id: 'rest-is-for-the-comfortable',
+            title: '😌 Comfortable already?',
+            body: "Missions cleared. Comfortable is how scores plateau. One more Practice round and you're still climbing.",
+        },
+        {
+            id: 'the-real-ones-keep-going',
+            title: '🏆 The real ones keep going',
+            body: '{PARTNER_NAME} has seen this before: mission done, momentum wasted. Not today. Boss Fight, right now.',
+        },
+        {
+            id: 'free-time-is-a-trap',
+            title: '⏳ "Free time" is a trap',
+            body: "You could close the app now. Or you could bank a Practice session while your brain is already warmed up. Your call.",
+        },
+        {
+            id: 'the-quiet-achiever',
+            title: "🤫 Nobody's watching, so why stop?",
+            body: "That's exactly why the ones who actually improve keep going after the minimum. One more round, no audience required.",
+        },
+        {
+            id: 'streak-of-effort',
+            title: '📈 Missions ≠ mastery',
+            body: 'Clearing missions keeps the lights on. Practice and Boss Fights are what actually move the needle. Go move it.',
+        },
+        {
+            id: 'auramon-still-hungry',
+            title: '🍽️ {PARTNER_NAME} is still hungry',
+            body: "You fed it one mission's worth of Aura. It wants more. So does your score. Hit a Boss Fight.",
+        },
+        {
+            id: 'the-bonus-round',
+            title: '✨ Consider this the bonus round',
+            body: "Today's requirement is met. Everything past this point is pure score gain. Take the free lap.",
+        },
+    ],
+
+    // 6. Last Chance - sent when it's late in the day (5pm local) and the
+    // user still hasn't touched today's missions at all.
+    lastChance: [
+        {
+            id: 'the-day-is-almost-gone',
+            title: '⏳ The day is almost gone',
+            body: "It's 5pm and you haven't opened a single mission today. The window is closing. Don't let today be a zero.",
+        },
+        {
+            id: 'last-call',
+            title: '📢 Last call',
+            body: "This is the part of the day where 'I'll do it later' quietly becomes 'I didn't do it.' Prove that wrong.",
+        },
+        {
+            id: 'evening-is-not-a-plan',
+            title: '🌆 \"Tonight\" is not a plan',
+            body: "You've said that before. Open one mission now while it's still easy to keep the promise.",
+        },
+        {
+            id: 'the-empty-progress-bar',
+            title: '📉 Still at zero today',
+            body: '{PARTNER_NAME} has been staring at an empty progress bar since this morning. Give it something to work with.',
+        },
+        {
+            id: 'sunset-deadline',
+            title: '🌇 Sunset deadline',
+            body: "The rest of your day is about to fill up. Ten minutes now beats zero minutes later. Start a mission.",
+        },
+        {
+            id: 'day-not-over-yet',
+            title: '⚠️ Not over yet, but close',
+            body: "You still have time to make today count. That window shrinks every hour you wait.",
+        },
+        {
+            id: 'the-honest-truth',
+            title: "🫤 Let's be honest",
+            body: "If you don't start now, you probably won't tonight either. Prove yourself wrong in the next five minutes.",
+        },
+        {
+            id: 'afternoon-slipped-away',
+            title: '🕔 The afternoon slipped away',
+            body: "That's fine, it happens. But evening shouldn't slip away too. One mission, right now.",
+        },
+        {
+            id: 'the-quiet-panic',
+            title: "😬 A little late-day panic, if you don't mind",
+            body: "Zero missions, 5pm, and {PARTNER_NAME} is starting to worry. A quick session would put that to rest.",
+        },
+        {
+            id: 'still-time-technically',
+            title: '⏰ Technically still time',
+            body: "\"Technically\" is doing a lot of work in that sentence. Close the gap before it closes on you.",
+        },
+    ],
+
+    // 7. Evolution Soon - sent when the active Auramon is within a couple of
+    // levels of its next evolution threshold, independent of mission state.
+    evolutionSoon: [
+        {
+            id: 'so-close',
+            title: '✨ {PARTNER_NAME} is SO close',
+            body: 'Just {LEVELS_TO_EVOLVE} level(s) from evolving. One good session could be the one that does it.',
+        },
+        {
+            id: 'the-glow-up-is-near',
+            title: '🌟 The glow-up is near',
+            body: "{PARTNER_NAME} is {LEVELS_TO_EVOLVE} level(s) away from its next evolution. Don't make it wait any longer than it has to.",
+        },
+        {
+            id: 'evolution-incoming',
+            title: '🧬 Evolution incoming',
+            body: 'A few more correct answers and {PARTNER_NAME} levels up into its next form. Go finish the job.',
+        },
+        {
+            id: 'one-push-away',
+            title: '🚀 One push away',
+            body: '{LEVELS_TO_EVOLVE} level(s) stand between {PARTNER_NAME} and its next stage. Give it that push.',
+        },
+        {
+            id: 'the-final-stretch',
+            title: '🏁 The final stretch',
+            body: "You've put in the work to get {PARTNER_NAME} this close. Don't stall out {LEVELS_TO_EVOLVE} level(s) from the finish line.",
+        },
+        {
+            id: 'almost-unrecognizable',
+            title: '🔮 Almost unrecognizable',
+            body: '{PARTNER_NAME} is {LEVELS_TO_EVOLVE} level(s) from a whole new form. Curious what it looks like? Go find out.',
+        },
+        {
+            id: 'dont-stop-now',
+            title: '🛑 Don\'t stop now',
+            body: "Evolution is right there, {LEVELS_TO_EVOLVE} level(s) out. This is the worst possible moment to take a break.",
+        },
+        {
+            id: 'patience-has-limits',
+            title: '⌛ Even {PARTNER_NAME} has limits',
+            body: "It's been waiting patiently for {LEVELS_TO_EVOLVE} more level(s). Patience isn't infinite. Neither is your excuse.",
+        },
+        {
+            id: 'the-countdown',
+            title: '⏱️ Evolution countdown: {LEVELS_TO_EVOLVE}',
+            body: 'That\'s how many levels stand between {PARTNER_NAME} and its next form. Every mission counts double right now.',
+        },
+        {
+            id: 'built-different-soon',
+            title: '💥 About to be built different',
+            body: '{LEVELS_TO_EVOLVE} level(s) from evolving, {PARTNER_NAME} is about to hit a new tier. Bring it home.',
         },
     ],
 };

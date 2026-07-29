@@ -25,8 +25,9 @@ export class AnalyticsScheduler {
     // Hourly nudge efficacy recalculation - runs every hour
     this.scheduleHourlyNudgeMetrics();
 
-    // Hourly email and Web Push reminder job - runs every hour
-    this.scheduleHourlyNudgeJob();
+    // Web Push reminder sweep - runs every 5 minutes so jittered per-user
+    // send times (e.g. 8:06 instead of a robotic 8:00) can actually be hit.
+    this.scheduleNudgeSweep();
 
     // Weekly retention cohort analysis - runs Sunday at 2 AM UTC
     this.scheduleWeeklyRetentionAnalysis();
@@ -109,20 +110,22 @@ export class AnalyticsScheduler {
   }
 
   /**
-   * Schedule hourly reminder job
-   * Checks local timezones and sends morning/afternoon/evening email and Web Push nudges
+   * Schedule the nudge sweep
+   * Runs every 5 minutes, checks local timezones, and sends the
+   * guaranteed morning/evening pushes (jittered per user), the
+   * opportunistic afternoon push, and event-triggered pushes
+   * (5pm last-chance, evolution-soon, Sunday leaderboard stagnation).
    */
-  private static scheduleHourlyNudgeJob(): void {
-    cron.schedule('0 * * * *', async () => {
-      console.log(`[${new Date().toISOString()}] Starting scheduled hourly reminder job...`);
+  private static scheduleNudgeSweep(): void {
+    cron.schedule('*/5 * * * *', async () => {
       try {
         await NudgeService.processHourlyNudges();
       } catch (error) {
-        console.error('❌ Scheduled hourly email nudge job failed:', error);
+        console.error('❌ Scheduled nudge sweep failed:', error);
       }
     });
 
-    console.log('✓ Scheduled hourly email nudge job');
+    console.log('✓ Scheduled nudge sweep (every 5 minutes)');
   }
 
   /**

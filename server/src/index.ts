@@ -2,38 +2,25 @@ import mongoose from 'mongoose';
 import app from './app';
 import { config, validateConfig } from './config';
 import { AnalyticsScheduler } from './jobs/scheduler';
-import { MongoMemoryServer } from 'mongodb-memory-server';
 import { QuestionIngestionService } from './services/questionIngestion.service';
-
-let mongoServerInstance: MongoMemoryServer | null = null;
 
 async function startServer(): Promise<void> {
     try {
         // Validate configuration
         validateConfig();
 
-        let mongoUri = config.mongodb.uri;
+        const mongoUri = config.mongodb.uri;
 
         // Connect to MongoDB with connection pooling
         console.log('Connecting to MongoDB...');
         console.log(`MongoDB URI: ${mongoUri.replace(/\/\/[^:]+:[^@]+@/, '//***:***@')}`); // Hide credentials in logs
 
-        try {
-            if (process.env.USE_IN_MEMORY_DB === 'true') {
-                throw new Error('Forcing in-memory DB due to USE_IN_MEMORY_DB flag');
-            }
-            await mongoose.connect(mongoUri, config.mongodb.options);
-            console.log(`Connected to MongoDB (pool size: ${config.mongodb.options.maxPoolSize})`);
-        } catch (connError) {
-            console.warn('⚠️ Primary MongoDB connection failed or bypassed:', connError instanceof Error ? connError.message : connError);
-            console.log('Spinning up in-memory MongoDB as a fallback...');
-            mongoServerInstance = await MongoMemoryServer.create();
-            mongoUri = mongoServerInstance.getUri();
-            console.log(`In-memory MongoDB started at: ${mongoUri}`);
-            
-            await mongoose.connect(mongoUri, config.mongodb.options);
-            console.log('Connected to fallback in-memory MongoDB');
-        }
+        // No fallback to an in-memory database: a connection failure here
+        // must be loud (crash + restart) rather than silently booting on an
+        // empty ephemeral DB, which previously caused the nudge cron to run
+        // "successfully" against zero users with no visible error.
+        await mongoose.connect(mongoUri, config.mongodb.options);
+        console.log(`Connected to MongoDB (pool size: ${config.mongodb.options.maxPoolSize})`);
 
         // Seed backup questions & fetch official questions
         QuestionIngestionService.seedBackupQuestions();
@@ -82,10 +69,6 @@ process.on('SIGINT', async () => {
     console.log('Shutting down gracefully...');
     AnalyticsScheduler.stopAllJobs();
     await mongoose.connection.close();
-    if (mongoServerInstance) {
-        await mongoServerInstance.stop();
-        console.log('In-memory MongoDB stopped.');
-    }
     process.exit(0);
 });
 
@@ -93,10 +76,6 @@ process.on('SIGTERM', async () => {
     console.log('Shutting down gracefully...');
     AnalyticsScheduler.stopAllJobs();
     await mongoose.connection.close();
-    if (mongoServerInstance) {
-        await mongoServerInstance.stop();
-        console.log('In-memory MongoDB stopped.');
-    }
     process.exit(0);
 });
 
