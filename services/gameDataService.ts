@@ -261,8 +261,15 @@ function normaliseFirestoreDoc(d: any): any {
 }
 
 /**
- * Unified fetch: tries Firestore first (fast & reliable), then
- * Render backend as fallback.  Always picks the newest copy by updatedAt.
+ * Unified fetch: Firestore is primary and wins whenever it has data — every
+ * successful sync writes there first and always-awaited (see
+ * syncGameDataToBackend above), while the Render/Mongo write is best-effort
+ * and can silently fail (cold start, timeout) without blocking the user or
+ * being retried. Comparing by updatedAt and letting whichever is "newer"
+ * win used to let a stale Mongo snapshot beat fresher Firestore data
+ * whenever Mongo's timestamp happened to race ahead — Render is only used
+ * as a true fallback now, when Firestore has no data at all (new user, or
+ * Firestore itself unreachable).
  */
 export async function fetchGameData(authToken: string): Promise<any> {
   const userId = auth.currentUser?.uid;
@@ -295,15 +302,9 @@ export async function fetchGameData(authToken: string): Promise<any> {
   const fs = normaliseFirestoreDoc(firestoreData);
   const be = normaliseBackend(backendData);
 
-  if (fs && be) {
-    const fsTime = new Date(fs.updatedAt || 0).getTime();
-    const beTime = new Date(be.updatedAt || 0).getTime();
-    console.log(`[Sync] Firestore: ${fs.updatedAt} | Backend: ${be.updatedAt}`);
-    return fsTime >= beTime ? fs : be;
-  }
-
   if (fs) {
-    console.log('[Sync] Using Firestore data (backend unavailable)');
+    if (be) console.log(`[Sync] Using Firestore data (primary). Firestore: ${fs.updatedAt} | Backend (ignored): ${be.updatedAt}`);
+    else console.log('[Sync] Using Firestore data (backend unavailable)');
     return fs;
   }
 
