@@ -81,7 +81,7 @@ const UnlockPopup: React.FC<UnlockPopupProps> = ({ feature, onContinue }) => {
     };
 
     return (
-        <div className="fixed inset-0 z-[50] flex items-center justify-center p-4 pointer-events-none">
+        <div className="fixed inset-0 z-[50] flex items-center justify-center p-4 overflow-y-auto pointer-events-none">
             {/* Particle burst effect */}
             <div className="absolute inset-0 overflow-hidden pointer-events-none">
                 {Array.from({ length: 30 }).map((_, i) => (
@@ -103,7 +103,7 @@ const UnlockPopup: React.FC<UnlockPopupProps> = ({ feature, onContinue }) => {
                 ))}
             </div>
 
-            <div className="max-w-sm w-full text-center relative">
+            <div className="max-w-sm w-full my-auto text-center relative">
                 {/* Lock breaking animation */}
                 <div className="relative mb-6 flex justify-center">
                     <svg className="w-16 h-16 text-highlight animate-shake" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2.5}>
@@ -112,7 +112,7 @@ const UnlockPopup: React.FC<UnlockPopupProps> = ({ feature, onContinue }) => {
                 </div>
 
                 {showContent && (
-                    <div className={`bg-surface border-4 ${colorClasses[data.color as keyof typeof colorClasses]} rounded-2xl p-6 animate-scaleIn shadow-2xl pointer-events-auto`}>
+                    <div className={`bg-surface border-4 ${colorClasses[data.color as keyof typeof colorClasses]} rounded-2xl p-6 max-h-[calc(100dvh-2rem)] overflow-y-auto animate-scaleIn shadow-2xl pointer-events-auto`}>
                         {/* Feature icon */}
                         <div className="mb-4 animate-gentleBounce flex justify-center">
                             {data.icon}

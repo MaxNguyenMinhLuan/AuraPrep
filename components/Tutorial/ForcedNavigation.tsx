@@ -127,13 +127,18 @@ const ForcedNavigation: React.FC<ForcedNavigationProps> = ({
     };
 
     // Calculate message box position (avoid overlapping target)
+    // Clamped to top/bottom instead of a centered transform so a tall box
+    // (long message on a short viewport) can never render above y=0 or
+    // below the viewport bottom with its button unreachable.
     const getMessageStyle = (): React.CSSProperties => {
+        const clampedTop = (percent: number): React.CSSProperties => ({
+            top: `clamp(1rem, ${percent}dvh, calc(100dvh - 1rem))`,
+            left: '50%',
+            transform: 'translate(-50%, -50%)'
+        });
+
         if (!targetRect) {
-            return {
-                top: '50%',
-                left: '50%',
-                transform: 'translate(-50%, -50%)'
-            };
+            return clampedTop(50);
         }
 
         // For desktop sidebar, position message to the right of the sidebar
@@ -151,18 +156,10 @@ const ForcedNavigation: React.FC<ForcedNavigationProps> = ({
 
         if (targetCenter > screenHeight / 2) {
             // Target is in bottom half (mobile nav), show message above
-            return {
-                top: '30%',
-                left: '50%',
-                transform: 'translate(-50%, -50%)'
-            };
+            return clampedTop(30);
         }
 
-        return {
-            top: '50%',
-            left: '50%',
-            transform: 'translate(-50%, -25%)'
-        };
+        return clampedTop(37.5); // approximates old translate(-50%, -25%) center point
     };
 
     return (
@@ -186,7 +183,7 @@ const ForcedNavigation: React.FC<ForcedNavigationProps> = ({
                 className="fixed z-[50] max-w-sm w-full px-4 pointer-events-auto"
                 style={getMessageStyle()}
             >
-                <div className="bg-surface border-4 border-highlight rounded-xl shadow-2xl p-5 animate-scaleIn">
+                <div className="bg-surface border-4 border-highlight rounded-xl shadow-2xl p-5 max-h-[calc(100dvh-2rem)] overflow-y-auto animate-scaleIn">
                     {/* Guide character icon */}
                     <div className="flex justify-center mb-3">
                         <div className="animate-bounce mb-2">

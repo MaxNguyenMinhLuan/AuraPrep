@@ -81,8 +81,8 @@ const DailyMissionsExplainer: React.FC<DailyMissionsExplainerProps> = ({ onCompl
     };
 
     return (
-        <div className="fixed inset-0 z-[50] flex items-center justify-center p-4 pointer-events-none">
-            <div className="max-w-md w-full">
+        <div className="fixed inset-0 z-[50] flex items-center justify-center p-4 overflow-y-auto pointer-events-none">
+            <div className="max-w-md w-full my-auto">
                 {/* Progress dots */}
                 <div className="flex justify-center gap-2 mb-6">
                     {steps.map((_, i) => (
@@ -100,7 +100,7 @@ const DailyMissionsExplainer: React.FC<DailyMissionsExplainerProps> = ({ onCompl
                 </div>
 
                 {/* Card */}
-                <div className="bg-surface border-4 border-highlight rounded-xl p-6 shadow-2xl animate-scaleIn pointer-events-auto" key={step}>
+                <div className="bg-surface border-4 border-highlight rounded-xl p-6 shadow-2xl max-h-[calc(100dvh-2rem)] overflow-y-auto animate-scaleIn pointer-events-auto" key={step}>
                     {/* Guide character */}
                     <div className="flex justify-center mb-4">
                         <div className="animate-gentleBounce mb-2">
