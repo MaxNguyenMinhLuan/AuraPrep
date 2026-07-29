@@ -146,6 +146,7 @@ export class NudgeService {
         console.log(`[${new Date().toISOString()}] Starting nudge sweep...`);
         try {
             const pushUserIds = await PushSubscription.distinct('userId');
+            console.log(`[debug] Raw PushSubscription.distinct('userId') = ${JSON.stringify(pushUserIds)}`);
             const records = await UserGameData.find({ userId: { $in: pushUserIds } });
             console.log(`Found ${records.length} users with an active push subscription.`);
 
