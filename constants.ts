@@ -1,5 +1,15 @@
 import { Creature, Rarity, CreatureType, PowerUpType, LeagueType, BossDef } from './types';
 
+// Single switch controlling which question bank/taxonomy is active. Flipping
+// this back to 'v1' fully reverts content, filtering, and difficulty
+// behavior to the pre-overhaul bank — see architecture/reversibility.md.
+export const ACTIVE_QUESTION_BANK: 'v1' | 'v2' = 'v1';
+
+export const QUESTION_BANK_PATHS: Record<'v1' | 'v2', string> = {
+    v1: '/questions.v1.legacy.json',
+    v2: '/questions.v2.json',
+};
+
 export const SUBTOPICS: string[] = [
     'Algebra: Absolute Value',
     'Algebra: Linear Functions',

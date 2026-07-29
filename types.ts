@@ -69,6 +69,32 @@ export interface GraphData {
     labels?: { x?: string; y?: string };
 }
 
+// Declarative stimulus specs emitted directly by the v2 content pipeline —
+// never raw injected SVG/HTML, so rendering stays consistent and safe.
+export interface ChartStimulus {
+    kind: 'chart';
+    chartType: 'line' | 'bar' | 'scatter' | 'system';
+    points?: Point[]; // line / scatter / system
+    bars?: { label: string; value: number }[]; // bar
+    labels?: { x?: string; y?: string };
+    legend?: string[];
+}
+
+export interface TableStimulus {
+    kind: 'table';
+    headers: string[];
+    rows: string[][];
+    caption?: string;
+}
+
+export interface FigureStimulus {
+    kind: 'figure';
+    shape: 'circle' | 'triangle' | 'rectangle' | 'polygon';
+    measurements: { label: string; value: string }[]; // given side lengths, angles, etc.
+}
+
+export type Stimulus = ChartStimulus | TableStimulus | FigureStimulus;
+
 export interface Question {
     question: string;
     options: string[];
@@ -77,6 +103,12 @@ export interface Question {
     subtopic: string;
     hasGraphic: boolean;
     graphData?: GraphData;
+    // v2 fields — optional so v1-shaped questions keep rendering unchanged.
+    // See architecture/reversibility.md.
+    passage?: string;
+    passages?: string[]; // Cross-Text Connections: two source texts
+    notes?: string[]; // Rhetorical Synthesis: bulleted research notes
+    stimulus?: Stimulus;
 }
 
 export type SkillLevel = 'Easy' | 'Medium' | 'Hard' | 'Master';
@@ -88,6 +120,12 @@ export interface SubtopicStat {
 }
 
 export type PowerUpType = 'ELIMINATE' | 'SKIP' | 'HINT' | 'SECOND_CHANCE' | 'DOUBLE_JEOPARDY';
+
+export interface UserPreferences {
+    // When true, practice/missions/boss fights never serve a skill's Easy
+    // tier — see utils/mastery.ts's skill-aware getDifficultyForLevel().
+    skipEasyQuestions: boolean;
+}
 
 export interface UserProfile {
     stats: {
@@ -101,6 +139,9 @@ export interface UserProfile {
     weeklyAuraGain: number;
     lastWeekResetDate: string;
     league: LeagueType;
+    // Optional so existing stored profiles (pre-overhaul) deserialize fine;
+    // callers should fall back to { skipEasyQuestions: false }.
+    preferences?: UserPreferences;
 }
 
 export enum Rarity {
@@ -169,6 +210,9 @@ export interface DailyMission {
     questionCount: number;
     reward: number;
     xp: number;
+    // Which tier this mission actually pulls from — always set explicitly at
+    // construction time so the UI never has to infer it. See utils/mastery.ts.
+    difficulty: Difficulty;
 }
 
 export interface MissionInstance extends DailyMission {
@@ -288,5 +332,21 @@ export interface DBQuestion {
     Type: string;
     Difficulty: Difficulty;
     Source: string;
-    Explanation?: string; 
+    Explanation?: string;
+    // v2 fields — mirrors Question's optional additions for storage parity.
+    Passage?: string;
+    Passages?: string[];
+    Notes?: string[];
+    Stimulus?: Stimulus;
+}
+
+// One entry per leaf skill in the v2 taxonomy (data/skillTaxonomy.v2.ts).
+// availableDifficulties is the source of truth for which tiers a skill
+// actually has — not every skill spans Easy through Master. See
+// architecture/reversibility.md and utils/mastery.ts.
+export interface SkillDefinition {
+    id: string; // canonical skill name, matches the subtopic/stats key
+    domain: string; // official College Board domain this skill belongs to
+    availableDifficulties: Difficulty[];
+    recipe?: string; // the mechanical "solution recipe" a student should learn to recognize
 }

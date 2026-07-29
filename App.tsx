@@ -99,7 +99,8 @@ const App: React.FC = () => {
             lastStreakDate: '',
             weeklyAuraGain: 0,
             lastWeekResetDate: '',
-            league: LeagueType.BRONZE
+            league: LeagueType.BRONZE,
+            preferences: { skipEasyQuestions: false }
         };
         SUBTOPICS.forEach(subtopic => {
             initialProfile.stats[subtopic] = { correct: 0, incorrect: 0, level: 'Easy' };
@@ -757,7 +758,7 @@ const App: React.FC = () => {
             // Preload questions for each mission in parallel
             const preloadPromises = missionsNeedingQuestions.map(async (mission) => {
                 const subtopicLevel = profile.stats[mission.subtopic]?.level || 'Easy';
-                const difficulty = getDifficultyForLevel(subtopicLevel);
+                const difficulty = getDifficultyForLevel(subtopicLevel, mission.subtopic, profile.preferences);
                 const generatedQuestions = await Promise.all(
                     Array(mission.questionCount).fill(0).map(() => generateSatQuestion(mission.subtopic, difficulty))
                 );
@@ -818,7 +819,7 @@ const App: React.FC = () => {
 
             // Wire stealth diagnostic: secretly log this answer!
             const subtopicLevel = profile.stats[mission.subtopic]?.level || 'Easy';
-            const difficulty = getDifficultyForLevel(subtopicLevel);
+            const difficulty = getDifficultyForLevel(subtopicLevel, mission.subtopic, profile.preferences);
             const difficultyTier = (difficulty === 'Extra Hard' ? 'Hard' : difficulty) as DifficultyTier;
             
             // Log to stealth diagnostic system locally
@@ -886,7 +887,7 @@ const App: React.FC = () => {
 
         if (shouldRegenerateQuestions) {
             const subtopicLevel = profile.stats[mission.subtopic]?.level || 'Easy';
-            const difficulty = getDifficultyForLevel(subtopicLevel);
+            const difficulty = getDifficultyForLevel(subtopicLevel, mission.subtopic, profile.preferences);
             setPreparingMissionId(missionId);
             setCurrentView(View.DASHBOARD);
             (async () => {
@@ -993,7 +994,7 @@ const App: React.FC = () => {
         }
         setPreparingMissionId(mission.id);
         const subtopicLevel = profile.stats[mission.subtopic]?.level || 'Easy';
-        const difficulty = getDifficultyForLevel(subtopicLevel);
+        const difficulty = getDifficultyForLevel(subtopicLevel, mission.subtopic, profile.preferences);
         const generatedQuestions = await Promise.all(
             Array(mission.questionCount).fill(0).map(() => generateSatQuestion(mission.subtopic, difficulty))
         );
@@ -1805,6 +1806,8 @@ const App: React.FC = () => {
                     onClose={() => setIsProfileOpen(false)}
                     onUpdateUser={handleUpdateUser}
                     onLogout={handleLogout}
+                    preferences={profile.preferences}
+                    onUpdatePreferences={(preferences) => setProfile(prev => ({ ...prev, preferences }))}
                 />
             )}
             {/* Push Notification Enrollment Banner */}

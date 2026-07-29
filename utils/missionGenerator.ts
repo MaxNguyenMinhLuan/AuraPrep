@@ -1,7 +1,7 @@
 
 import { UserProfile, DailyMission } from '../types';
 import { SUBTOPICS } from '../constants';
-import { SKILL_LEVELS } from './mastery';
+import { SKILL_LEVELS, getDifficultyForLevel } from './mastery';
 
 // Helper to shuffle an array
 const shuffleArray = <T>(array: T[]): T[] => {
@@ -37,6 +37,8 @@ export const generateDailyMissions = (profile: UserProfile): DailyMission[] => {
     const missions: DailyMission[] = selectedSubtopics.map((subtopic, index) => {
         const template = missionTemplates[index % missionTemplates.length];
         const safeSubtopicId = subtopic.replace(/[^a-zA-Z0-9]/g, '_');
+        const level = profile.stats[subtopic]?.level || 'Easy';
+        const difficulty = getDifficultyForLevel(level, subtopic, profile.preferences);
         return {
             id: `${safeSubtopicId}_${new Date().toLocaleDateString('en-CA')}`,
             title: template.title,
@@ -44,7 +46,8 @@ export const generateDailyMissions = (profile: UserProfile): DailyMission[] => {
             subtopic: subtopic,
             questionCount: template.questionCount,
             reward: template.reward,
-            xp: template.xp
+            xp: template.xp,
+            difficulty,
         };
     });
     

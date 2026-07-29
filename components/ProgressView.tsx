@@ -9,7 +9,8 @@ import { getStrategyTip } from '../utils/strategyTips';
 import { getSkillsOfTheDay } from '../utils/skillsOfTheDay';
 import LoadingSpinner from './icons/LoadingSpinner';
 import FormattedText from './FormattedText';
-import QuestionGraph from './QuestionGraph';
+import QuestionStimulus from './QuestionStimulus';
+import AnswerChoices from './AnswerChoices';
 import ScissorsIcon from './icons/ScissorsIcon';
 import EyeIcon from './icons/EyeIcon';
 import LockIcon from './icons/LockIcon';
@@ -81,7 +82,7 @@ const PracticeSession: React.FC<{
     const [showStreakToast, setShowStreakToast] = useState(false);
     const [showReportModal, setShowReportModal] = useState(false);
 
-    const difficulty = getDifficultyForLevel(profile.stats[subtopic].level);
+    const difficulty = getDifficultyForLevel(profile.stats[subtopic].level, subtopic, profile.preferences);
     const strategyTip = currentQuestion ? getStrategyTip(currentQuestion.subtopic || subtopic, currentQuestion.question) : null;
 
     const fetchQuestion = useCallback(async () => {
@@ -206,53 +207,18 @@ const PracticeSession: React.FC<{
                             <span className="text-[9px] md:text-[10px] bg-secondary/30 px-2 py-1 rounded text-primary">{difficulty}</span>
                         </div>
 
-                        {currentQuestion.graphData && <QuestionGraph data={currentQuestion.graphData} />}
+                        <QuestionStimulus question={currentQuestion} />
 
                         <FormattedText className="text-base md:text-lg mb-6 md:mb-8 leading-relaxed font-clean" text={currentQuestion.question} />
 
-                        <div className="space-y-2 md:space-y-3">
-                            {currentQuestion.options.map((option, index) => {
-                                let buttonClass = 'w-full text-left p-3 md:p-4 transition-premium border-2 flex justify-between items-center rounded-xl touch-target press-effect ';
-                                let icon: React.ReactNode = null;
-
-                                if (selectedAnswer === null) {
-                                    buttonClass += 'bg-surface hover:bg-secondary/30 active:bg-secondary/30 border-secondary/30 shadow-card hover:shadow-card-hover';
-                                } else {
-                                    if (index === currentQuestion.answerIndex) {
-                                        buttonClass += 'bg-success/10 border-success text-success font-bold shadow-glow-success animate-successPop';
-                                        icon = (
-                                            <svg className="w-5 h-5 text-success" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={3}>
-                                                <path strokeLinecap="round" strokeLinejoin="round" d="M5 13l4 4L19 7" />
-                                            </svg>
-                                        );
-                                    } else if (index === selectedAnswer && !isCorrect) {
-                                        buttonClass += 'bg-accent/10 border-accent text-accent font-bold';
-                                        icon = (
-                                            <svg className="w-5 h-5 text-accent animate-shake" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={3}>
-                                                <path strokeLinecap="round" strokeLinejoin="round" d="M6 18L18 6M6 6l12 12" />
-                                            </svg>
-                                        );
-                                    } else {
-                                        buttonClass += 'bg-surface opacity-50 border-text-dark/20';
-                                    }
-                                }
-
-                                return (
-                                    <button
-                                        key={index}
-                                        onClick={() => handleAnswerSelect(index)}
-                                        disabled={selectedAnswer !== null}
-                                        className={buttonClass}
-                                    >
-                                        <span className="text-xs md:text-sm flex items-start text-left">
-                                            <span className="font-bold mr-2 text-primary">{String.fromCharCode(65 + index)}.</span>
-                                            <FormattedText className="inline text-sm md:text-base font-clean" text={option} />
-                                        </span>
-                                        {icon && <span className="ml-2 flex-shrink-0">{icon}</span>}
-                                    </button>
-                                );
-                            })}
-                        </div>
+                        <AnswerChoices
+                            options={currentQuestion.options}
+                            answerIndex={currentQuestion.answerIndex}
+                            selectedAnswer={selectedAnswer}
+                            isCorrect={isCorrect}
+                            onSelect={handleAnswerSelect}
+                            variant="standard"
+                        />
                     </div>
                     {selectedAnswer !== null && (
                         <div className="mt-6 md:mt-8 p-4 md:p-6 bg-background animate-fadeIn border-2 border-secondary rounded-lg shadow-md">
@@ -417,7 +383,7 @@ const BossFightSession: React.FC<{
     const [doubleJeopardyActive, setDoubleJeopardyActive] = useState(false);
 
     const requirement = getBossFightRequirement(level);
-    const difficulty = getDifficultyForLevel(level);
+    const difficulty = getDifficultyForLevel(level, subtopic);
 
     useEffect(() => {
         const generateBossQuestions = async () => {
@@ -620,7 +586,7 @@ const BossFightSession: React.FC<{
                     )}
                     
                     <div>
-                      {currentQuestion.graphData && <QuestionGraph data={currentQuestion.graphData} />}
+                      <QuestionStimulus question={currentQuestion} />
                       <FormattedText className="text-base md:text-lg mb-8 leading-relaxed pt-4 font-clean" text={currentQuestion.question} />
                       {hintVisible && (
                           <div className="mb-6 p-4 bg-highlight/10 border-l-4 border-highlight text-[8px] text-text-main italic rounded-r-md font-clean">
@@ -628,30 +594,16 @@ const BossFightSession: React.FC<{
                           </div>
                       )}
 
-                      <div className="space-y-4">
-                          {currentQuestion.options.map((option, index) => {
-                              if (hiddenOptions.includes(index)) {
-                                  return <div key={index} className="w-full h-14 border-2 border-dashed border-text-dark/20 flex items-center justify-center text-text-dark/30 text-[8px] rounded-md">Eliminated</div>;
-                              }
-                              let btnClass = 'w-full text-left p-4 border-2 transition-all duration-200 rounded-md ';
-                              if (selectedAnswer === null) {
-                                   if (disabledOptions.includes(index)) {
-                                       btnClass += 'bg-text-dark/10 border-text-dark/30 text-text-dim cursor-not-allowed opacity-60';
-                                   } else {
-                                       btnClass += 'bg-surface hover:bg-secondary border-primary/20 shadow-sm';
-                                   }
-                              }
-                              else if (index === currentQuestion.answerIndex) btnClass += 'bg-success/10 border-success font-bold';
-                              else if (index === selectedAnswer) btnClass += 'bg-accent/10 border-accent font-bold';
-                              else btnClass += 'bg-surface opacity-50 border-text-dark/20';
-                              
-                              return (
-                                <button key={index} onClick={() => handleAnswerSelect(index)} disabled={selectedAnswer !== null || disabledOptions.includes(index)} className={btnClass}>
-                                    <span className="text-xs md:text-sm flex items-start text-left"><span className="font-bold mr-2 text-primary">{String.fromCharCode(65 + index)}.</span> <FormattedText className="inline text-sm md:text-base font-clean" text={option} /></span>
-                                </button>
-                              );
-                          })}
-                      </div>
+                      <AnswerChoices
+                          options={currentQuestion.options}
+                          answerIndex={currentQuestion.answerIndex}
+                          selectedAnswer={selectedAnswer}
+                          isCorrect={isCorrect}
+                          onSelect={handleAnswerSelect}
+                          hiddenIndices={hiddenOptions}
+                          disabledIndices={disabledOptions}
+                          variant="boss"
+                      />
                     </div>
 
                     {/* Power Ups Bar */}
@@ -872,7 +824,7 @@ const ProgressView: React.FC<ProgressViewProps> = ({ userId, userEmail, profile,
         logDailyEvent('bossFight');
         if (success && selectedSubtopic) {
             const currentLevel = profile.stats[selectedSubtopic].level;
-            const nextLevel = getNextLevel(currentLevel);
+            const nextLevel = getNextLevel(currentLevel, selectedSubtopic);
             if (nextLevel) {
                 levelUpSubtopic(selectedSubtopic, nextLevel);
                 const auraReward = nextLevel === 'Master' ? 1000 : 500;
@@ -940,7 +892,7 @@ const ProgressView: React.FC<ProgressViewProps> = ({ userId, userEmail, profile,
     // View: Options (Practice or Boss Fight)
     if (view === 'options' && selectedSubtopic) {
         const currentLevel = profile.stats[selectedSubtopic].level;
-        const nextLevel = getNextLevel(currentLevel);
+        const nextLevel = getNextLevel(currentLevel, selectedSubtopic);
         return (
             <div className="animate-fadeIn max-w-lg mx-auto">
                 <button onClick={() => setView('list')} className="text-text-dim hover:text-highlight mb-4 flex items-center gap-2">&larr; All Skills</button>

@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { User } from '../types';
+import { User, UserPreferences } from '../types';
 import { redeemGiftCode } from '../services/adminService';
 
 interface ProfileModalProps {
@@ -7,6 +7,8 @@ interface ProfileModalProps {
     onClose: () => void;
     onUpdateUser: (updates: Partial<User>) => void;
     onLogout: () => void;
+    preferences?: UserPreferences;
+    onUpdatePreferences: (preferences: UserPreferences) => void;
 }
 
 const PROFANITY_REGEX = /\b(fuck|shit|bitch|asshole|cunt|dick|pussy|whore|slut|fag|nigger|nigga|retard)\b/i;
@@ -16,8 +18,9 @@ const containsProfanity = (text: string): boolean => {
     return PROFANITY_REGEX.test(text);
 };
 
-const ProfileModal: React.FC<ProfileModalProps> = ({ user, onClose, onUpdateUser, onLogout }) => {
+const ProfileModal: React.FC<ProfileModalProps> = ({ user, onClose, onUpdateUser, onLogout, preferences, onUpdatePreferences }) => {
     const [name, setName] = useState(user.name);
+    const [skipEasyQuestions, setSkipEasyQuestions] = useState(preferences?.skipEasyQuestions ?? false);
     const [photoUrl] = useState(user.photoUrl);
     const [isCopied, setIsCopied] = useState(false);
     const [modalImageError, setModalImageError] = useState(false);
@@ -44,6 +47,7 @@ const ProfileModal: React.FC<ProfileModalProps> = ({ user, onClose, onUpdateUser
         }
         setError(null);
         onUpdateUser({ name });
+        onUpdatePreferences({ skipEasyQuestions });
         onClose();
     };
 
@@ -123,6 +127,22 @@ const ProfileModal: React.FC<ProfileModalProps> = ({ user, onClose, onUpdateUser
                             />
                             {error && <p className="text-accent text-xs font-bold mt-1 animate-shake">{error}</p>}
                         </div>
+                    </div>
+
+                    {/* Difficulty Preference */}
+                    <div className="bg-background/50 p-3 rounded-lg border border-secondary/50">
+                        <label className="flex items-center gap-3 cursor-pointer">
+                            <input
+                                type="checkbox"
+                                checked={skipEasyQuestions}
+                                onChange={(e) => setSkipEasyQuestions(e.target.checked)}
+                                className="w-5 h-5 accent-primary flex-shrink-0"
+                            />
+                            <div>
+                                <p className="text-xs font-bold text-text-main">Skip Easy Questions</p>
+                                <p className="text-[10px] text-text-dim">Jump straight to Medium+ difficulty in practice, missions, and boss fights.</p>
+                            </div>
+                        </label>
                     </div>
 
                     {/* Gift Code Redemption */}

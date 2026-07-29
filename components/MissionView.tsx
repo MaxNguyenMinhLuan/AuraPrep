@@ -1,7 +1,8 @@
 
 import React, { useState, useCallback, useEffect } from 'react';
 import { MissionInstance, PowerUpType } from '../types';
-import QuestionGraph from './QuestionGraph';
+import QuestionStimulus from './QuestionStimulus';
+import AnswerChoices from './AnswerChoices';
 import { getStrategyTip } from '../utils/strategyTips';
 import FormattedText from './FormattedText';
 import AuraIcon from './icons/AuraIcon';
@@ -189,52 +190,19 @@ const MissionView: React.FC<MissionViewProps> = ({ mission, onAnswer, onExit, in
                     )}
                   </div>
 
-                  {/* Graphical Content */}
-                  {currentQuestion.graphData && <QuestionGraph data={currentQuestion.graphData} />}
+                  <QuestionStimulus question={currentQuestion} />
 
                   <FormattedText className="text-base md:text-lg mb-4 md:mb-6 leading-relaxed font-clean" text={currentQuestion.question} />
 
-                  <div className="space-y-2 md:space-y-3">
-                      {currentQuestion.options.map((option, index) => {
-                          let buttonClass = 'w-full text-left p-3 md:p-4 transition-premium border-2 flex justify-between items-center rounded-xl touch-target press-effect ';
-                          let icon: React.ReactNode = null;
-
-                          if (selectedAnswer === null) {
-                              buttonClass += 'bg-surface hover:bg-secondary/30 active:bg-secondary/30 border-secondary/30 shadow-card hover:shadow-card-hover';
-                          } else {
-                              if (index === currentQuestion.answerIndex) {
-                                  buttonClass += 'bg-success/10 border-success text-success font-bold shadow-glow-success animate-successPop';
-                                  icon = (
-                                      <svg className="w-5 h-5 text-success" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={3}>
-                                          <path strokeLinecap="round" strokeLinejoin="round" d="M5 13l4 4L19 7" />
-                                      </svg>
-                                  );
-                              } else if (index === selectedAnswer && !isCorrect) {
-                                  buttonClass += 'bg-accent/10 border-accent text-accent font-bold';
-                                  icon = (
-                                      <svg className="w-5 h-5 text-accent animate-shake" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={3}>
-                                          <path strokeLinecap="round" strokeLinejoin="round" d="M6 18L18 6M6 6l12 12" />
-                                      </svg>
-                                  );
-                              } else {
-                                  buttonClass += 'bg-surface opacity-50 border-text-dark/20';
-                              }
-                          }
-
-                          return (
-                            <button
-                                key={index}
-                                onClick={() => handleAnswerSelect(index)}
-                                disabled={selectedAnswer !== null || isResetting}
-                                className={buttonClass}
-                                style={{ animationDelay: `${index * 0.05}s` }}
-                            >
-                                <span className="text-xs md:text-sm flex items-start text-left"><span className="font-bold mr-2 text-primary">{String.fromCharCode(65 + index)}.</span><FormattedText className="inline text-sm md:text-base font-clean" text={option} /></span>
-                                {icon && <span className="ml-2 flex-shrink-0">{icon}</span>}
-                            </button>
-                          );
-                      })}
-                  </div>
+                  <AnswerChoices
+                      options={currentQuestion.options}
+                      answerIndex={currentQuestion.answerIndex}
+                      selectedAnswer={selectedAnswer}
+                      isCorrect={isCorrect}
+                      onSelect={handleAnswerSelect}
+                      disabled={isResetting}
+                      variant="standard"
+                  />
                 </div>
                 {selectedAnswer !== null && !showJeopardyModal && (
                     <div className={`mt-4 md:mt-6 p-3 md:p-4 bg-background animate-slideUp border-2 rounded-xl shadow-card ${isCorrect ? 'border-success/50' : 'border-accent/50'}`}>

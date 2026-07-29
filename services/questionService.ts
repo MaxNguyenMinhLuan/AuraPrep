@@ -1,5 +1,6 @@
 import { Question, Difficulty, Point, GraphData } from '../types';
 import { getQuestionsByCategory } from '../data/questionBankIndexed';
+import { ACTIVE_QUESTION_BANK, QUESTION_BANK_PATHS } from '../constants';
 
 const FALLBACK_QUESTION = (subtopic: string, difficulty: string): Omit<Question, 'subtopic'> => ({
     question: `This category ("${subtopic}" at ${difficulty} level) is still being populated with SAT-style questions.\n\nSelect "Skip this question" to continue without penalty.`,
@@ -107,8 +108,9 @@ export const loadLocalQuestions = async (): Promise<any[]> => {
 
     loadPromise = (async () => {
         try {
-            const response = await fetch('/questions.json');
-            if (!response.ok) throw new Error('Failed to load questions.json');
+            const bankPath = QUESTION_BANK_PATHS[ACTIVE_QUESTION_BANK];
+            const response = await fetch(bankPath);
+            if (!response.ok) throw new Error(`Failed to load ${bankPath}`);
             cachedQuestions = await response.json();
             return cachedQuestions || [];
         } catch (err) {

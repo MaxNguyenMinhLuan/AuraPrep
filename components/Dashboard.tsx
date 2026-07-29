@@ -179,6 +179,24 @@ const Dashboard: React.FC<DashboardProps> = ({
                 {/* Daily Missions */}
                 <div className="w-full bg-surface border-2 border-primary/80 p-4 md:p-5 lg:p-6 space-y-4 shadow-card rounded-xl flex-grow animate-scaleIn">
 
+                    <div className="flex justify-between items-center">
+                        <h2 className="text-base md:text-lg font-serif text-highlight">Daily Missions</h2>
+                        <span className="text-[10px] md:text-xs font-bold bg-primary text-light px-3 py-1.5 rounded-full shadow-button uppercase tracking-wide">
+                            Today
+                        </span>
+                    </div>
+
+                    {progressUnlocked && dailyMissions.length > 0 && dailyMissions.every(m => m.completed) && (
+                        <div className="p-3 md:p-4 bg-success/10 border-2 border-success/40 rounded-xl text-center animate-popIn">
+                            <p className="text-sm md:text-base font-bold text-success">
+                                🎉 Congrats, all daily missions complete!
+                            </p>
+                            <p className="text-[11px] md:text-xs text-text-dim mt-1">
+                                Keep your streak sharp — head to the Progress tab to practice more.
+                            </p>
+                        </div>
+                    )}
+
                     <div className="grid grid-cols-1 gap-3 md:gap-4">
                         {[...dailyMissions].sort((a, b) => {
                             if (a.completed && !b.completed) return 1;

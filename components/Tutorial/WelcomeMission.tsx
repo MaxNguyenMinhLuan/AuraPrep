@@ -17,7 +17,8 @@ import {
     getQuestionTime,
 } from '../../services/stealthMissionService';
 import { getRecommendedDifficulty, getUserSkillProfile } from '../../services/stealthDiagnosticService';
-import QuestionGraph from '../QuestionGraph';
+import QuestionStimulus from '../QuestionStimulus';
+import AnswerChoices from '../AnswerChoices';
 import FormattedText from '../FormattedText';
 
 interface WelcomeMissionProps {
@@ -208,55 +209,18 @@ const WelcomeMission: React.FC<WelcomeMissionProps> = ({ uid, onComplete, onExit
                         {currentQuestion.subtopic}
                     </p>
 
-                    {/* Graph if present */}
-                    {currentQuestion.graphData && <QuestionGraph data={currentQuestion.graphData} />}
+                    <QuestionStimulus question={currentQuestion} />
 
                     <FormattedText className="text-sm leading-relaxed mb-6" text={currentQuestion.question} />
 
-                    {/* Answer Options */}
-                    <div className="space-y-3">
-                        {currentQuestion.options.map((option, index) => {
-                            let buttonClass = 'w-full text-left p-4 transition-all border-2 flex justify-between items-center rounded-xl ';
-                            let icon: React.ReactNode = null;
-
-                            if (selectedAnswer === null) {
-                                buttonClass += 'bg-surface hover:bg-secondary/30 active:bg-secondary/30 border-secondary/30 shadow-card hover:shadow-card-hover';
-                            } else {
-                                if (index === currentQuestion.answerIndex) {
-                                    buttonClass += 'bg-success/10 border-success text-success font-bold shadow-glow-success animate-successPop';
-                                    icon = (
-                                        <svg className="w-5 h-5 text-success" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={3}>
-                                            <path strokeLinecap="round" strokeLinejoin="round" d="M5 13l4 4L19 7" />
-                                        </svg>
-                                    );
-                                } else if (index === selectedAnswer && !isCorrect) {
-                                    buttonClass += 'bg-accent/10 border-accent text-accent font-bold';
-                                    icon = (
-                                        <svg className="w-5 h-5 text-accent animate-shake" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={3}>
-                                            <path strokeLinecap="round" strokeLinejoin="round" d="M6 18L18 6M6 6l12 12" />
-                                        </svg>
-                                    );
-                                } else {
-                                    buttonClass += 'bg-surface opacity-50 border-text-dark/20';
-                                }
-                            }
-
-                            return (
-                                <button
-                                    key={index}
-                                    onClick={() => handleAnswerSelect(index)}
-                                    disabled={selectedAnswer !== null}
-                                    className={buttonClass}
-                                >
-                                    <span className="text-xs flex items-start text-left">
-                                        <span className="font-bold mr-2 text-primary">{String.fromCharCode(65 + index)}.</span>
-                                        <FormattedText className="inline" text={option} />
-                                    </span>
-                                    {icon && <span className="ml-2 flex-shrink-0">{icon}</span>}
-                                </button>
-                            );
-                        })}
-                    </div>
+                    <AnswerChoices
+                        options={currentQuestion.options}
+                        answerIndex={currentQuestion.answerIndex}
+                        selectedAnswer={selectedAnswer}
+                        isCorrect={isCorrect}
+                        onSelect={handleAnswerSelect}
+                        variant="standard"
+                    />
 
                     {/* Explanation + Next Button */}
                     {selectedAnswer !== null && (

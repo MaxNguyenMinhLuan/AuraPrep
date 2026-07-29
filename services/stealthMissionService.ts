@@ -42,6 +42,7 @@ export function createSeedMission(): DailyMission {
         questionCount: DEFAULT_SEED_MISSION_CONFIG.questionCount,
         reward: 150, // Generous reward to encourage completion
         xp: 75,
+        difficulty: 'Medium', // matches generateSeedMissionQuestions' fixed calibration difficulty
     };
 }
 
@@ -131,6 +132,7 @@ export async function generateAdaptiveMission(
         questionCount: questions.length,
         reward: Math.round(baseReward * difficultyMultiplier * questions.length / 5),
         xp: questions.length * 5,
+        difficulty: avgDifficulty,
         completed: false,
         progress: 0,
         correctAnswers: 0,
