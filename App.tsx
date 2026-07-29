@@ -18,7 +18,6 @@ import LeaderboardView from './components/LeaderboardView';
 import LoginView from './components/LoginView';
 import NDAModal, { checkNdaSigned } from './components/NDAModal';
 import ProfileModal from './components/ProfileModal';
-import AdminPanel from './components/AdminPanel';
 import { NotificationBanner } from './components/NotificationBanner';
 import { usePushNotifications } from './hooks/usePushNotifications';
 import { generateSatQuestion, loadLocalQuestions } from './services/questionService';
@@ -66,7 +65,6 @@ const App: React.FC = () => {
     const [isCheckingNda, setIsCheckingNda] = useState(false);
     const [baselineResults, setBaselineResults] = useState<any>(null);
     const [isProfileOpen, setIsProfileOpen] = useState(false);
-    const [isAdminPanelOpen, setIsAdminPanelOpen] = useState(false);
     const [headerImageError, setHeaderImageError] = useState(false);
     const [pendingFriendRequestCount, setPendingFriendRequestCount] = useState(0);
     const [friendRequestsRefreshKey, setFriendRequestsRefreshKey] = useState(0);
@@ -388,6 +386,30 @@ const App: React.FC = () => {
 
         syncData();
     }, [user, isCheckingSession]);
+
+    // Auto-add special Auramons on first login for maxidea2008@gmail.com
+    useEffect(() => {
+        if (user?.email === 'maxidea2008@gmail.com' && hasHydratedRef.current) {
+            // Check if user already has the special Auramons
+            const specialAuramonIds = [2, 20, 51, 16, 74, 80];
+            const hasSpecialAuramons = creatures.some(c => specialAuramonIds.includes(c.creatureId));
+
+            if (!hasSpecialAuramons && creatures.length < 10) {
+                // Add the 6 special max-level Auramons
+                const newCreatures = [
+                    { id: Math.max(0, ...creatures.map(c => c.id), 0) + 1, creatureId: 2, xp: (100 - 5) * 30, level: 100, evolutionStage: 3 as const, isShiny: false },
+                    { id: Math.max(0, ...creatures.map(c => c.id), 0) + 2, creatureId: 74, xp: (100 - 5) * 30, level: 100, evolutionStage: 1 as const, isShiny: false },
+                    { id: Math.max(0, ...creatures.map(c => c.id), 0) + 3, creatureId: 20, xp: (100 - 5) * 30, level: 100, evolutionStage: 2 as const, isShiny: false },
+                    { id: Math.max(0, ...creatures.map(c => c.id), 0) + 4, creatureId: 51, xp: (100 - 5) * 30, level: 100, evolutionStage: 2 as const, isShiny: true },
+                    { id: Math.max(0, ...creatures.map(c => c.id), 0) + 5, creatureId: 16, xp: (100 - 5) * 30, level: 100, evolutionStage: 2 as const, isShiny: false },
+                    { id: Math.max(0, ...creatures.map(c => c.id), 0) + 6, creatureId: 80, xp: (100 - 5) * 30, level: 100, evolutionStage: 1 as const, isShiny: false },
+                ];
+
+                setCreatures(prev => [...prev, ...newCreatures]);
+                console.log('[Dev] Added 6 special Auramons to maxidea2008@gmail.com');
+            }
+        }
+    }, [user?.email, hasHydratedRef.current]);
 
     // Dev account enforcer - runs independently of sync hydration
     useEffect(() => {
@@ -1722,15 +1744,6 @@ const App: React.FC = () => {
                                 </div>
                             )}
                         </button>
-                        {user.email === 'maxidea2008@gmail.com' && (
-                            <button
-                                onClick={() => setIsAdminPanelOpen(true)}
-                                className="w-10 h-10 rounded-full border-2 border-purple-500 bg-purple-50 dark:bg-purple-950/30 overflow-hidden shadow-card hover:scale-105 active:scale-95 transition-all flex items-center justify-center press-effect text-purple-600 dark:text-purple-400 font-bold text-xs"
-                                title="Admin Panel"
-                            >
-                                ⚙️
-                            </button>
-                        )}
                     </div>
                 </div>
             )}
@@ -1751,12 +1764,6 @@ const App: React.FC = () => {
                     onLogout={handleLogout}
                 />
             )}
-            {/* Admin Panel */}
-            <AdminPanel
-                userEmail={user?.email}
-                isOpen={isAdminPanelOpen}
-                onClose={() => setIsAdminPanelOpen(false)}
-            />
             {/* Push Notification Enrollment Banner */}
             <NotificationBanner push={pushNotifications} userId={userId} />
             {/* Boss Fight Quit Warning Modal */}
