@@ -2,22 +2,22 @@ import React from 'react';
 import { PixelCreature } from '../CreatureCard';
 import { INITIAL_CREATURES } from '../../constants';
 
-const pikachu = INITIAL_CREATURES.find(c => c.id === 20);
+const guideCharacter = INITIAL_CREATURES.find(c => c.id === 20);
 
-interface PikachuGuideProps {
+interface TutorialGuideProps {
     message: string;
     onNext?: () => void;
     buttonText?: string;
     position?: 'center' | 'bottom' | 'top';
-    showPikachu?: boolean;
+    showCharacter?: boolean;
 }
 
-const PikachuGuide: React.FC<PikachuGuideProps> = ({
+const TutorialGuide: React.FC<TutorialGuideProps> = ({
     message,
     onNext,
     buttonText = "Continue",
     position = 'center',
-    showPikachu = true
+    showCharacter = true
 }) => {
     const positionClasses = {
         center: 'items-center justify-center',
@@ -28,11 +28,10 @@ const PikachuGuide: React.FC<PikachuGuideProps> = ({
     return (
         <div className={`fixed inset-0 z-[50] flex ${positionClasses[position]} p-4 animate-fadeIn pointer-events-none`}>
             <div className="bg-surface border-4 border-highlight rounded-xl shadow-2xl max-w-md w-full p-6 animate-reveal pointer-events-auto">
-                {showPikachu && (
+                {showCharacter && (
                     <div className="flex justify-center mb-4">
-                        {/* Pikachu sprite placeholder - using emoji for now */}
                         <div className="animate-bounce">
-                            {pikachu && <PixelCreature creature={pikachu} evolutionStage={1} pixelSize={8} />}
+                            {guideCharacter && <PixelCreature creature={guideCharacter} evolutionStage={1} pixelSize={8} />}
                         </div>
                     </div>
                 )}
@@ -60,4 +59,4 @@ const PikachuGuide: React.FC<PikachuGuideProps> = ({
     );
 };
 
-export default PikachuGuide;
+export default TutorialGuide;

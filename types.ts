@@ -185,7 +185,7 @@ export interface DailyActivity {
 
 export type TutorialPhase =
     // Phase 1: Onboarding
-    | 'welcome'                    // Initial greeting from Professor Pikachu
+    | 'welcome'                    // Initial greeting from AI Guide
     | 'choose-starter'             // Pick one of 3 starter creatures
     | 'first-easy-mission'         // Do 1 super easy math question
     | 'first-reward'               // Get rewarded 500 aura

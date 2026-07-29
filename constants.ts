@@ -132,26 +132,26 @@ export const getBossForSubtopic = (subtopic: string): BossDef => {
     return BOSSES[index];
 };
 
-// Pokemon sprite base URL for placeholder testing
-// NOTE: These Pokemon sprites are placeholders for testing only and will be replaced with original characters before commercial launch
+// Creature sprite base URL for placeholder testing
+// NOTE: These sprites are placeholders for testing only and will be replaced with original characters before commercial launch
 const SPRITE_BASE = 'https://img.pokemondb.net/sprites/black-white/anim/normal/';
 
 // Helper to create sprite URL
 const sprite = (name: string): string => `${SPRITE_BASE}${name}.gif`;
 
-// Empty pixel sprite for Pokemon (we'll use spriteUrls instead)
+// Empty pixel sprite for Creatures (we'll use spriteUrls instead)
 const EMPTY_SPRITE: string[][] = [[''], [''], ['']];
 const EMPTY_COLORS: { [key: string]: string } = {};
 
 // ============================================================================
 // EVOLUTION LEVELS
-// Pokemon evolve at specific levels like the real games
-// All Pokemon start at Level 5 and can reach Level 100
+// Creatures evolve at specific levels like the real games
+// All Creatures start at Level 5 and can reach Level 100
 // ============================================================================
 
 export const INITIAL_CREATURES: Creature[] = [
     // ===== 3-STAGE EVOLUTION LINES =====
-    // Starter Pokemon (evolve at 16, 32/36)
+    // Starter Creatures (evolve at 16, 32/36)
     {
         id: 1,
         name: 'Bulbasaur',
@@ -163,7 +163,7 @@ export const INITIAL_CREATURES: Creature[] = [
         maxEvolutionStage: 3,
         evolveLevel1: 16,
         evolveLevel2: 32,
-        description: 'A seed Pokemon that grows with sunlight.',
+        description: 'A seed Creature that grows with sunlight.',
         spriteUrls: [sprite('bulbasaur'), sprite('ivysaur'), sprite('venusaur')]
     },
     {
@@ -177,7 +177,7 @@ export const INITIAL_CREATURES: Creature[] = [
         maxEvolutionStage: 3,
         evolveLevel1: 16,
         evolveLevel2: 36,
-        description: 'A fire Pokemon whose tail flame shows its life force.',
+        description: 'A fire Creature whose tail flame shows its life force.',
         spriteUrls: [sprite('charmander'), sprite('charmeleon'), sprite('charizard')]
     },
     {
@@ -191,11 +191,11 @@ export const INITIAL_CREATURES: Creature[] = [
         maxEvolutionStage: 3,
         evolveLevel1: 16,
         evolveLevel2: 36,
-        description: 'A water Pokemon with a protective shell.',
+        description: 'A water Creature with a protective shell.',
         spriteUrls: [sprite('squirtle'), sprite('wartortle'), sprite('blastoise')]
     },
 
-    // Bug Pokemon (quick evolution at 7, 10)
+    // Bug Creature (quick evolution at 7, 10)
     {
         id: 4,
         name: 'Caterpie',
@@ -207,7 +207,7 @@ export const INITIAL_CREATURES: Creature[] = [
         maxEvolutionStage: 3,
         evolveLevel1: 7,
         evolveLevel2: 10,
-        description: 'A bug Pokemon that evolves into a beautiful butterfly.',
+        description: 'A bug Creature that evolves into a beautiful butterfly.',
         spriteUrls: [sprite('caterpie'), sprite('metapod'), sprite('butterfree')]
     },
     {
@@ -221,11 +221,11 @@ export const INITIAL_CREATURES: Creature[] = [
         maxEvolutionStage: 3,
         evolveLevel1: 7,
         evolveLevel2: 10,
-        description: 'A bug Pokemon with poisonous stingers.',
+        description: 'A bug Creature with poisonous stingers.',
         spriteUrls: [sprite('weedle'), sprite('kakuna'), sprite('beedrill')]
     },
 
-    // Bird Pokemon (evolve at 18, 36)
+    // Bird Creature (evolve at 18, 36)
     {
         id: 6,
         name: 'Pidgey',
@@ -237,7 +237,7 @@ export const INITIAL_CREATURES: Creature[] = [
         maxEvolutionStage: 3,
         evolveLevel1: 18,
         evolveLevel2: 36,
-        description: 'A common bird Pokemon found in many regions.',
+        description: 'A common bird Creature found in many regions.',
         spriteUrls: [sprite('pidgey'), sprite('pidgeotto'), sprite('pidgeot')]
     },
 
@@ -253,7 +253,7 @@ export const INITIAL_CREATURES: Creature[] = [
         maxEvolutionStage: 3,
         evolveLevel1: 16,
         evolveLevel2: 36,
-        description: 'A female poison Pokemon with barbs.',
+        description: 'A female poison Creature with barbs.',
         spriteUrls: [sprite('nidoran-f'), sprite('nidorina'), sprite('nidoqueen')]
     },
     {
@@ -267,7 +267,7 @@ export const INITIAL_CREATURES: Creature[] = [
         maxEvolutionStage: 3,
         evolveLevel1: 16,
         evolveLevel2: 36,
-        description: 'A male poison Pokemon with horns.',
+        description: 'A male poison Creature with horns.',
         spriteUrls: [sprite('nidoran-m'), sprite('nidorino'), sprite('nidoking')]
     },
 
@@ -283,7 +283,7 @@ export const INITIAL_CREATURES: Creature[] = [
         maxEvolutionStage: 3,
         evolveLevel1: 21,
         evolveLevel2: 36,
-        description: 'A weed Pokemon that releases toxic pollen.',
+        description: 'A weed Creature that releases toxic pollen.',
         spriteUrls: [sprite('oddish'), sprite('gloom'), sprite('vileplume')]
     },
 
@@ -299,7 +299,7 @@ export const INITIAL_CREATURES: Creature[] = [
         maxEvolutionStage: 3,
         evolveLevel1: 25,
         evolveLevel2: 36,
-        description: 'A tadpole Pokemon with a spiral pattern.',
+        description: 'A tadpole Creature with a spiral pattern.',
         spriteUrls: [sprite('poliwag'), sprite('poliwhirl'), sprite('poliwrath')]
     },
 
@@ -315,7 +315,7 @@ export const INITIAL_CREATURES: Creature[] = [
         maxEvolutionStage: 3,
         evolveLevel1: 16,
         evolveLevel2: 36,
-        description: 'A psychic Pokemon that can teleport.',
+        description: 'A psychic Creature that can teleport.',
         spriteUrls: [sprite('abra'), sprite('kadabra'), sprite('alakazam')]
     },
 
@@ -363,7 +363,7 @@ export const INITIAL_CREATURES: Creature[] = [
         maxEvolutionStage: 3,
         evolveLevel1: 25,
         evolveLevel2: 40,
-        description: 'A rock Pokemon often mistaken for a boulder.',
+        description: 'A rock Creature often mistaken for a boulder.',
         spriteUrls: [sprite('geodude'), sprite('graveler'), sprite('golem')]
     },
 
@@ -379,7 +379,7 @@ export const INITIAL_CREATURES: Creature[] = [
         maxEvolutionStage: 3,
         evolveLevel1: 25,
         evolveLevel2: 40,
-        description: 'A ghost Pokemon made of gas.',
+        description: 'A ghost Creature made of gas.',
         spriteUrls: [sprite('gastly'), sprite('haunter'), sprite('gengar')]
     },
 
@@ -436,7 +436,7 @@ export const INITIAL_CREATURES: Creature[] = [
         pixelColors: EMPTY_COLORS,
         maxEvolutionStage: 2,
         evolveLevel1: 22,
-        description: 'A snake Pokemon that moves silently.',
+        description: 'A snake Creature that moves silently.',
         spriteUrls: [sprite('ekans'), sprite('arbok')]
     },
     {
@@ -462,7 +462,7 @@ export const INITIAL_CREATURES: Creature[] = [
         pixelColors: EMPTY_COLORS,
         maxEvolutionStage: 2,
         evolveLevel1: 22,
-        description: 'A ground Pokemon that burrows in sand.',
+        description: 'A ground Creature that burrows in sand.',
         spriteUrls: [sprite('sandshrew'), sprite('sandslash')]
     },
     {
@@ -488,7 +488,7 @@ export const INITIAL_CREATURES: Creature[] = [
         pixelColors: EMPTY_COLORS,
         maxEvolutionStage: 2,
         evolveLevel1: 30,
-        description: 'A fox Pokemon with multiple tails.',
+        description: 'A fox Creature with multiple tails.',
         spriteUrls: [sprite('vulpix'), sprite('ninetales')]
     },
     {
@@ -501,7 +501,7 @@ export const INITIAL_CREATURES: Creature[] = [
         pixelColors: EMPTY_COLORS,
         maxEvolutionStage: 2,
         evolveLevel1: 30,
-        description: 'A balloon Pokemon with a soothing song.',
+        description: 'A balloon Creature with a soothing song.',
         spriteUrls: [sprite('jigglypuff'), sprite('wigglytuff')]
     },
     {
@@ -514,7 +514,7 @@ export const INITIAL_CREATURES: Creature[] = [
         pixelColors: EMPTY_COLORS,
         maxEvolutionStage: 2,
         evolveLevel1: 22,
-        description: 'A bat Pokemon that uses ultrasonic waves.',
+        description: 'A bat Creature that uses ultrasonic waves.',
         spriteUrls: [sprite('zubat'), sprite('golbat')]
     },
     {
@@ -527,7 +527,7 @@ export const INITIAL_CREATURES: Creature[] = [
         pixelColors: EMPTY_COLORS,
         maxEvolutionStage: 2,
         evolveLevel1: 24,
-        description: 'A mushroom Pokemon with parasitic fungi.',
+        description: 'A mushroom Creature with parasitic fungi.',
         spriteUrls: [sprite('paras'), sprite('parasect')]
     },
     {
@@ -540,7 +540,7 @@ export const INITIAL_CREATURES: Creature[] = [
         pixelColors: EMPTY_COLORS,
         maxEvolutionStage: 2,
         evolveLevel1: 31,
-        description: 'A bug Pokemon with large radar eyes.',
+        description: 'A bug Creature with large radar eyes.',
         spriteUrls: [sprite('venonat'), sprite('venomoth')]
     },
     {
@@ -553,7 +553,7 @@ export const INITIAL_CREATURES: Creature[] = [
         pixelColors: EMPTY_COLORS,
         maxEvolutionStage: 2,
         evolveLevel1: 26,
-        description: 'A mole Pokemon that burrows underground.',
+        description: 'A mole Creature that burrows underground.',
         spriteUrls: [sprite('diglett'), sprite('dugtrio')]
     },
     {
@@ -566,7 +566,7 @@ export const INITIAL_CREATURES: Creature[] = [
         pixelColors: EMPTY_COLORS,
         maxEvolutionStage: 2,
         evolveLevel1: 28,
-        description: 'A cat Pokemon that loves shiny objects.',
+        description: 'A cat Creature that loves shiny objects.',
         spriteUrls: [sprite('meowth'), sprite('persian')]
     },
     {
@@ -579,7 +579,7 @@ export const INITIAL_CREATURES: Creature[] = [
         pixelColors: EMPTY_COLORS,
         maxEvolutionStage: 2,
         evolveLevel1: 33,
-        description: 'A duck Pokemon with psychic powers.',
+        description: 'A duck Creature with psychic powers.',
         spriteUrls: [sprite('psyduck'), sprite('golduck')]
     },
     {
@@ -592,7 +592,7 @@ export const INITIAL_CREATURES: Creature[] = [
         pixelColors: EMPTY_COLORS,
         maxEvolutionStage: 2,
         evolveLevel1: 28,
-        description: 'A fighting Pokemon with rage issues.',
+        description: 'A fighting Creature with rage issues.',
         spriteUrls: [sprite('mankey'), sprite('primeape')]
     },
     {
@@ -735,7 +735,7 @@ export const INITIAL_CREATURES: Creature[] = [
         pixelColors: EMPTY_COLORS,
         maxEvolutionStage: 2,
         evolveLevel1: 28,
-        description: 'A crab Pokemon with large pincers.',
+        description: 'A crab Creature with large pincers.',
         spriteUrls: [sprite('krabby'), sprite('kingler')]
     },
     {
@@ -748,7 +748,7 @@ export const INITIAL_CREATURES: Creature[] = [
         pixelColors: EMPTY_COLORS,
         maxEvolutionStage: 2,
         evolveLevel1: 30,
-        description: 'A ball Pokemon often mistaken for a Poke Ball.',
+        description: 'A ball Creature often mistaken for a Poke Ball.',
         spriteUrls: [sprite('voltorb'), sprite('electrode')]
     },
     {
@@ -761,7 +761,7 @@ export const INITIAL_CREATURES: Creature[] = [
         pixelColors: EMPTY_COLORS,
         maxEvolutionStage: 2,
         evolveLevel1: 35,
-        description: 'An egg Pokemon that gathers in groups.',
+        description: 'An egg Creature that gathers in groups.',
         spriteUrls: [sprite('exeggcute'), sprite('exeggutor')]
     },
     {
@@ -774,7 +774,7 @@ export const INITIAL_CREATURES: Creature[] = [
         pixelColors: EMPTY_COLORS,
         maxEvolutionStage: 2,
         evolveLevel1: 28,
-        description: 'A lonely Pokemon wearing its mother\'s skull.',
+        description: 'A lonely Creature wearing its mother\'s skull.',
         spriteUrls: [sprite('cubone'), sprite('marowak')]
     },
     {
@@ -800,7 +800,7 @@ export const INITIAL_CREATURES: Creature[] = [
         pixelColors: EMPTY_COLORS,
         maxEvolutionStage: 2,
         evolveLevel1: 42,
-        description: 'A rhino Pokemon with incredible strength.',
+        description: 'A rhino Creature with incredible strength.',
         spriteUrls: [sprite('rhyhorn'), sprite('rhydon')]
     },
     {
@@ -852,7 +852,7 @@ export const INITIAL_CREATURES: Creature[] = [
         pixelColors: EMPTY_COLORS,
         maxEvolutionStage: 2,
         evolveLevel1: 20,
-        description: 'A weak Pokemon that evolves into a powerful dragon.',
+        description: 'A weak Creature that evolves into a powerful dragon.',
         spriteUrls: [sprite('magikarp'), sprite('gyarados')]
     },
     {
@@ -865,7 +865,7 @@ export const INITIAL_CREATURES: Creature[] = [
         pixelColors: EMPTY_COLORS,
         maxEvolutionStage: 2,
         evolveLevel1: 25,
-        description: 'An evolution Pokemon that can take many forms.',
+        description: 'An evolution Creature that can take many forms.',
         spriteUrls: [sprite('eevee'), sprite('vaporeon')]
     },
     {
@@ -878,7 +878,7 @@ export const INITIAL_CREATURES: Creature[] = [
         pixelColors: EMPTY_COLORS,
         maxEvolutionStage: 2,
         evolveLevel1: 40,
-        description: 'A prehistoric Pokemon resurrected from a fossil.',
+        description: 'A prehistoric Creature resurrected from a fossil.',
         spriteUrls: [sprite('omanyte'), sprite('omastar')]
     },
     {
@@ -891,7 +891,7 @@ export const INITIAL_CREATURES: Creature[] = [
         pixelColors: EMPTY_COLORS,
         maxEvolutionStage: 2,
         evolveLevel1: 40,
-        description: 'An ancient Pokemon with sharp claws.',
+        description: 'An ancient Creature with sharp claws.',
         spriteUrls: [sprite('kabuto'), sprite('kabutops')]
     },
 
@@ -905,7 +905,7 @@ export const INITIAL_CREATURES: Creature[] = [
         pixelSprite: EMPTY_SPRITE,
         pixelColors: EMPTY_COLORS,
         maxEvolutionStage: 1,
-        description: 'A duck Pokemon that carries a leek.',
+        description: 'A duck Creature that carries a leek.',
         spriteUrls: [sprite('farfetchd')]
     },
     {
@@ -941,7 +941,7 @@ export const INITIAL_CREATURES: Creature[] = [
         pixelSprite: EMPTY_SPRITE,
         pixelColors: EMPTY_COLORS,
         maxEvolutionStage: 1,
-        description: 'A punching Pokemon with lightning fast fists.',
+        description: 'A punching Creature with lightning fast fists.',
         spriteUrls: [sprite('hitmonchan')]
     },
     {
@@ -953,7 +953,7 @@ export const INITIAL_CREATURES: Creature[] = [
         pixelSprite: EMPTY_SPRITE,
         pixelColors: EMPTY_COLORS,
         maxEvolutionStage: 1,
-        description: 'A Pokemon with an incredibly long tongue.',
+        description: 'A Creature with an incredibly long tongue.',
         spriteUrls: [sprite('lickitung')]
     },
     {
@@ -965,7 +965,7 @@ export const INITIAL_CREATURES: Creature[] = [
         pixelSprite: EMPTY_SPRITE,
         pixelColors: EMPTY_COLORS,
         maxEvolutionStage: 1,
-        description: 'A kind Pokemon that shares eggs with the injured.',
+        description: 'A kind Creature that shares eggs with the injured.',
         spriteUrls: [sprite('chansey')]
     },
     {
@@ -977,7 +977,7 @@ export const INITIAL_CREATURES: Creature[] = [
         pixelSprite: EMPTY_SPRITE,
         pixelColors: EMPTY_COLORS,
         maxEvolutionStage: 1,
-        description: 'A Pokemon covered in blue vines.',
+        description: 'A Creature covered in blue vines.',
         spriteUrls: [sprite('tangela')]
     },
     {
@@ -989,7 +989,7 @@ export const INITIAL_CREATURES: Creature[] = [
         pixelSprite: EMPTY_SPRITE,
         pixelColors: EMPTY_COLORS,
         maxEvolutionStage: 1,
-        description: 'A parent Pokemon that protects its baby.',
+        description: 'A parent Creature that protects its baby.',
         spriteUrls: [sprite('kangaskhan')]
     },
     {
@@ -1001,7 +1001,7 @@ export const INITIAL_CREATURES: Creature[] = [
         pixelSprite: EMPTY_SPRITE,
         pixelColors: EMPTY_COLORS,
         maxEvolutionStage: 1,
-        description: 'A mime Pokemon that creates invisible walls.',
+        description: 'A mime Creature that creates invisible walls.',
         spriteUrls: [sprite('mr-mime')]
     },
     {
@@ -1013,7 +1013,7 @@ export const INITIAL_CREATURES: Creature[] = [
         pixelSprite: EMPTY_SPRITE,
         pixelColors: EMPTY_COLORS,
         maxEvolutionStage: 1,
-        description: 'A mantis Pokemon with razor-sharp scythes.',
+        description: 'A mantis Creature with razor-sharp scythes.',
         spriteUrls: [sprite('scyther')]
     },
     {
@@ -1025,7 +1025,7 @@ export const INITIAL_CREATURES: Creature[] = [
         pixelSprite: EMPTY_SPRITE,
         pixelColors: EMPTY_COLORS,
         maxEvolutionStage: 1,
-        description: 'A humanoid Pokemon that dances rhythmically.',
+        description: 'A humanoid Creature that dances rhythmically.',
         spriteUrls: [sprite('jynx')]
     },
     {
@@ -1037,7 +1037,7 @@ export const INITIAL_CREATURES: Creature[] = [
         pixelSprite: EMPTY_SPRITE,
         pixelColors: EMPTY_COLORS,
         maxEvolutionStage: 1,
-        description: 'An electric Pokemon found near power plants.',
+        description: 'An electric Creature found near power plants.',
         spriteUrls: [sprite('electabuzz')]
     },
     {
@@ -1049,7 +1049,7 @@ export const INITIAL_CREATURES: Creature[] = [
         pixelSprite: EMPTY_SPRITE,
         pixelColors: EMPTY_COLORS,
         maxEvolutionStage: 1,
-        description: 'A fire Pokemon born in volcanic craters.',
+        description: 'A fire Creature born in volcanic craters.',
         spriteUrls: [sprite('magmar')]
     },
     {
@@ -1061,7 +1061,7 @@ export const INITIAL_CREATURES: Creature[] = [
         pixelSprite: EMPTY_SPRITE,
         pixelColors: EMPTY_COLORS,
         maxEvolutionStage: 1,
-        description: 'A stag beetle Pokemon with powerful pincers.',
+        description: 'A stag beetle Creature with powerful pincers.',
         spriteUrls: [sprite('pinsir')]
     },
     {
@@ -1073,7 +1073,7 @@ export const INITIAL_CREATURES: Creature[] = [
         pixelSprite: EMPTY_SPRITE,
         pixelColors: EMPTY_COLORS,
         maxEvolutionStage: 1,
-        description: 'A wild bull Pokemon that charges at anything.',
+        description: 'A wild bull Creature that charges at anything.',
         spriteUrls: [sprite('tauros')]
     },
     {
@@ -1097,7 +1097,7 @@ export const INITIAL_CREATURES: Creature[] = [
         pixelSprite: EMPTY_SPRITE,
         pixelColors: EMPTY_COLORS,
         maxEvolutionStage: 1,
-        description: 'A Pokemon that can transform into anything.',
+        description: 'A Creature that can transform into anything.',
         spriteUrls: [sprite('ditto')]
     },
     {
@@ -1109,7 +1109,7 @@ export const INITIAL_CREATURES: Creature[] = [
         pixelSprite: EMPTY_SPRITE,
         pixelColors: EMPTY_COLORS,
         maxEvolutionStage: 1,
-        description: 'A virtual Pokemon made of programming code.',
+        description: 'A virtual Creature made of programming code.',
         spriteUrls: [sprite('porygon')]
     },
     {
@@ -1133,7 +1133,7 @@ export const INITIAL_CREATURES: Creature[] = [
         pixelSprite: EMPTY_SPRITE,
         pixelColors: EMPTY_COLORS,
         maxEvolutionStage: 1,
-        description: 'A sleeping Pokemon that blocks roads.',
+        description: 'A sleeping Creature that blocks roads.',
         spriteUrls: [sprite('snorlax')]
     },
 
@@ -1183,7 +1183,7 @@ export const INITIAL_CREATURES: Creature[] = [
         pixelSprite: EMPTY_SPRITE,
         pixelColors: EMPTY_COLORS,
         maxEvolutionStage: 1,
-        description: 'A powerful psychic Pokemon created by science.',
+        description: 'A powerful psychic Creature created by science.',
         spriteUrls: [sprite('mewtwo')]
     },
     {
@@ -1207,7 +1207,7 @@ export const INITIAL_CREATURES: Creature[] = [
         pixelSprite: EMPTY_SPRITE,
         pixelColors: EMPTY_COLORS,
         maxEvolutionStage: 1,
-        description: 'A legendary bird Pokemon of Galar. Elegant and freezing.',
+        description: 'A legendary bird Creature of Galar. Elegant and freezing.',
         spriteUrls: ['https://img.pokemondb.net/sprites/home/normal/articuno-galarian.png']
     },
     {
@@ -1219,7 +1219,7 @@ export const INITIAL_CREATURES: Creature[] = [
         pixelSprite: EMPTY_SPRITE,
         pixelColors: EMPTY_COLORS,
         maxEvolutionStage: 1,
-        description: 'A legendary bird Pokemon of Galar. Fast-running and fierce.',
+        description: 'A legendary bird Creature of Galar. Fast-running and fierce.',
         spriteUrls: ['https://img.pokemondb.net/sprites/home/normal/zapdos-galarian.png']
     },
     {
@@ -1231,7 +1231,7 @@ export const INITIAL_CREATURES: Creature[] = [
         pixelSprite: EMPTY_SPRITE,
         pixelColors: EMPTY_COLORS,
         maxEvolutionStage: 1,
-        description: 'A legendary bird Pokemon of Galar. Sinister aura and flaming fury.',
+        description: 'A legendary bird Creature of Galar. Sinister aura and flaming fury.',
         spriteUrls: ['https://img.pokemondb.net/sprites/home/normal/moltres-galarian.png']
     }
 ];

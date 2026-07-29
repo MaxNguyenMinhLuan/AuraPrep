@@ -29,7 +29,7 @@ import AuraIcon from './components/icons/AuraIcon';
 import FireIcon from './components/icons/FireIcon';
 
 // Tutorial components
-import PikachuGuide from './components/Tutorial/PikachuGuide';
+import TutorialGuide from './components/Tutorial/TutorialGuide';
 import TutorialOverlay from './components/Tutorial/TutorialOverlay';
 import StarterSelection from './components/Tutorial/StarterSelection';
 import ForcedNavigation from './components/Tutorial/ForcedNavigation';
@@ -386,6 +386,23 @@ const App: React.FC = () => {
 
         syncData();
     }, [user, isCheckingSession]);
+
+    // Data migration: ensure all users with progressUnlocked also have trainingUnlocked and shopUnlocked
+    useEffect(() => {
+        if (!user || !hasHydratedRef.current) return;
+
+        setTutorialState(prev => {
+            if (prev.progressUnlocked && (!prev.trainingUnlocked || !prev.shopUnlocked)) {
+                console.log('[Migration] Unlocking Training and Shop for user with Progress access');
+                return {
+                    ...prev,
+                    trainingUnlocked: true,
+                    shopUnlocked: true
+                };
+            }
+            return prev;
+        });
+    }, [user?.uid, hasHydratedRef.current]);
 
     // Auto-add special Auramons on first login for maxidea2008@gmail.com
     useEffect(() => {
@@ -1183,17 +1200,20 @@ const App: React.FC = () => {
         setTutorialState(prev => {
             const newTotal = prev.totalQuestionsAnswered + 1;
 
-            // Check for Progress unlock at 60 questions
+            // Check for Progress unlock at PROGRESS_UNLOCK_QUESTIONS
+            // Also unlock Shop and Training at the same time
             if (!prev.progressUnlocked && newTotal >= PROGRESS_UNLOCK_QUESTIONS) {
                 return {
                     ...prev,
                     totalQuestionsAnswered: newTotal,
                     progressUnlocked: true,
+                    trainingUnlocked: true,
+                    shopUnlocked: true,
                     currentPhase: 'progress-unlocked'
                 };
             }
 
-            // Check for Leaderboard unlock at 120 questions
+            // Check for Leaderboard unlock at LEADERBOARD_UNLOCK_QUESTIONS
             if (prev.progressUnlocked && !prev.leaderboardUnlocked && newTotal >= LEADERBOARD_UNLOCK_QUESTIONS) {
                 return {
                     ...prev,
@@ -1423,7 +1443,7 @@ const App: React.FC = () => {
 
             case 'welcome':
                 return (
-                    <PikachuGuide
+                    <TutorialGuide
                         message={TUTORIAL_DIALOGUE.welcome.greeting}
                         onNext={() => setTutorialState(prev => ({ ...prev, currentPhase: 'choose-starter' }))}
                         buttonText={TUTORIAL_DIALOGUE.welcome.button}
@@ -1466,10 +1486,10 @@ const App: React.FC = () => {
                 }
                 // On summon view - show guidance overlay
                 return (
-                    <PikachuGuide
+                    <TutorialGuide
                         message={TUTORIAL_DIALOGUE.forcedSummon.instruction}
                         position="top"
-                        showPikachu={false}
+                        showCharacter={false}
                     />
                 );
 
@@ -1486,7 +1506,7 @@ const App: React.FC = () => {
                     );
                 }
                 return (
-                    <PikachuGuide
+                    <TutorialGuide
                         message={TUTORIAL_DIALOGUE.forcedBestiary.tapToSee}
                         onNext={handleBestiaryViewComplete}
                         buttonText="Got it!"
@@ -1496,7 +1516,7 @@ const App: React.FC = () => {
 
             case 'choose-active-creature':
                 return (
-                    <PikachuGuide
+                    <TutorialGuide
                         message={TUTORIAL_DIALOGUE.chooseActiveCreature.instruction}
                         onNext={handleActiveCreatureChosen}
                         buttonText="I've chosen!"
@@ -1532,7 +1552,7 @@ const App: React.FC = () => {
 
             case 'progress-tour':
                 return (
-                    <PikachuGuide
+                    <TutorialGuide
                         message={"Welcome to Progress! Here's how it works:\n\nPRACTICE: Pick any skill and drill questions at your level. Every 3 correct answers in a row = +50 Aura. Exiting early? You keep partial streak rewards!\n\nBOSS FIGHT: Win a 10-question fight to LEVEL UP the skill — from Easy → Medium → Hard → Master. Beating a boss earns Aura + Guardian XP. You can bring up to 2 power-ups into each fight.\n\nI've added a special Tutorial skill for you to try first!"}
                         onNext={handleProgressTourComplete}
                         buttonText="Start Tutorial Practice"
@@ -1566,7 +1586,7 @@ const App: React.FC = () => {
                     );
                 }
                 return (
-                    <PikachuGuide
+                    <TutorialGuide
                         message={TUTORIAL_DIALOGUE.forcedTraining.purpose}
                         onNext={handleTrainingComplete}
                         buttonText="Continue"
@@ -1596,17 +1616,17 @@ const App: React.FC = () => {
                 }
                 // Shop view will handle the forced purchase
                 return (
-                    <PikachuGuide
+                    <TutorialGuide
                         message={TUTORIAL_DIALOGUE.forcedShop.instruction}
                         position="top"
-                        showPikachu={false}
+                        showCharacter={false}
                     />
                 );
 
             case 'tutorial-boss':
                 // Handled by ProgressView
                 return (
-                    <PikachuGuide
+                    <TutorialGuide
                         message={TUTORIAL_DIALOGUE.tutorialBoss.intro}
                         onNext={() => {}}
                         buttonText="Let's fight!"
@@ -1616,7 +1636,7 @@ const App: React.FC = () => {
 
             case 'tutorial-skill-complete':
                 return (
-                    <PikachuGuide
+                    <TutorialGuide
                         message={TUTORIAL_DIALOGUE.tutorialSkillComplete.celebration + '\n\n' + TUTORIAL_DIALOGUE.tutorialSkillComplete.encouragement}
                         onNext={handleTutorialSkillComplete}
                         buttonText={TUTORIAL_DIALOGUE.tutorialSkillComplete.button}
@@ -1637,7 +1657,7 @@ const App: React.FC = () => {
 
             case 'leaderboard-tour':
                 return (
-                    <PikachuGuide
+                    <TutorialGuide
                         message={TUTORIAL_DIALOGUE.leaderboardTour.intro + '\n\n' + TUTORIAL_DIALOGUE.leaderboardTour.promotion + '\n\n' + TUTORIAL_DIALOGUE.leaderboardTour.encouragement}
                         onNext={handleLeaderboardTourComplete}
                         buttonText="Let's compete!"

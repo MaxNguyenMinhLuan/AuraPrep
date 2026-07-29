@@ -13,7 +13,7 @@ interface PixelCreatureProps {
 export const PixelCreature: React.FC<PixelCreatureProps> = ({ creature, evolutionStage, pixelSize = 8, isShiny = false }) => {
     // Priority 1: Evolution-based sprite URLs (animated GIFs for each stage)
     if (creature.spriteUrls) {
-        // Clamp evolution stage to maxEvolutionStage (for Pokemon without evolutions)
+        // Clamp evolution stage to maxEvolutionStage (for Creatures without evolutions)
         const effectiveStage = Math.min(evolutionStage, creature.maxEvolutionStage);
         let spriteUrl = creature.spriteUrls[effectiveStage - 1];
         if (isShiny && spriteUrl) {

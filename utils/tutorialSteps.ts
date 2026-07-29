@@ -25,7 +25,7 @@ export const INITIAL_TUTORIAL_STATE: TutorialState = {
     tutorialShopPurchased: false,
 
     // Creature selection
-    starterPokemonId: null,
+    starterCreatureId: null,
     hasChosenActiveCreature: false,
 
     // Legacy fields
@@ -37,7 +37,7 @@ export const INITIAL_TUTORIAL_STATE: TutorialState = {
     hasSeenLeaderboard: false,
 };
 
-// Starter Pokemon IDs (Bulbasaur, Charmander, Squirtle)
+// Starter Creature IDs (Bulbasaur, Charmander, Squirtle)
 export const STARTER_IDS = [1, 2, 3];
 
 // Tutorial skill ID - special skill that appears during tutorial
@@ -49,7 +49,7 @@ export const TUTORIAL_DIALOGUE = {
     // ============================================
 
     welcome: {
-        greeting: "Welcome, Seeker! I'm Professor Pikachu. Ready to begin your SAT mastery journey?",
+        greeting: "Welcome, Seeker! I'm your AI Guide. Ready to begin your SAT mastery journey?",
         button: "Let's Go!"
     },
 

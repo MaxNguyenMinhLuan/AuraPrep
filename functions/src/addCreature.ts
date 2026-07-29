@@ -7,16 +7,16 @@ if (!admin.apps.length) {
 
 const db = admin.firestore();
 
-interface PokemonToAdd {
+interface CreatureToAdd {
   id: number;
   evolutionStage: 1 | 2 | 3;
   name: string;
   isShiny?: boolean;
 }
 
-async function addPokemonToUser(email: string) {
+async function addCreatureToUser(email: string) {
   try {
-    console.log(`\n[INFO] Adding Pokemon to ${email}...`);
+    console.log(`\n[INFO] Adding Creature to ${email}...`);
 
     // Query user by email in the 'users' collection
     const usersSnapshot = await db.collection('users').where('email', '==', email).get();
@@ -47,13 +47,13 @@ async function addPokemonToUser(email: string) {
       if (c.id > maxId) maxId = c.id;
     });
 
-    // Define the Pokemon to add
-    const pokemonToAdd: PokemonToAdd[] = [
+    // Define the Creatures to add
+    const creaturesToAdd: CreatureToAdd[] = [
       // Charizard (final stage of Charmander line - id: 2)
       { id: 2, evolutionStage: 3, name: 'Charizard' },
       // Snorlax (no evolution - id: 74)
       { id: 74, evolutionStage: 1, name: 'Snorlax' },
-      // Raichu (final stage of Pikachu line - id: 20)
+      // Raichu (final stage of Creature line - id: 20)
       { id: 20, evolutionStage: 2, name: 'Raichu' },
       // Gyarados (final stage of Magikarp line - id: 51, SHINY)
       { id: 51, evolutionStage: 2, name: 'Shiny Gyarados', isShiny: true },
@@ -64,19 +64,19 @@ async function addPokemonToUser(email: string) {
     ];
 
     // Create new creature instances at max level (100)
-    const newCreatures = pokemonToAdd.map((pokemon, index) => ({
+    const newCreatures = creaturesToAdd.map((creature, index) => ({
       id: maxId + index + 1,
-      creatureId: pokemon.id,
+      creatureId: creature.id,
       xp: (100 - 5) * 30, // Max level 100 XP calculation (level * XP_PER_LEVEL)
       level: 100,
-      evolutionStage: pokemon.evolutionStage,
-      isShiny: pokemon.isShiny || false
+      evolutionStage: creature.evolutionStage,
+      isShiny: creature.isShiny || false
     }));
 
     console.log(`[INFO] Adding ${newCreatures.length} new creatures:`);
     newCreatures.forEach((c, i) => {
-      const poke = pokemonToAdd[i];
-      console.log(`  - Instance ID ${c.id}: ${poke.name}, Level ${c.level}, Evolution Stage ${c.evolutionStage}${c.isShiny ? ' (Shiny)' : ''}`);
+      const creature = creaturesToAdd[i];
+      console.log(`  - Instance ID ${c.id}: ${creature.name}, Level ${c.level}, Evolution Stage ${c.evolutionStage}${c.isShiny ? ' (Shiny)' : ''}`);
     });
 
     // Update the document
@@ -87,11 +87,11 @@ async function addPokemonToUser(email: string) {
       updatedAt: new Date().toISOString()
     }, { merge: true });
 
-    console.log(`[SUCCESS] Added ${newCreatures.length} Pokemon to ${email}\n`);
+    console.log(`[SUCCESS] Added ${newCreatures.length} Creatures to ${email}\n`);
   } catch (error: any) {
     console.error('[ERROR]', error.message);
   }
 }
 
 // Run the function
-addPokemonToUser('maxidea2008@gmail.com');
+addCreatureToUser('maxidea2008@gmail.com');

@@ -10,7 +10,7 @@ import { TutorialPhase, View } from '../../types';
 import { PixelCreature } from '../CreatureCard';
 import { INITIAL_CREATURES } from '../../constants';
 
-const pikachu = INITIAL_CREATURES.find(c => c.id === 20);
+const guideCharacter = INITIAL_CREATURES.find(c => c.id === 20);
 
 interface ForcedNavigationProps {
     phase: TutorialPhase;
@@ -187,10 +187,10 @@ const ForcedNavigation: React.FC<ForcedNavigationProps> = ({
                 style={getMessageStyle()}
             >
                 <div className="bg-surface border-4 border-highlight rounded-xl shadow-2xl p-5 animate-scaleIn">
-                    {/* Pikachu icon */}
+                    {/* Guide character icon */}
                     <div className="flex justify-center mb-3">
                         <div className="animate-bounce mb-2">
-                            {pikachu && <PixelCreature creature={pikachu} evolutionStage={1} pixelSize={6} />}
+                            {guideCharacter && <PixelCreature creature={guideCharacter} evolutionStage={1} pixelSize={6} />}
                         </div>
                     </div>
 
