@@ -20,8 +20,13 @@ interface LeaderboardEntry {
     username: string;
     weeklyGain: number;
     guardianId: number;
+    evolutionStage: 1 | 2 | 3;
     isUser?: boolean;
 }
+
+// Mock competitors have no real evolution data — a fixed mid-stage keeps
+// their podium/list icons decorative without implying anything real.
+const MOCK_EVOLUTION_STAGE = 2;
 
 type LeaderboardTab = 'league' | 'friends';
 
@@ -37,11 +42,12 @@ interface LeaderboardViewProps {
     league: LeagueType;
     competitors: any[];
     activeGuardianId?: number;
+    activeGuardianEvolutionStage?: 1 | 2 | 3;
     pendingFriendRequestCount?: number;
     onFriendRequestsChanged?: () => void;
 }
 
-const LeaderboardView: React.FC<LeaderboardViewProps> = ({ user, username, weeklyGain, league, competitors, activeGuardianId = 1, pendingFriendRequestCount = 0, onFriendRequestsChanged = () => {} }) => {
+const LeaderboardView: React.FC<LeaderboardViewProps> = ({ user, username, weeklyGain, league, competitors, activeGuardianId = 1, activeGuardianEvolutionStage = 1, pendingFriendRequestCount = 0, onFriendRequestsChanged = () => {} }) => {
     const [activeTab, setActiveTab] = useState<LeaderboardTab>('league');
     const [isMenuOpen, setIsMenuOpen] = useState(false);
     const [isAddFriendOpen, setIsAddFriendOpen] = useState(false);
@@ -85,30 +91,30 @@ const LeaderboardView: React.FC<LeaderboardViewProps> = ({ user, username, weekl
 
     const leagueEntries = useMemo<LeaderboardEntry[]>(() => {
         const realEntries: LeaderboardEntry[] = realCompetitors.map(p => ({
-            id: p.uid, rank: 0, username: p.name, weeklyGain: p.weeklyGain, guardianId: p.guardianId
+            id: p.uid, rank: 0, username: p.name, weeklyGain: p.weeklyGain, guardianId: p.guardianId, evolutionStage: p.guardianEvolutionStage
         }));
         const remainingSlots = Math.max(0, LEAGUE_POOL_SIZE - realEntries.length);
         const mockEntries: LeaderboardEntry[] = competitors.slice(0, remainingSlots).map((c, idx) => ({
-            id: `mock-${idx}-${c.username}`, rank: 0, username: c.username, weeklyGain: c.weeklyGain, guardianId: c.guardianId
+            id: `mock-${idx}-${c.username}`, rank: 0, username: c.username, weeklyGain: c.weeklyGain, guardianId: c.guardianId, evolutionStage: MOCK_EVOLUTION_STAGE
         }));
-        const selfEntry: LeaderboardEntry = { id: user.uid, rank: 0, username, weeklyGain, guardianId: activeGuardianId, isUser: true };
+        const selfEntry: LeaderboardEntry = { id: user.uid, rank: 0, username, weeklyGain, guardianId: activeGuardianId, evolutionStage: activeGuardianEvolutionStage, isUser: true };
 
         return [...realEntries, ...mockEntries, selfEntry]
             .sort((a, b) => b.weeklyGain - a.weeklyGain)
             .slice(0, 20)
             .map((entry, idx) => ({ ...entry, rank: idx + 1 }));
-    }, [realCompetitors, competitors, username, weeklyGain, activeGuardianId, user.uid]);
+    }, [realCompetitors, competitors, username, weeklyGain, activeGuardianId, activeGuardianEvolutionStage, user.uid]);
 
     const friendsEntries = useMemo<LeaderboardEntry[]>(() => {
         const friendEntries: LeaderboardEntry[] = friendProfiles.map(p => ({
-            id: p.uid, rank: 0, username: p.name, weeklyGain: p.weeklyGain, guardianId: p.guardianId
+            id: p.uid, rank: 0, username: p.name, weeklyGain: p.weeklyGain, guardianId: p.guardianId, evolutionStage: p.guardianEvolutionStage
         }));
-        const selfEntry: LeaderboardEntry = { id: user.uid, rank: 0, username, weeklyGain, guardianId: activeGuardianId, isUser: true };
+        const selfEntry: LeaderboardEntry = { id: user.uid, rank: 0, username, weeklyGain, guardianId: activeGuardianId, evolutionStage: activeGuardianEvolutionStage, isUser: true };
 
         return [...friendEntries, selfEntry]
             .sort((a, b) => b.weeklyGain - a.weeklyGain)
             .map((entry, idx) => ({ ...entry, rank: idx + 1 }));
-    }, [friendProfiles, username, weeklyGain, activeGuardianId, user.uid]);
+    }, [friendProfiles, username, weeklyGain, activeGuardianId, activeGuardianEvolutionStage, user.uid]);
 
     const isLeagueTab = activeTab === 'league';
     const allEntries = isLeagueTab ? leagueEntries : friendsEntries;
@@ -255,7 +261,7 @@ const LeaderboardView: React.FC<LeaderboardViewProps> = ({ user, username, weekl
                                     <div className={`mb-2 md:mb-4 transform ${scale} ${displayRank === 1 ? 'animate-bounce' : ''}`}>
                                         <PixelCreature
                                             creature={INITIAL_CREATURES.find(c => c.id === entry.guardianId) || INITIAL_CREATURES[0]}
-                                            evolutionStage={displayRank === 1 ? 3 : 2}
+                                            evolutionStage={entry.evolutionStage}
                                             pixelSize={displayRank === 1 ? 4 : 3}
                                         />
                                     </div>
@@ -310,7 +316,7 @@ const LeaderboardView: React.FC<LeaderboardViewProps> = ({ user, username, weekl
                                         <div className="w-8 h-8 flex items-center justify-center grayscale group-hover:grayscale-0 transition-all opacity-60">
                                             <PixelCreature
                                                 creature={INITIAL_CREATURES.find(c => c.id === entry.guardianId) || INITIAL_CREATURES[0]}
-                                                evolutionStage={1}
+                                                evolutionStage={entry.evolutionStage}
                                                 pixelSize={2}
                                             />
                                         </div>

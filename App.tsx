@@ -301,7 +301,9 @@ const App: React.FC = () => {
     // user's team. Debounced since these change on every correct answer.
     useEffect(() => {
         if (!user) return;
-        const guardianId = creatures.find(c => c.id === activeCreatureId)?.creatureId || 1;
+        const activeCreature = creatures.find(c => c.id === activeCreatureId);
+        const guardianId = activeCreature?.creatureId || 1;
+        const guardianEvolutionStage = activeCreature?.evolutionStage || 1;
         const team = userTeam
             .map(instanceId => creatures.find(c => c.id === instanceId))
             .filter((c): c is CreatureInstance => !!c)
@@ -310,6 +312,7 @@ const App: React.FC = () => {
             syncPublicLeaderboardStats(user.uid, {
                 weeklyGain: profile.weeklyAuraGain,
                 guardianId,
+                guardianEvolutionStage,
                 league: profile.league,
                 team,
                 streak: profile.dailyStreak
@@ -1051,6 +1054,7 @@ const App: React.FC = () => {
                             league={profile.league}
                             competitors={mockCompetitors}
                             activeGuardianId={creatures.find(c => c.id === activeCreatureId)?.creatureId || 1}
+                            activeGuardianEvolutionStage={creatures.find(c => c.id === activeCreatureId)?.evolutionStage || 1}
                             pendingFriendRequestCount={pendingFriendRequestCount}
                             onFriendRequestsChanged={() => setFriendRequestsRefreshKey(k => k + 1)}
                         />;

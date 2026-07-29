@@ -23,6 +23,7 @@ function toPublicProfile(uid: string, data: any): PublicProfile {
         photoUrl: data.photoUrl ?? undefined,
         weeklyGain: typeof data.weeklyGain === 'number' ? data.weeklyGain : 0,
         guardianId: typeof data.guardianId === 'number' ? data.guardianId : 1,
+        guardianEvolutionStage: [1, 2, 3].includes(data.guardianEvolutionStage) ? data.guardianEvolutionStage : 1,
         league: data.league ?? undefined,
         team: Array.isArray(data.team) ? data.team : [],
         streak: typeof data.streak === 'number' ? data.streak : 0
@@ -53,11 +54,12 @@ export async function ensurePublicProfile(user: User): Promise<void> {
  */
 export async function syncPublicLeaderboardStats(
     uid: string,
-    stats: { weeklyGain: number; guardianId: number; league: LeagueType; team: PublicTeamMember[]; streak: number }
+    stats: { weeklyGain: number; guardianId: number; guardianEvolutionStage: 1 | 2 | 3; league: LeagueType; team: PublicTeamMember[]; streak: number }
 ): Promise<void> {
     await setDoc(doc(db, 'users', uid), {
         weeklyGain: stats.weeklyGain,
         guardianId: stats.guardianId,
+        guardianEvolutionStage: stats.guardianEvolutionStage,
         league: stats.league,
         team: stats.team,
         streak: stats.streak,

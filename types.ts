@@ -27,6 +27,7 @@ export interface PublicProfile {
     photoUrl?: string;
     weeklyGain: number;
     guardianId: number;
+    guardianEvolutionStage: 1 | 2 | 3;
     league?: LeagueType;
     team: PublicTeamMember[];
     streak: number;
