@@ -246,7 +246,7 @@ export interface TutorialState {
     tutorialShopPurchased: boolean;      // Has bought 1 power-up during tutorial
 
     // Creature selection tracking
-    starterPokemonId: number | null;     // Track which starter was chosen
+    starterAuramonId: number | null;     // Track which starter was chosen
     hasChosenActiveCreature: boolean;    // Has explicitly chosen active creature
 
     // Legacy fields - preserved for compatibility

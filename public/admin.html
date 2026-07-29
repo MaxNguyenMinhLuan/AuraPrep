@@ -1,0 +1,352 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<meta name="robots" content="noindex, nofollow" />
+<title>AuraPrep — Daily Stats</title>
+<style>
+  :root { color-scheme: light dark; }
+  body {
+    font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+    margin: 0;
+    padding: 24px;
+    background: #0f1115;
+    color: #e8e8ea;
+  }
+  h1 { font-size: 1.25rem; margin: 0 0 4px; }
+  .sub { color: #9a9aa2; font-size: 0.85rem; margin-bottom: 20px; }
+  #gate {
+    max-width: 420px;
+    margin: 80px auto;
+    text-align: center;
+  }
+  button {
+    background: #4f46e5;
+    color: white;
+    border: none;
+    padding: 10px 18px;
+    border-radius: 8px;
+    font-size: 0.9rem;
+    cursor: pointer;
+  }
+  button:hover { background: #4338ca; }
+  button:disabled { opacity: 0.5; cursor: default; }
+  #controls {
+    display: flex;
+    gap: 10px;
+    align-items: center;
+    flex-wrap: wrap;
+    margin-bottom: 14px;
+  }
+  input[type="text"], input[type="date"] {
+    background: #1b1e27;
+    border: 1px solid #33374a;
+    color: #e8e8ea;
+    padding: 8px 10px;
+    border-radius: 6px;
+    font-size: 0.85rem;
+  }
+  table {
+    width: 100%;
+    border-collapse: collapse;
+    font-size: 0.85rem;
+  }
+  th, td {
+    text-align: left;
+    padding: 8px 10px;
+    border-bottom: 1px solid #23262f;
+    white-space: nowrap;
+  }
+  th {
+    cursor: pointer;
+    color: #b8b8c2;
+    font-weight: 600;
+    position: sticky;
+    top: 0;
+    background: #0f1115;
+    user-select: none;
+  }
+  th:hover { color: #fff; }
+  tbody tr:hover { background: #171a22; }
+  .num { text-align: right; font-variant-numeric: tabular-nums; }
+  .empty, .error { color: #9a9aa2; padding: 40px 0; text-align: center; }
+  .error { color: #f87171; }
+  .totals td { font-weight: 700; border-top: 2px solid #33374a; }
+  #status { color: #9a9aa2; font-size: 0.8rem; margin-left: auto; }
+  .table-wrap { overflow-x: auto; max-width: 100%; }
+</style>
+</head>
+<body>
+
+<div id="gate">
+  <h1>AuraPrep — Daily Stats</h1>
+  <p class="sub">Admin-only. Sign in with the account this dashboard is restricted to.</p>
+  <button id="signInBtn">Sign in with Google</button>
+  <p id="gateMsg" class="sub"></p>
+</div>
+
+<div id="dashboard" style="display:none">
+  <h1>AuraPrep — Daily Stats</h1>
+  <p class="sub">Reads live from Firestore. Same numbers the twice-daily Sheets export uses.</p>
+  <div id="controls">
+    <input type="text" id="filterUser" placeholder="Filter by user…" />
+    <input type="date" id="filterFrom" />
+    <span class="sub">to</span>
+    <input type="date" id="filterTo" />
+    <button id="refreshBtn">Refresh</button>
+    <button id="csvBtn">Export CSV</button>
+    <span id="status"></span>
+  </div>
+  <div class="table-wrap">
+    <table>
+      <thead>
+        <tr>
+          <th data-key="date">Date</th>
+          <th data-key="user">User</th>
+          <th data-key="logins" class="num">Logins</th>
+          <th data-key="loginTimes">Login Times</th>
+          <th data-key="missions" class="num">Missions</th>
+          <th data-key="questions" class="num">Questions</th>
+          <th data-key="summons" class="num">Summons</th>
+          <th data-key="bossFights" class="num">Boss Fights</th>
+          <th data-key="updatedAt">Last Updated</th>
+        </tr>
+      </thead>
+      <tbody id="rows"></tbody>
+      <tfoot id="totals"></tfoot>
+    </table>
+  </div>
+  <p id="emptyMsg" class="empty" style="display:none">No activity recorded for this range yet.</p>
+</div>
+
+<script type="module">
+import { initializeApp } from 'https://www.gstatic.com/firebasejs/12.7.0/firebase-app.js';
+import {
+  getAuth, GoogleAuthProvider, signInWithPopup, onAuthStateChanged, signOut,
+} from 'https://www.gstatic.com/firebasejs/12.7.0/firebase-auth.js';
+import {
+  getFirestore, collectionGroup, getDocsFromServer, doc, getDocFromServer,
+} from 'https://www.gstatic.com/firebasejs/12.7.0/firebase-firestore.js';
+
+// Same public web config the main app ships with (services/firebase.ts) —
+// not a secret, protection comes from firestore.rules.
+const firebaseConfig = {
+  apiKey: "AIzaSyDGmQozAQW6ox2hxrgnNo7F1DClr__6sCo",
+  authDomain: "auraprep-da99c.firebaseapp.com",
+  projectId: "auraprep-da99c",
+  storageBucket: "auraprep-da99c.firebasestorage.app",
+  messagingSenderId: "1084120674348",
+  appId: "1:1084120674348:web:bf31903496450e75d2a189",
+};
+
+const ADMIN_EMAIL = 'maxidea2008@gmail.com';
+
+const app = initializeApp(firebaseConfig);
+const auth = getAuth(app);
+const db = getFirestore(app);
+const provider = new GoogleAuthProvider();
+
+const gateEl = document.getElementById('gate');
+const gateMsgEl = document.getElementById('gateMsg');
+const dashboardEl = document.getElementById('dashboard');
+const rowsEl = document.getElementById('rows');
+const totalsEl = document.getElementById('totals');
+const emptyMsgEl = document.getElementById('emptyMsg');
+const statusEl = document.getElementById('status');
+
+document.getElementById('signInBtn').addEventListener('click', () => {
+  signInWithPopup(auth, provider).catch((err) => {
+    gateMsgEl.textContent = err.message;
+  });
+});
+
+let allRows = [];
+let sortKey = 'date';
+let sortDir = -1;
+let isLoading = false;
+
+// Live view, not a twice-a-day batch: reload from the server on every
+// manual Refresh click, plus automatically in the background so the page
+// stays current if you just leave it open.
+const AUTO_REFRESH_MS = 60_000;
+let autoRefreshTimer = null;
+
+function startAutoRefresh() {
+  stopAutoRefresh();
+  autoRefreshTimer = setInterval(loadData, AUTO_REFRESH_MS);
+}
+
+function stopAutoRefresh() {
+  if (autoRefreshTimer) clearInterval(autoRefreshTimer);
+  autoRefreshTimer = null;
+}
+
+onAuthStateChanged(auth, async (user) => {
+  if (!user) {
+    gateEl.style.display = '';
+    dashboardEl.style.display = 'none';
+    stopAutoRefresh();
+    return;
+  }
+  if (user.email !== ADMIN_EMAIL) {
+    gateMsgEl.textContent = `Signed in as ${user.email}, which isn't authorized for this dashboard.`;
+    await signOut(auth);
+    return;
+  }
+  gateEl.style.display = 'none';
+  dashboardEl.style.display = '';
+  loadData();
+  startAutoRefresh();
+});
+
+async function loadData() {
+  if (isLoading) return;
+  isLoading = true;
+  statusEl.textContent = 'Loading…';
+  try {
+    // *FromServer skips any local cache so both the manual Refresh button
+    // and the auto-refresh tick always pull genuinely current counts.
+    const snap = await getDocsFromServer(collectionGroup(db, 'dailyStats'));
+
+    const entries = snap.docs.map((d) => ({
+      uid: d.ref.parent.parent?.id ?? 'unknown',
+      data: d.data(),
+    }));
+
+    const uniqueUids = [...new Set(entries.map((e) => e.uid))];
+    const labelPairs = await Promise.all(uniqueUids.map(async (uid) => {
+      try {
+        const profileSnap = await getDocFromServer(doc(db, 'users', uid));
+        const label = profileSnap.exists() ? (profileSnap.data().name || uid) : uid;
+        return [uid, label];
+      } catch {
+        return [uid, uid];
+      }
+    }));
+    const labelByUid = new Map(labelPairs);
+
+    allRows = entries.map(({ uid, data }) => ({
+      date: data.date || '',
+      user: labelByUid.get(uid) || uid,
+      logins: data.logins || 0,
+      loginTimes: (data.loginTimestamps || []).map(formatTime).join(', '),
+      missions: data.missionsCompleted || 0,
+      questions: data.questionsAnswered || 0,
+      summons: data.summons || 0,
+      bossFights: data.bossFights || 0,
+      updatedAt: data.updatedAt || '',
+    }));
+
+    statusEl.textContent = `${allRows.length} row(s) · updated ${new Date().toLocaleTimeString()} · auto-refreshing every ${AUTO_REFRESH_MS / 1000}s`;
+    render();
+  } catch (err) {
+    statusEl.textContent = `Refresh failed: ${err.message}`;
+  } finally {
+    isLoading = false;
+  }
+}
+
+function formatTime(iso) {
+  try {
+    return new Date(iso).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
+  } catch {
+    return iso;
+  }
+}
+
+function escapeHtml(s) {
+  const div = document.createElement('div');
+  div.textContent = String(s);
+  return div.innerHTML;
+}
+
+function getFiltered() {
+  const userFilter = document.getElementById('filterUser').value.trim().toLowerCase();
+  const from = document.getElementById('filterFrom').value;
+  const to = document.getElementById('filterTo').value;
+
+  return allRows.filter((r) => {
+    if (userFilter && !r.user.toLowerCase().includes(userFilter)) return false;
+    if (from && r.date < from) return false;
+    if (to && r.date > to) return false;
+    return true;
+  });
+}
+
+function render() {
+  const filtered = getFiltered();
+  filtered.sort((a, b) => {
+    const av = a[sortKey], bv = b[sortKey];
+    if (typeof av === 'number' && typeof bv === 'number') return (av - bv) * sortDir;
+    return String(av).localeCompare(String(bv)) * sortDir;
+  });
+
+  if (filtered.length === 0) {
+    rowsEl.innerHTML = '';
+    totalsEl.innerHTML = '';
+    emptyMsgEl.style.display = '';
+    return;
+  }
+  emptyMsgEl.style.display = 'none';
+
+  rowsEl.innerHTML = filtered.map((r) => `
+    <tr>
+      <td>${escapeHtml(r.date)}</td>
+      <td>${escapeHtml(r.user)}</td>
+      <td class="num">${r.logins}</td>
+      <td>${escapeHtml(r.loginTimes)}</td>
+      <td class="num">${r.missions}</td>
+      <td class="num">${r.questions}</td>
+      <td class="num">${r.summons}</td>
+      <td class="num">${r.bossFights}</td>
+      <td>${escapeHtml(r.updatedAt ? new Date(r.updatedAt).toLocaleString() : '')}</td>
+    </tr>
+  `).join('');
+
+  const sum = (key) => filtered.reduce((acc, r) => acc + r[key], 0);
+  totalsEl.innerHTML = `
+    <tr class="totals">
+      <td colspan="2">Total (${filtered.length} row${filtered.length === 1 ? '' : 's'})</td>
+      <td class="num">${sum('logins')}</td>
+      <td></td>
+      <td class="num">${sum('missions')}</td>
+      <td class="num">${sum('questions')}</td>
+      <td class="num">${sum('summons')}</td>
+      <td class="num">${sum('bossFights')}</td>
+      <td></td>
+    </tr>
+  `;
+}
+
+document.querySelectorAll('th[data-key]').forEach((th) => {
+  th.addEventListener('click', () => {
+    const key = th.dataset.key;
+    sortDir = sortKey === key ? -sortDir : -1;
+    sortKey = key;
+    render();
+  });
+});
+
+['filterUser', 'filterFrom', 'filterTo'].forEach((id) => {
+  document.getElementById(id).addEventListener('input', render);
+});
+
+document.getElementById('refreshBtn').addEventListener('click', loadData);
+
+document.getElementById('csvBtn').addEventListener('click', () => {
+  const filtered = getFiltered();
+  const header = ['Date', 'User', 'Logins', 'Login Times', 'Missions', 'Questions', 'Summons', 'Boss Fights', 'Last Updated'];
+  const csvRows = filtered.map((r) => [
+    r.date, r.user, r.logins, r.loginTimes, r.missions, r.questions, r.summons, r.bossFights, r.updatedAt,
+  ].map((v) => `"${String(v).replace(/"/g, '""')}"`).join(','));
+  const csv = [header.join(','), ...csvRows].join('\n');
+  const blob = new Blob([csv], { type: 'text/csv' });
+  const a = document.createElement('a');
+  a.href = URL.createObjectURL(blob);
+  a.download = `auraprep-daily-stats-${new Date().toISOString().slice(0, 10)}.csv`;
+  a.click();
+});
+</script>
+</body>
+</html>

@@ -178,11 +178,6 @@ const Dashboard: React.FC<DashboardProps> = ({
                 
                 {/* Daily Missions */}
                 <div className="w-full bg-surface border-2 border-primary/80 p-4 md:p-5 lg:p-6 space-y-4 shadow-card rounded-xl flex-grow animate-scaleIn">
-                    <div className="flex justify-between items-center mb-2">
-                        <h2 className="text-base md:text-lg lg:text-xl text-highlight font-sans">Daily Missions</h2>
-                        <span className="text-[10px] md:text-xs bg-primary text-white px-2.5 py-1 rounded-full uppercase tracking-wider font-bold shadow-button animate-subtlePulse">Today</span>
-                    </div>
-                    <div className="h-px w-full bg-gradient-to-r from-transparent via-primary/30 to-transparent mb-4"></div>
 
                     <div className="grid grid-cols-1 gap-3 md:gap-4">
                         {[...dailyMissions].sort((a, b) => {

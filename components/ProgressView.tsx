@@ -18,6 +18,7 @@ import ShuffleIcon from './icons/ShuffleIcon';
 import ShieldIcon from './icons/ShieldIcon';
 import TargetIcon from './icons/TargetIcon';
 import ReportQuestionModal from './ReportQuestionModal';
+import { logDailyEvent } from '../services/dailyStatsService';
 import { reportQuestion } from '../services/reportService';
 
 const getPowerUpColorClass = (id: PowerUpType) => {
@@ -116,6 +117,7 @@ const PracticeSession: React.FC<{
         setIsCorrect(correct);
         updateProfile(subtopic, correct);
         setStreak(prev => correct ? prev + 1 : 0);
+        logDailyEvent('question');
     };
     
     const handleReportSubmit = (reason: string) => {
@@ -480,7 +482,8 @@ const BossFightSession: React.FC<{
         setSelectedAnswer(index);
         setIsCorrect(correct);
         updateProfile(subtopic, correct);
-        
+        logDailyEvent('question');
+
         if (correct) {
             const damage = doubleJeopardyActive ? 2 : 1;
             setBossHealth(prev => Math.max(0, prev - damage));
@@ -866,6 +869,7 @@ const ProgressView: React.FC<ProgressViewProps> = ({ userId, userEmail, profile,
 
     const handleBossFightComplete = (success: boolean) => {
         setIsBossFightActive?.(false);
+        logDailyEvent('bossFight');
         if (success && selectedSubtopic) {
             const currentLevel = profile.stats[selectedSubtopic].level;
             const nextLevel = getNextLevel(currentLevel);

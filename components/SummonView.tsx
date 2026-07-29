@@ -4,6 +4,8 @@ import { Creature, Rarity, CreatureInstance } from '../types';
 import { INITIAL_CREATURES, SUMMON_COST } from '../constants';
 import { PixelCreature } from './CreatureCard';
 import AuraIcon from './icons/AuraIcon';
+import { logDailyEvent } from '../services/dailyStatsService';
+import { redeemGiftCode } from '../services/adminService';
 
 interface SummonResult extends Creature {
     isNew: boolean;
@@ -221,6 +223,10 @@ const SummonView: React.FC<SummonViewProps> = ({ auraPoints, setAuraPoints, user
     const [phase, setPhase] = useState<SummonPhase>('idle');
     const [summonedResults, setSummonedResults] = useState<SummonResult[]>([]);
     const [revealIndex, setRevealIndex] = useState(0);
+    const [giftCode, setGiftCode] = useState('');
+    const [giftCodeMessage, setGiftCodeMessage] = useState('');
+    const [giftCodeLoading, setGiftCodeLoading] = useState(false);
+    const [giftCodeError, setGiftCodeError] = useState(false);
 
     const timeoutsRef = useRef<number[]>([]);
     const completedRef = useRef(false);
@@ -288,6 +294,7 @@ const SummonView: React.FC<SummonViewProps> = ({ auraPoints, setAuraPoints, user
     const fireComplete = () => {
         if (!completedRef.current) {
             completedRef.current = true;
+            logDailyEvent('summon', summonedResults.length);
             onSummonComplete?.();
         }
     };
@@ -447,6 +454,26 @@ const SummonView: React.FC<SummonViewProps> = ({ auraPoints, setAuraPoints, user
                 setPhase('idle');
                 setSummonedResults([]);
                 break;
+        }
+    };
+
+    const handleRedeemGiftCode = async (e: React.FormEvent) => {
+        e.preventDefault();
+        setGiftCodeLoading(true);
+        setGiftCodeMessage('');
+        setGiftCodeError(false);
+        try {
+            const result = await redeemGiftCode(giftCode);
+            setGiftCodeMessage(`✨ You received ${result.auramon.name} at Level ${result.auramon.level}!`);
+            setGiftCode('');
+            // Refresh the page or trigger data update
+            setTimeout(() => window.location.reload(), 2000);
+        } catch (error: any) {
+            setGiftCodeError(true);
+            const errorMsg = error.message || 'Failed to redeem code';
+            setGiftCodeMessage(errorMsg);
+        } finally {
+            setGiftCodeLoading(false);
         }
     };
 
@@ -678,6 +705,38 @@ const SummonView: React.FC<SummonViewProps> = ({ auraPoints, setAuraPoints, user
             {/* Summon buttons and Aura Points - only show when not animating */}
             {!isAnimating && (
                 <>
+                    {/* Gift Code Redemption */}
+                    <div className="w-full mt-3 md:mt-6 max-w-lg md:max-w-2xl lg:max-w-3xl mx-auto mb-4">
+                        <form onSubmit={handleRedeemGiftCode} className="space-y-2">
+                            <div className="flex gap-2">
+                                <input
+                                    type="text"
+                                    placeholder="Enter gift code..."
+                                    value={giftCode}
+                                    onChange={(e) => setGiftCode(e.target.value)}
+                                    disabled={giftCodeLoading}
+                                    className="flex-1 px-4 py-2 md:py-3 rounded-lg border-2 border-secondary/30 bg-surface text-text-main placeholder-text-dim/50 focus:outline-none focus:border-primary uppercase font-mono text-xs md:text-sm"
+                                />
+                                <button
+                                    type="submit"
+                                    disabled={giftCodeLoading || !giftCode.trim()}
+                                    className="px-4 md:px-6 py-2 md:py-3 bg-primary hover:brightness-110 disabled:opacity-50 text-white font-bold rounded-lg transition-all duration-200 active:scale-95 text-xs md:text-sm uppercase"
+                                >
+                                    {giftCodeLoading ? 'Redeeming...' : 'Redeem'}
+                                </button>
+                            </div>
+                            {giftCodeMessage && (
+                                <div className={`p-2 md:p-3 rounded-lg text-xs md:text-sm ${
+                                    giftCodeError
+                                        ? 'bg-red-50 text-red-700 dark:bg-red-950/20 dark:text-red-400 border border-red-200 dark:border-red-800'
+                                        : 'bg-emerald-50 text-emerald-700 dark:bg-emerald-950/20 dark:text-emerald-400 border border-emerald-200 dark:border-emerald-800'
+                                }`}>
+                                    {giftCodeMessage}
+                                </div>
+                            )}
+                        </form>
+                    </div>
+
                     <div className="w-full mt-3 md:mt-6 space-y-3 max-w-lg md:max-w-2xl lg:max-w-3xl mx-auto">
                         <div className="flex flex-col sm:flex-row gap-3 md:gap-4 max-w-2xl mx-auto">
                             <button

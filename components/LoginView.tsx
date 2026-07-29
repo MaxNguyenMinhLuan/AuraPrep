@@ -119,7 +119,7 @@ const LoginView: React.FC<LoginViewProps> = ({ onLogin }) => {
                             </li>
                             <li className="flex items-center gap-3 text-xs text-text-main">
                                 <span className="bg-success/20 text-success p-1 rounded-full text-[8px]">✓</span>
-                                Collect & Evolve Creatures
+                                Collect & Evolve Auramons
                             </li>
                             <li className="flex items-center gap-3 text-xs text-text-main">
                                 <span className="bg-success/20 text-success p-1 rounded-full text-[8px]">✓</span>

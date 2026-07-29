@@ -10,6 +10,7 @@ interface BestiaryViewProps {
     onToggleTeamMember: (instanceId: number) => void;
     onToggleFavorite: (instanceId: number) => void;
     onRenameCreature: (instanceId: number, newName: string) => void;
+    onEvolveCreature?: (instanceId: number) => void;
 }
 
 const getRarityClasses = (rarity: Rarity) => {
@@ -44,7 +45,7 @@ const PixelPencilIcon = () => (
     </svg>
 );
 
-const BestiaryView: React.FC<BestiaryViewProps> = ({ userCreatures, userTeam, onToggleTeamMember, onToggleFavorite, onRenameCreature }) => {
+const BestiaryView: React.FC<BestiaryViewProps> = ({ userCreatures, userTeam, onToggleTeamMember, onToggleFavorite, onRenameCreature, onEvolveCreature }) => {
     const [selectedInstance, setSelectedInstance] = useState<CreatureInstance | null>(null);
     const [activeTab, setActiveTab] = useState<'team' | 'binder'>('team');
     const [isEditingName, setIsEditingName] = useState(false);
@@ -241,6 +242,14 @@ const BestiaryView: React.FC<BestiaryViewProps> = ({ userCreatures, userTeam, on
                         <p className="text-xs text-highlight mt-2">
                             Evolves at Level {nextEvoLevel} ({nextEvoLevel - currentLevel} levels to go!)
                         </p>
+                    )}
+                    {nextEvoLevel && currentLevel >= nextEvoLevel && currentInstance.evolutionStage < maxEvoStage && onEvolveCreature && (
+                        <button
+                            onClick={() => onEvolveCreature(currentInstance.id)}
+                            className="w-full mt-3 bg-gradient-to-r from-purple-500 to-pink-500 hover:from-purple-600 hover:to-pink-600 text-white font-bold py-2 px-4 rounded-lg transition-all duration-200 active:scale-95 shadow-md"
+                        >
+                            ✨ Evolve to {creatureData.names[currentInstance.evolutionStage] || 'Next Stage'}
+                        </button>
                     )}
                 </div>
             </div>

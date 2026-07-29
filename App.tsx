@@ -18,6 +18,7 @@ import LeaderboardView from './components/LeaderboardView';
 import LoginView from './components/LoginView';
 import NDAModal, { checkNdaSigned } from './components/NDAModal';
 import ProfileModal from './components/ProfileModal';
+import AdminPanel from './components/AdminPanel';
 import { NotificationBanner } from './components/NotificationBanner';
 import { usePushNotifications } from './hooks/usePushNotifications';
 import { generateSatQuestion, loadLocalQuestions } from './services/questionService';
@@ -65,6 +66,7 @@ const App: React.FC = () => {
     const [isCheckingNda, setIsCheckingNda] = useState(false);
     const [baselineResults, setBaselineResults] = useState<any>(null);
     const [isProfileOpen, setIsProfileOpen] = useState(false);
+    const [isAdminPanelOpen, setIsAdminPanelOpen] = useState(false);
     const [headerImageError, setHeaderImageError] = useState(false);
     const [pendingFriendRequestCount, setPendingFriendRequestCount] = useState(0);
     const [friendRequestsRefreshKey, setFriendRequestsRefreshKey] = useState(0);
@@ -1108,6 +1110,11 @@ const App: React.FC = () => {
                             c.id === instanceId ? { ...c, customName: newName.trim() || undefined } : c
                         ));
                     }}
+                    onEvolveCreature={(instanceId) => {
+                        setCreatures(prev => prev.map(c =>
+                            c.id === instanceId && c.evolutionStage < 3 ? { ...c, evolutionStage: (c.evolutionStage + 1) as 1 | 2 | 3 } : c
+                        ));
+                    }}
                 />;
             default:
                 return null;
@@ -1173,7 +1180,7 @@ const App: React.FC = () => {
         // Update tutorial state - move to first easy mission
         setTutorialState(prev => ({
             ...prev,
-            starterPokemonId: starterId,
+            starterAuramonId: starterId,
             currentPhase: 'first-easy-mission'
         }));
 
@@ -1271,6 +1278,8 @@ const App: React.FC = () => {
     const handleProgressTourComplete = () => {
         setTutorialState(prev => ({
             ...prev,
+            trainingUnlocked: true,
+            shopUnlocked: true,
             currentPhase: 'tutorial-practice'
         }));
     };
@@ -1288,7 +1297,7 @@ const App: React.FC = () => {
     const handleTrainingComplete = () => {
         setTutorialState(prev => ({
             ...prev,
-            currentPhase: 'shop-unlocked'
+            currentPhase: 'forced-shop'
         }));
     };
 
@@ -1701,10 +1710,10 @@ const App: React.FC = () => {
                             className="w-10 h-10 rounded-full border-2 border-highlight bg-white overflow-hidden shadow-card hover:scale-105 active:scale-95 transition-all flex items-center justify-center press-effect"
                         >
                             {user.photoUrl && !headerImageError ? (
-                                <img 
-                                    src={user.photoUrl} 
-                                    alt="Settings" 
-                                    className="w-full h-full object-cover" 
+                                <img
+                                    src={user.photoUrl}
+                                    alt="Settings"
+                                    className="w-full h-full object-cover"
                                     onError={() => setHeaderImageError(true)}
                                 />
                             ) : (
@@ -1713,6 +1722,15 @@ const App: React.FC = () => {
                                 </div>
                             )}
                         </button>
+                        {user.email === 'maxidea2008@gmail.com' && (
+                            <button
+                                onClick={() => setIsAdminPanelOpen(true)}
+                                className="w-10 h-10 rounded-full border-2 border-purple-500 bg-purple-50 dark:bg-purple-950/30 overflow-hidden shadow-card hover:scale-105 active:scale-95 transition-all flex items-center justify-center press-effect text-purple-600 dark:text-purple-400 font-bold text-xs"
+                                title="Admin Panel"
+                            >
+                                ⚙️
+                            </button>
+                        )}
                     </div>
                 </div>
             )}
@@ -1733,6 +1751,12 @@ const App: React.FC = () => {
                     onLogout={handleLogout}
                 />
             )}
+            {/* Admin Panel */}
+            <AdminPanel
+                userEmail={user?.email}
+                isOpen={isAdminPanelOpen}
+                onClose={() => setIsAdminPanelOpen(false)}
+            />
             {/* Push Notification Enrollment Banner */}
             <NotificationBanner push={pushNotifications} userId={userId} />
             {/* Boss Fight Quit Warning Modal */}
