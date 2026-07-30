@@ -407,7 +407,7 @@ const BestiaryView: React.FC<BestiaryViewProps> = ({ userCreatures, userTeam, on
                                 <div className="relative flex-1">
                                     <input
                                         type="text"
-                                        placeholder="Search by name or species..."
+                                        placeholder="Search..."
                                         value={searchQuery}
                                         onChange={(e) => setSearchQuery(e.target.value)}
                                         className="w-full px-3 py-2 pl-9 pr-8 bg-background text-text-main border border-secondary/30 rounded-xl focus:outline-none focus:border-primary/50 text-xs sm:text-sm font-bold shadow-sm transition-all font-sans placeholder-text-dim/50"
