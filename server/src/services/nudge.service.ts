@@ -13,7 +13,9 @@ import { getUserLeagueRank } from './leaderboard.service';
 // 'morning' and 'evening' are the two guaranteed sends; 'afternoon' is
 // opportunistic (not guaranteed); 'lunchBreak', 'lastChance', and
 // 'evolutionSoon' are event-triggered and independent of the guaranteed slots.
-type NudgeSlot = 'morning' | 'afternoon' | 'evening' | 'lunchBreak' | 'lastChance' | 'evolutionSoon';
+// 'streakBroken'/'dormant'/'dormantHarsh' are inactivity-tier triggers based
+// on days since lastCompletionDate, each firing once per gap (not per day).
+type NudgeSlot = 'morning' | 'afternoon' | 'evening' | 'lunchBreak' | 'lastChance' | 'evolutionSoon' | 'streakBroken' | 'dormant' | 'dormantHarsh';
 
 // Jitter windows, in minutes-since-local-midnight. Each user's exact target
 // minute within a window is deterministic per (userId, localDateStr) so it's
@@ -31,6 +33,14 @@ const LUNCH_BREAK_WINDOW_END_MIN = 13 * 60;         // 13:00
 const EVENING_WINDOW_START_MIN = 19 * 60 + 50; // 19:50
 const EVENING_WINDOW_END_MIN = 20 * 60 + 15;   // 20:15
 const LAST_CHANCE_HOUR = 17; // 5pm local
+
+// Inactivity tiers, in days since lastCompletionDate. Each tier fires once
+// per gap (guarded by profile.lastDormancyNudgeTier, reset whenever the user
+// actually completes a mission again) - mirrors Duolingo's escalating-tone
+// pattern for prolonged absence rather than repeating the same daily nudge.
+const STREAK_BROKEN_DAYS = 1;
+const DORMANT_DAYS = 3;
+const DORMANT_HARSH_DAYS = 7;
 
 export class NudgeService {
     /**
@@ -257,7 +267,39 @@ export class NudgeService {
         // threshold crossing, not once per day).
         if (this.isEvolutionNudgeDue(gameData)) return 'evolutionSoon';
 
+        // Event: inactivity tiers (streakBroken/dormant/dormantHarsh), each
+        // firing once per gap regardless of time-of-day windows above.
+        const dormancySlot = this.dueDormancySlot(gameData);
+        if (dormancySlot) return dormancySlot;
+
         return null;
+    }
+
+    /**
+     * Determine the highest inactivity tier due right now, based on days
+     * since lastCompletionDate. Returns null if the user has completed a
+     * mission recently enough, or if the highest currently-due tier has
+     * already been sent for this same inactivity gap.
+     */
+    private static dueDormancySlot(gameData: IUserGameData): 'streakBroken' | 'dormant' | 'dormantHarsh' | null {
+        if (!gameData.lastCompletionDate) return null;
+
+        const daysInactive = Math.floor((Date.now() - gameData.lastCompletionDate.getTime()) / (24 * 60 * 60 * 1000));
+        if (daysInactive < STREAK_BROKEN_DAYS) return null;
+
+        const tier: 'streakBroken' | 'dormant' | 'dormantHarsh' =
+            daysInactive >= DORMANT_HARSH_DAYS ? 'dormantHarsh' :
+            daysInactive >= DORMANT_DAYS ? 'dormant' :
+            'streakBroken';
+
+        const tierRank = { streakBroken: 1, dormant: 2, dormantHarsh: 3 };
+        const profile = (gameData.profile || {}) as Record<string, any>;
+        const lastSentTier = profile.lastDormancyNudgeTier as ('streakBroken' | 'dormant' | 'dormantHarsh' | undefined);
+
+        // Already sent this tier (or a higher one) for the current gap - don't refire.
+        if (lastSentTier && tierRank[lastSentTier] >= tierRank[tier]) return null;
+
+        return tier;
     }
 
     private static isEvolutionNudgeDue(gameData: IUserGameData): boolean {
@@ -289,11 +331,18 @@ export class NudgeService {
         const streakCount = (gameData.profile as any)?.dailyStreak ?? gameData.currentStreak ?? 0;
         const leagueName = (gameData.profile as any)?.league ?? 'Bronze';
         const partnerName = gameData.activeCreature?.name || 'your Auramon';
+        const firstName = getFirstName(user.name);
 
         let pushCategory: PushCategory;
         let levelsToEvolve = 0;
+        let daysInactive = 0;
 
-        if (slot === 'lastChance') {
+        if (slot === 'streakBroken' || slot === 'dormant' || slot === 'dormantHarsh') {
+            pushCategory = slot;
+            daysInactive = gameData.lastCompletionDate
+                ? Math.floor((Date.now() - gameData.lastCompletionDate.getTime()) / (24 * 60 * 60 * 1000))
+                : 0;
+        } else if (slot === 'lastChance') {
             pushCategory = 'lastChance';
         } else if (slot === 'lunchBreak') {
             pushCategory = 'lunchBreak';
@@ -316,11 +365,13 @@ export class NudgeService {
         const deepLink = `${config.appUrl}?token=${token}`;
 
         const pushContent = renderPushTemplate(pickRandomTemplate(pushCategory), {
+            firstName,
             partnerName,
             streakCount,
             rival: pickRival(),
             leagueName,
             levelsToEvolve,
+            daysInactive,
         });
 
         const pushResult = await sendNotificationToUser(user._id.toString(), {
@@ -333,6 +384,9 @@ export class NudgeService {
             console.log(`🔔 Push nudge (${slot}/${pushCategory}) sent to ${user.email} on ${pushResult.sent} device(s).`);
             if (slot === 'evolutionSoon') {
                 await this.markEvolutionNudgeSent(gameData);
+            }
+            if (slot === 'streakBroken' || slot === 'dormant' || slot === 'dormantHarsh') {
+                this.markDormancyNudgeSent(gameData, slot);
             }
         } else if (pushResult.failed > 0) {
             console.warn(`Push nudge (${slot}/${pushCategory}) could not be delivered to ${user.email}.`);
@@ -380,8 +434,23 @@ export class NudgeService {
         gameData.profile = profile;
         gameData.markModified('profile');
     }
+
+    private static markDormancyNudgeSent(gameData: IUserGameData, tier: 'streakBroken' | 'dormant' | 'dormantHarsh'): void {
+        const profile = (gameData.profile || {}) as Record<string, any>;
+        profile.lastDormancyNudgeTier = tier;
+        gameData.profile = profile;
+        gameData.markModified('profile');
+    }
 }
 
 function userIdStr(gameData: IUserGameData): string {
     return gameData.userId.toString();
+}
+
+// User.name is a full display name (Google OAuth or local signup) - pull
+// just the first token for a more personal {FIRST_NAME} in push copy.
+function getFirstName(fullName: string): string {
+    const trimmed = (fullName || '').trim();
+    if (!trimmed) return 'there';
+    return trimmed.split(/\s+/)[0];
 }

@@ -8,7 +8,7 @@
  * state; this module only owns the copy and the substitution mechanics.
  */
 
-export type PushCategory = 'dailyMissions' | 'streak' | 'leaderboard' | 'auraFarming' | 'beyondMissions' | 'lastChance' | 'evolutionSoon' | 'lunchBreak';
+export type PushCategory = 'dailyMissions' | 'streak' | 'leaderboard' | 'auraFarming' | 'beyondMissions' | 'lastChance' | 'evolutionSoon' | 'lunchBreak' | 'streakBroken' | 'dormant' | 'dormantHarsh';
 
 export interface PushTemplate {
     id: string;
@@ -17,11 +17,13 @@ export interface PushTemplate {
 }
 
 export interface PushVariables {
+    firstName: string;
     partnerName: string;
     streakCount: number;
     rival: string;
     leagueName: string;
     levelsToEvolve: number;
+    daysInactive: number;
 }
 
 // Flavor names for the leaderboard's fictional competitors. There is no real
@@ -43,11 +45,13 @@ export function pickRival(): string {
 export function renderPushTemplate(template: PushTemplate, vars: PushVariables): { title: string; body: string } {
     const substitute = (text: string) =>
         text
+            .replace(/\{FIRST_NAME\}/g, vars.firstName)
             .replace(/\{PARTNER_NAME\}/g, vars.partnerName)
             .replace(/\{STREAK_COUNT\}/g, String(vars.streakCount))
             .replace(/\{RIVAL\}/g, vars.rival)
             .replace(/\{LEAGUE_NAME\}/g, vars.leagueName)
-            .replace(/\{LEVELS_TO_EVOLVE\}/g, String(vars.levelsToEvolve));
+            .replace(/\{LEVELS_TO_EVOLVE\}/g, String(vars.levelsToEvolve))
+            .replace(/\{DAYS_INACTIVE\}/g, String(vars.daysInactive));
 
     return { title: substitute(template.title), body: substitute(template.body) };
 }
@@ -73,17 +77,17 @@ export const PUSH_TEMPLATES: Record<PushCategory, PushTemplate[]> = {
         },
         {
             id: 'not-mad-just-disappointed',
-            title: '💔 A quiet day in the academy',
+            title: '💔 A quiet day in the academy, {FIRST_NAME}',
             body: "We noticed you haven't opened AuraPrep today. We're not mad. Just... disappointed. Mostly disappointed.",
         },
         {
             id: 'auramon-reading-books',
             title: '🐢 Your partner is waiting...',
-            body: '{PARTNER_NAME} got bored waiting for you and started reading a dictionary. It now has a higher vocabulary score than you.',
+            body: '{FIRST_NAME}, {PARTNER_NAME} got bored waiting for you and started reading a dictionary. It now has a higher vocabulary score than you.',
         },
         {
             id: 'the-ghost-town',
-            title: '👻 Is anyone home?',
+            title: '👻 Is anyone home, {FIRST_NAME}?',
             body: "Your daily missions are sitting here getting dusty. But hey, I'm sure whatever you're doing on TikTok is way more important.",
         },
         {
@@ -104,7 +108,7 @@ export const PUSH_TEMPLATES: Record<PushCategory, PushTemplate[]> = {
         {
             id: 'aura-evaporation',
             title: '💨 Aura is evaporating',
-            body: '{PARTNER_NAME} is waiting on your missions. Every minute you delay, it loses a tiny bit of respect for you.',
+            body: '{FIRST_NAME}, {PARTNER_NAME} is waiting on your missions. Every minute you delay, it loses a tiny bit of respect for you.',
         },
         {
             id: 'the-short-sat-quiz',
@@ -117,18 +121,18 @@ export const PUSH_TEMPLATES: Record<PushCategory, PushTemplate[]> = {
     streak: [
         {
             id: 'nice-streak',
-            title: '🔥 That\'s a nice {STREAK_COUNT}-day streak you have there',
+            title: '🔥 That\'s a nice {STREAK_COUNT}-day streak you have there, {FIRST_NAME}',
             body: 'It would be a real shame if something happened to it... in exactly 4 hours. Save it now.',
         },
         {
             id: 'your-fault',
-            title: '⚠️ Your streak is dying',
+            title: '⚠️ Your streak is dying, {FIRST_NAME}',
             body: "I'm not saying it's your fault, but... it is literally your fault. Complete a mission now to rescue it.",
         },
         {
             id: 'explain-to-your-auramon',
             title: '😿 Abandonment issues',
-            body: 'Save your streak or prepare to explain to {PARTNER_NAME} why you walked away from everything you built together.',
+            body: '{FIRST_NAME}, save your streak or prepare to explain to {PARTNER_NAME} why you walked away from everything you built together.',
         },
         {
             id: 'streak-has-feelings',
@@ -174,11 +178,11 @@ export const PUSH_TEMPLATES: Record<PushCategory, PushTemplate[]> = {
         {
             id: 'the-view-from-above',
             title: '👋 A message from {RIVAL}',
-            body: 'They just passed you on the leaderboard. They said to tell you the view from above is great, but you wouldn\'t know.',
+            body: '{FIRST_NAME}, they just passed you on the leaderboard. They said to tell you the view from above is great, but you wouldn\'t know.',
         },
         {
             id: 'cozy-bottom',
-            title: '📉 Slipping down the ranks',
+            title: '📉 Slipping down the ranks, {FIRST_NAME}',
             body: "Don't worry, the bottom of the leaderboard is actually very cozy. Very little effort or ambition required down there.",
         },
         {
@@ -208,7 +212,7 @@ export const PUSH_TEMPLATES: Record<PushCategory, PushTemplate[]> = {
         },
         {
             id: 'leaderboard-recluse',
-            title: '🙈 Are you hiding?',
+            title: '🙈 Are you hiding, {FIRST_NAME}?',
             body: 'Your ranking is so low right now, we had to scroll for three pages to find you. Let\'s change that immediately.',
         },
         {
@@ -227,7 +231,7 @@ export const PUSH_TEMPLATES: Record<PushCategory, PushTemplate[]> = {
     auraFarming: [
         {
             id: '0-aura-skill-issue',
-            title: '🚨 Aura Check: 0 Aura',
+            title: '🚨 Aura Check: 0 Aura, {FIRST_NAME}',
             body: "Imagine having exactly 0 Aura. Couldn't be you... oh wait, you haven't studied today. Tap to start aurafarming immediately.",
         },
         {
@@ -258,7 +262,7 @@ export const PUSH_TEMPLATES: Record<PushCategory, PushTemplate[]> = {
         {
             id: 'no-rizz-0-aura',
             title: '👀 Your partner has a message:',
-            body: '{PARTNER_NAME} says you have no study rizz and 0 Aura today. Prove them wrong and clear a quick challenge.',
+            body: '{FIRST_NAME}, {PARTNER_NAME} says you have no study rizz and 0 Aura today. Prove them wrong and clear a quick challenge.',
         },
         {
             id: 'underground-farming-guild',
@@ -272,7 +276,7 @@ export const PUSH_TEMPLATES: Record<PushCategory, PushTemplate[]> = {
         },
         {
             id: 'the-ultimate-flex',
-            title: '👑 Maximize your Aura',
+            title: '👑 Maximize your Aura, {FIRST_NAME}',
             body: "Want to auramaxx and flex on the leaderboard? Complete today's missions and claim the high-tier pulls you deserve.",
         },
     ],
@@ -284,13 +288,13 @@ export const PUSH_TEMPLATES: Record<PushCategory, PushTemplate[]> = {
     beyondMissions: [
         {
             id: 'the-minimum-is-not-enough',
-            title: '📊 The daily minimum? Cute.',
+            title: '📊 The daily minimum? Cute, {FIRST_NAME}.',
             body: "You cleared today's missions. Top preppers stop there. Top scorers don't. A Boss Fight is still standing.",
         },
         {
             id: 'aura-still-warm',
             title: '🔥 Your Aura is still warm',
-            body: "Missions: done. But {PARTNER_NAME} knows a fresh Practice session while you're locked in beats one tomorrow when you're not.",
+            body: "Missions: done, {FIRST_NAME}. But {PARTNER_NAME} knows a fresh Practice session while you're locked in beats one tomorrow when you're not.",
         },
         {
             id: 'overachiever-energy',
@@ -304,7 +308,7 @@ export const PUSH_TEMPLATES: Record<PushCategory, PushTemplate[]> = {
         },
         {
             id: 'the-real-ones-keep-going',
-            title: '🏆 The real ones keep going',
+            title: '🏆 The real ones keep going, {FIRST_NAME}',
             body: '{PARTNER_NAME} has seen this before: mission done, momentum wasted. Not today. Boss Fight, right now.',
         },
         {
@@ -339,7 +343,7 @@ export const PUSH_TEMPLATES: Record<PushCategory, PushTemplate[]> = {
     lastChance: [
         {
             id: 'the-day-is-almost-gone',
-            title: '⏳ The day is almost gone',
+            title: '⏳ The day is almost gone, {FIRST_NAME}',
             body: "It's 5pm and you haven't opened a single mission today. The window is closing. Don't let today be a zero.",
         },
         {
@@ -354,7 +358,7 @@ export const PUSH_TEMPLATES: Record<PushCategory, PushTemplate[]> = {
         },
         {
             id: 'the-empty-progress-bar',
-            title: '📉 Still at zero today',
+            title: '📉 Still at zero today, {FIRST_NAME}',
             body: '{PARTNER_NAME} has been staring at an empty progress bar since this morning. Give it something to work with.',
         },
         {
@@ -380,7 +384,7 @@ export const PUSH_TEMPLATES: Record<PushCategory, PushTemplate[]> = {
         {
             id: 'the-quiet-panic',
             title: "😬 A little late-day panic, if you don't mind",
-            body: "Zero missions, 5pm, and {PARTNER_NAME} is starting to worry. A quick session would put that to rest.",
+            body: "Zero missions, 5pm, {FIRST_NAME} - and {PARTNER_NAME} is starting to worry. A quick session would put that to rest.",
         },
         {
             id: 'still-time-technically',
@@ -394,7 +398,7 @@ export const PUSH_TEMPLATES: Record<PushCategory, PushTemplate[]> = {
     evolutionSoon: [
         {
             id: 'so-close',
-            title: '✨ {PARTNER_NAME} is SO close',
+            title: '✨ {PARTNER_NAME} is SO close, {FIRST_NAME}',
             body: 'Just {LEVELS_TO_EVOLVE} level(s) from evolving. One good session could be the one that does it.',
         },
         {
@@ -414,7 +418,7 @@ export const PUSH_TEMPLATES: Record<PushCategory, PushTemplate[]> = {
         },
         {
             id: 'the-final-stretch',
-            title: '🏁 The final stretch',
+            title: '🏁 The final stretch, {FIRST_NAME}',
             body: "You've put in the work to get {PARTNER_NAME} this close. Don't stall out {LEVELS_TO_EVOLVE} level(s) from the finish line.",
         },
         {
@@ -451,7 +455,7 @@ export const PUSH_TEMPLATES: Record<PushCategory, PushTemplate[]> = {
     lunchBreak: [
         {
             id: 'five-minutes-lunch',
-            title: '🥪 Got 5 minutes on your break?',
+            title: '🥪 Got 5 minutes on your break, {FIRST_NAME}?',
             body: "That's genuinely all it takes to knock out today's mission and bank some Aura for {PARTNER_NAME}. Worth it.",
         },
         {
@@ -491,13 +495,183 @@ export const PUSH_TEMPLATES: Record<PushCategory, PushTemplate[]> = {
         },
         {
             id: 'the-midday-nudge',
-            title: '👋 Just a friendly midday nudge',
+            title: '👋 Just a friendly midday nudge, {FIRST_NAME}',
             body: "Haven't gotten to today's mission yet? Five minutes on your break is honestly enough to knock it out.",
         },
         {
             id: 'break-time-still-counts',
             title: '✅ Break time still counts',
             body: "A few minutes right now is worth more than a longer session later that might not happen. Go for it.",
+        },
+    ],
+
+    // 9. Streak Broken - sent once, the day after a streak lapses (exactly
+    // 1 day since lastCompletionDate). Gentle, not punishing - the goal is
+    // getting them to restart today, not making them feel bad enough to
+    // avoid the app entirely.
+    streakBroken: [
+        {
+            id: 'the-streak-reset',
+            title: '💔 Yesterday happened, {FIRST_NAME}',
+            body: "Your streak reset to zero. Annoying, but not the end of the world - today's a perfectly good day to start a new one.",
+        },
+        {
+            id: 'no-judgment-restart',
+            title: '🔄 Clean slate',
+            body: "The old streak is gone. No judgment - {PARTNER_NAME} just wants to know if today's the day you start the next one.",
+        },
+        {
+            id: 'one-day-does-not-define',
+            title: '🌱 One missed day, {FIRST_NAME}',
+            body: "That's all it was. Doesn't erase the progress you made getting there. Pick it back up today.",
+        },
+        {
+            id: 'the-gentle-restart',
+            title: '👋 Missed you yesterday',
+            body: "Your streak broke, but honestly? Day one of a new streak looks identical to day one of the last one. Let's go.",
+        },
+        {
+            id: 'auramon-still-here',
+            title: '🤝 {PARTNER_NAME} is still here',
+            body: "Streaks come and go. Your partner doesn't. Whenever you're ready to start the next one, it's ready too.",
+        },
+        {
+            id: 'the-honest-nudge',
+            title: '📅 Streak: back to zero',
+            body: "It happens. What matters more is what you do today, {FIRST_NAME} - not what happened yesterday.",
+        },
+        {
+            id: 'restart-is-progress-too',
+            title: '🔁 Restarting counts as progress',
+            body: "A broken streak isn't a failed run, it's just a pause. Today's mission gets the counter moving again.",
+        },
+        {
+            id: 'quiet-comeback',
+            title: '🎯 Ready for a quiet comeback?',
+            body: "No fanfare needed. Just today's mission, and the streak counter starts climbing again.",
+        },
+        {
+            id: 'the-day-after',
+            title: '🌤️ The day after',
+            body: "Streaks reset, motivation doesn't have to. {PARTNER_NAME} is ready whenever you are, {FIRST_NAME}.",
+        },
+        {
+            id: 'back-on-the-horse',
+            title: '🐎 Back on the horse?',
+            body: "Yesterday's streak is gone, but today's still wide open. One mission gets a new one started.",
+        },
+    ],
+
+    // 10. Dormant - sent once when a user hits ~3 days since their last
+    // completion. Firmer than streakBroken but still not the "quitter"-tier
+    // language reserved for dormantHarsh at 7+ days.
+    dormant: [
+        {
+            id: 'three-days-quiet',
+            title: '📵 It\'s been {DAYS_INACTIVE} days, {FIRST_NAME}',
+            body: "{PARTNER_NAME} hasn't heard from you in a few days. Everything okay? Five minutes gets you back in it.",
+        },
+        {
+            id: 'falling-behind-gently',
+            title: '📉 Starting to fall behind',
+            body: "A few days off adds up faster than it feels like. Come back before the gap gets harder to close.",
+        },
+        {
+            id: 'the-check-in',
+            title: '👋 Just checking in',
+            body: "You've been away for {DAYS_INACTIVE} days. No pressure - just didn't want AuraPrep to become something you forgot about.",
+        },
+        {
+            id: 'momentum-cooling',
+            title: '❄️ Momentum is cooling off',
+            body: "{DAYS_INACTIVE} days quiet. Whatever progress you built is still there - it's just waiting on you to pick it back up.",
+        },
+        {
+            id: 'the-test-does-not-wait',
+            title: '📅 The SAT isn\'t on pause',
+            body: "{DAYS_INACTIVE} days without a mission is {DAYS_INACTIVE} days the test prep clock kept running anyway.",
+        },
+        {
+            id: 'auramon-noticed',
+            title: '🥺 {PARTNER_NAME} noticed',
+            body: "It's been {DAYS_INACTIVE} days. Doesn't have to mean anything - just come back when you can.",
+        },
+        {
+            id: 'the-soft-warning',
+            title: '⚠️ A few days quiet now',
+            body: "Nothing dramatic yet, {FIRST_NAME} - just a nudge before {DAYS_INACTIVE} days turns into something harder to restart from.",
+        },
+        {
+            id: 'still-worth-it',
+            title: '💭 Still worth five minutes?',
+            body: "It's been a few days. The mission's still short, {PARTNER_NAME} is still waiting, and the Aura's still there for the taking.",
+        },
+        {
+            id: 'the-gap-is-growing',
+            title: '📏 The gap is growing',
+            body: "{DAYS_INACTIVE} days since your last mission. Small gaps are easy to close. Don't let this one grow into something bigger.",
+        },
+        {
+            id: 'a-few-days-off',
+            title: '🌥️ A few days off the radar',
+            body: "That's all this is right now, {FIRST_NAME} - a few days. One mission today keeps it that way.",
+        },
+    ],
+
+    // 11. Dormant Harsh - sent once a user crosses ~7 days since their last
+    // completion. Sharper, pattern-breaking tone (Duolingo's "these
+    // reminders don't seem to be working" playbook) - meant to stand out
+    // after the gentler dormant nudge already went unanswered.
+    dormantHarsh: [
+        {
+            id: 'these-reminders-are-not-working',
+            title: '😑 These reminders don\'t seem to be working',
+            body: "{DAYS_INACTIVE} days, {FIRST_NAME}. We've tried nice. This is us trying something else: please come back.",
+        },
+        {
+            id: 'the-quitter-question',
+            title: '🏳️ Is this a quit, or a pause?',
+            body: "{DAYS_INACTIVE} days without a single mission. Genuinely asking - because {PARTNER_NAME} would like to know too.",
+        },
+        {
+            id: 'a-week-of-silence',
+            title: '🔇 A full week of silence',
+            body: "{DAYS_INACTIVE} days since you last opened AuraPrep. The SAT prep didn't pause with you.",
+        },
+        {
+            id: 'auramon-abandoned',
+            title: '😢 {PARTNER_NAME} thinks it\'s been abandoned',
+            body: "{DAYS_INACTIVE} days is a long time in Auramon years. Prove it wrong with one mission.",
+        },
+        {
+            id: 'the-streak-is-a-memory',
+            title: '🪦 Your streak is a distant memory now',
+            body: "{DAYS_INACTIVE} days gone, {FIRST_NAME}. At this point even we've stopped keeping count. Almost.",
+        },
+        {
+            id: 'score-does-not-improve-itself',
+            title: '📉 Scores don\'t improve on their own',
+            body: "{DAYS_INACTIVE} days of not practicing is {DAYS_INACTIVE} days your score stayed exactly where it was. Or slipped.",
+        },
+        {
+            id: 'the-last-attempt',
+            title: '📮 Last attempt at this',
+            body: "We won't keep pinging you forever, {FIRST_NAME}. {DAYS_INACTIVE} days in, this is us checking if it's worth trying again.",
+        },
+        {
+            id: 'brutally-honest',
+            title: '🎯 Okay, brutal honesty time',
+            body: "{DAYS_INACTIVE} days off doesn't build an SAT score. It builds a gap you'll have to close later, under more pressure.",
+        },
+        {
+            id: 'the-dust-has-settled',
+            title: '🌫️ The dust has settled on your missions',
+            body: "{DAYS_INACTIVE} days untouched. {PARTNER_NAME} is still technically here. Are you?",
+        },
+        {
+            id: 'we-noticed-a-while-ago',
+            title: '👁️ We noticed a while ago, {FIRST_NAME}',
+            body: "{DAYS_INACTIVE} days is long enough that this stopped being a gentle reminder. One mission ends the streak of silence.",
         },
     ],
 };

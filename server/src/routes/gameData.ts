@@ -216,6 +216,11 @@ router.patch('/mission', async (req: AuthenticatedRequest, res: Response) => {
       gameData.lastCompletionDate = new Date();
       // Reset nudges sent for next day
       gameData.dailyMissions.nudgesSent = 0;
+      // Clear the dormancy tier - the inactivity gap this was tracking is over.
+      if (gameData.profile && (gameData.profile as any).lastDormancyNudgeTier) {
+        delete (gameData.profile as any).lastDormancyNudgeTier;
+        gameData.markModified('profile');
+      }
     }
 
     await gameData.save();
