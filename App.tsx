@@ -493,11 +493,45 @@ const App: React.FC = () => {
                 }));
                 changed = true;
             }
+
+            if (hasHydratedRef.current) {
+                const specialAuramonsToEnsure = [
+                    { creatureId: 2, level: 100, evolutionStage: 3 as const, isShiny: false },
+                    { creatureId: 74, level: 100, evolutionStage: 1 as const, isShiny: false },
+                    { creatureId: 20, level: 100, evolutionStage: 2 as const, isShiny: false },
+                    { creatureId: 51, level: 100, evolutionStage: 2 as const, isShiny: true },
+                    { creatureId: 16, level: 100, evolutionStage: 2 as const, isShiny: false },
+                    { creatureId: 80, level: 100, evolutionStage: 1 as const, isShiny: false },
+                ];
+
+                const missingAuramons = specialAuramonsToEnsure.filter(
+                    target => !creatures.some(c => c.creatureId === target.creatureId && c.level === 100 && c.isShiny === target.isShiny)
+                );
+
+                if (missingAuramons.length > 0) {
+                    const targetIds = specialAuramonsToEnsure.map(s => s.creatureId);
+                    const filteredPrev = creatures.filter(c => !targetIds.includes(c.creatureId));
+                    const maxId = Math.max(0, ...filteredPrev.map(c => c.id), 0);
+                    
+                    const newCreatures = specialAuramonsToEnsure.map((target, index) => ({
+                        id: maxId + index + 1,
+                        creatureId: target.creatureId,
+                        xp: (target.level - 5) * 30,
+                        level: target.level,
+                        evolutionStage: target.evolutionStage,
+                        isShiny: target.isShiny,
+                    }));
+
+                    setCreatures([...filteredPrev, ...newCreatures]);
+                    changed = true;
+                }
+            }
+
             if (changed) {
                 console.log('Dev account enforcer applied.');
             }
         }
-    }, [user, auraPoints, tutorialState]);
+    }, [user, auraPoints, tutorialState, creatures]);
 
     // Auto-sync whenever local game data changes (debounced by 3 seconds)
     // Uses refs to track dirty-checking and prevent infinite sync loops
