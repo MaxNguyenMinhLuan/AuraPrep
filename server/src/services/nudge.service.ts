@@ -11,9 +11,9 @@ import { getUserLeagueRank } from './leaderboard.service';
 
 // A nudge "slot" is a distinct reason to notify a user in a given local day.
 // 'morning' and 'evening' are the two guaranteed sends; 'afternoon' is
-// opportunistic (not guaranteed); 'lastChance' and 'evolutionSoon' are
-// event-triggered and independent of the guaranteed slots.
-type NudgeSlot = 'morning' | 'afternoon' | 'evening' | 'lastChance' | 'evolutionSoon';
+// opportunistic (not guaranteed); 'lunchBreak', 'lastChance', and
+// 'evolutionSoon' are event-triggered and independent of the guaranteed slots.
+type NudgeSlot = 'morning' | 'afternoon' | 'evening' | 'lunchBreak' | 'lastChance' | 'evolutionSoon';
 
 // Jitter windows, in minutes-since-local-midnight. Each user's exact target
 // minute within a window is deterministic per (userId, localDateStr) so it's
@@ -26,6 +26,8 @@ const SUNDAY_MORNING_WINDOW_START_MIN = 7 * 60 + 50; // 7:50
 const SUNDAY_MORNING_WINDOW_END_MIN = 7 * 60 + 58;   // 7:58 (per spec: Sunday is ~7:54)
 const AFTERNOON_WINDOW_START_MIN = 13 * 60 + 50; // 13:50
 const AFTERNOON_WINDOW_END_MIN = 14 * 60 + 15;   // 14:15
+const LUNCH_BREAK_WINDOW_START_MIN = 11 * 60;       // 11:00
+const LUNCH_BREAK_WINDOW_END_MIN = 13 * 60;         // 13:00
 const EVENING_WINDOW_START_MIN = 19 * 60 + 50; // 19:50
 const EVENING_WINDOW_END_MIN = 20 * 60 + 15;   // 20:15
 const LAST_CHANCE_HOUR = 17; // 5pm local
@@ -224,6 +226,15 @@ export class NudgeService {
             if (localMinuteOfDay >= target) return 'morning';
         }
 
+        // Event: lunch break, only if today's mission is still incomplete.
+        // Not guaranteed daily - only fires when there's actually something
+        // to nudge about, keeping it feeling like an occasional check-in
+        // rather than a fixed slot.
+        if (!slotsSentToday.has('lunchBreak') && !gameData.dailyMissions.completed) {
+            const target = this.jitteredTargetMinute(userId, localDateStr, 'lunchBreak', LUNCH_BREAK_WINDOW_START_MIN, LUNCH_BREAK_WINDOW_END_MIN);
+            if (localMinuteOfDay >= target) return 'lunchBreak';
+        }
+
         // Opportunistic afternoon slot
         if (!slotsSentToday.has('afternoon')) {
             const target = this.jitteredTargetMinute(userId, localDateStr, 'afternoon', AFTERNOON_WINDOW_START_MIN, AFTERNOON_WINDOW_END_MIN);
@@ -284,6 +295,8 @@ export class NudgeService {
 
         if (slot === 'lastChance') {
             pushCategory = 'lastChance';
+        } else if (slot === 'lunchBreak') {
+            pushCategory = 'lunchBreak';
         } else if (slot === 'evolutionSoon') {
             pushCategory = 'evolutionSoon';
             levelsToEvolve = levelsUntilNextEvolution(gameData.activeCreature.creatureId, gameData.activeCreature.level) ?? 0;

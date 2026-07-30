@@ -8,7 +8,7 @@
  * state; this module only owns the copy and the substitution mechanics.
  */
 
-export type PushCategory = 'dailyMissions' | 'streak' | 'leaderboard' | 'auraFarming' | 'beyondMissions' | 'lastChance' | 'evolutionSoon';
+export type PushCategory = 'dailyMissions' | 'streak' | 'leaderboard' | 'auraFarming' | 'beyondMissions' | 'lastChance' | 'evolutionSoon' | 'lunchBreak';
 
 export interface PushTemplate {
     id: string;
@@ -441,6 +441,63 @@ export const PUSH_TEMPLATES: Record<PushCategory, PushTemplate[]> = {
             id: 'built-different-soon',
             title: '💥 About to be built different',
             body: '{LEVELS_TO_EVOLVE} level(s) from evolving, {PARTNER_NAME} is about to hit a new tier. Bring it home.',
+        },
+    ],
+
+    // 8. Lunch Break - sent midday, only if today's mission is still
+    // incomplete. Gentle and encouraging rather than guilt-trippy: the whole
+    // point is showing that 5 spare minutes on a break is genuinely enough,
+    // not piling on more pressure the way lastChance does later in the day.
+    lunchBreak: [
+        {
+            id: 'five-minutes-lunch',
+            title: '🥪 Got 5 minutes on your break?',
+            body: "That's genuinely all it takes to knock out today's mission and bank some Aura for {PARTNER_NAME}. Worth it.",
+        },
+        {
+            id: 'small-window-big-return',
+            title: '⏱️ Five minutes, real progress',
+            body: "You don't need a free afternoon. One quick round on your lunch break moves the needle more than you'd think.",
+        },
+        {
+            id: 'break-time-bonus-round',
+            title: '🍱 Turn your break into a bonus round',
+            body: "Five minutes between bites is plenty. {PARTNER_NAME} will take whatever Aura you can spare.",
+        },
+        {
+            id: 'the-lunch-quickie',
+            title: '☀️ Midday check-in',
+            body: "No mission done yet today - no stress. Even five minutes right now keeps things moving.",
+        },
+        {
+            id: 'micro-session-macro-gains',
+            title: '📚 Small session, real gains',
+            body: "You've got a few minutes free. That's the whole ask. Squeeze in a quick one and get back to your day.",
+        },
+        {
+            id: 'lunch-break-loophole',
+            title: '🔓 The 5-minute loophole',
+            body: "Big study blocks aren't the only way to make progress. A few minutes on your break counts too - promise.",
+        },
+        {
+            id: 'fuel-up-both-ways',
+            title: '🥤 Fuel your break, fuel your Aura',
+            body: "While you're taking five, {PARTNER_NAME} wouldn't mind a quick mission too. Two birds.",
+        },
+        {
+            id: 'no-pressure-just-progress',
+            title: '🌤️ No pressure, just an idea',
+            body: "If you've got a spare five minutes right now, today's mission is shorter than you think.",
+        },
+        {
+            id: 'the-midday-nudge',
+            title: '👋 Just a friendly midday nudge',
+            body: "Haven't gotten to today's mission yet? Five minutes on your break is honestly enough to knock it out.",
+        },
+        {
+            id: 'break-time-still-counts',
+            title: '✅ Break time still counts',
+            body: "A few minutes right now is worth more than a longer session later that might not happen. Go for it.",
         },
     ],
 };
