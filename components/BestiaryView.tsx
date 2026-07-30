@@ -52,8 +52,9 @@ const BestiaryView: React.FC<BestiaryViewProps> = ({ userCreatures, userTeam, on
     const [tempName, setTempName] = useState('');
     const [isSelectingForTeam, setIsSelectingForTeam] = useState(false);
     const [searchQuery, setSearchQuery] = useState('');
-    const [sortBy, setSortBy] = useState<'name' | 'level' | 'dex'>('dex');
-    const [sortOrder, setSortOrder] = useState<'asc' | 'desc'>('asc');
+    const [sortBy, setSortBy] = useState<'name' | 'level' | 'dex' | 'recent'>('recent');
+    const [sortOrder, setSortOrder] = useState<'asc' | 'desc'>('desc');
+    const [isSortMenuOpen, setIsSortMenuOpen] = useState(false);
 
     // Keep selectedInstance in sync with userCreatures changes (for favorite toggle)
     const currentInstance = selectedInstance
@@ -105,6 +106,8 @@ const BestiaryView: React.FC<BestiaryViewProps> = ({ userCreatures, userTeam, on
             comp = a.level - b.level;
         } else if (sortBy === 'dex') {
             comp = a.creatureId - b.creatureId;
+        } else if (sortBy === 'recent') {
+            comp = a.id - b.id;
         }
 
         if (sortOrder === 'desc') {
@@ -396,50 +399,126 @@ const BestiaryView: React.FC<BestiaryViewProps> = ({ userCreatures, userTeam, on
 
                     {/* Roster list */}
                     <div>
-                        <div className="flex flex-col md:flex-row md:justify-between md:items-center gap-3 mb-4 bg-surface p-3 rounded-xl border border-secondary/30 shadow-card">
+                        <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2.5 mb-4 bg-surface p-3 rounded-xl border border-secondary/30 shadow-card">
                             <h2 className="text-sm font-bold text-primary whitespace-nowrap">Your Auramons ({userCreatures.length})</h2>
-                            <div className="flex flex-col sm:flex-row items-stretch sm:items-center gap-2.5 w-full md:w-auto">
-                                <div className="relative flex-1 sm:w-48">
+
+                            {/* Search & Sort Controls: Wide search bar + Compact square sort button */}
+                            <div className="flex items-center gap-2 flex-1 w-full sm:w-auto sm:max-w-md ml-auto">
+                                <div className="relative flex-1">
                                     <input
                                         type="text"
                                         placeholder="Search by name or species..."
                                         value={searchQuery}
                                         onChange={(e) => setSearchQuery(e.target.value)}
-                                        className="w-full px-3 py-1.5 pl-8 pr-7 bg-background text-text-main border border-secondary/30 rounded-lg focus:outline-none focus:border-primary/50 text-[11px] font-bold shadow-sm transition-all font-sans placeholder-text-dim/50"
+                                        className="w-full px-3 py-2 pl-9 pr-8 bg-background text-text-main border border-secondary/30 rounded-xl focus:outline-none focus:border-primary/50 text-xs sm:text-sm font-bold shadow-sm transition-all font-sans placeholder-text-dim/50"
                                     />
-                                    <svg className="absolute left-2.5 top-1/2 -translate-y-1/2 text-text-dim w-3.5 h-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2.5}>
+                                    <svg className="absolute left-3 top-1/2 -translate-y-1/2 text-text-dim w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2.5}>
                                         <path strokeLinecap="round" strokeLinejoin="round" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
                                     </svg>
                                     {searchQuery && (
                                         <button
                                             onClick={() => setSearchQuery('')}
-                                            className="absolute right-2 top-1/2 -translate-y-1/2 text-text-dim hover:text-text-main text-xs font-bold p-0.5"
+                                            className="absolute right-2.5 top-1/2 -translate-y-1/2 text-text-dim hover:text-text-main text-xs font-bold p-1 touch-target"
                                             title="Clear search"
                                         >
                                             ✕
                                         </button>
                                     )}
                                 </div>
-                                <div className="flex items-center gap-2 shrink-0">
-                                    <span className="text-[10px] font-bold text-text-dim uppercase tracking-wider hidden sm:inline">Sort:</span>
-                                    <select
-                                        value={sortBy}
-                                        onChange={(e) => setSortBy(e.target.value as 'name' | 'level' | 'dex')}
-                                        className="bg-background text-text-main border border-secondary/30 rounded-lg px-2.5 py-1.5 text-xs font-bold focus:outline-none focus:border-primary/50 shadow-sm cursor-pointer"
-                                        aria-label="Sort options"
-                                    >
-                                        <option value="dex">Dex Order</option>
-                                        <option value="name">Name (Alphabetical)</option>
-                                        <option value="level">Level</option>
-                                    </select>
+
+                                {/* Compact Square Sort Button & Dropdown */}
+                                <div className="relative shrink-0">
                                     <button
-                                        onClick={() => setSortOrder(prev => prev === 'asc' ? 'desc' : 'asc')}
-                                        className="flex items-center gap-1 bg-background hover:bg-secondary/10 border border-secondary/30 rounded-lg px-2.5 py-1.5 text-xs font-bold text-text-main shadow-sm press-effect transition-all touch-target"
-                                        title={`Order: ${sortOrder === 'asc' ? 'Ascending' : 'Descending'} (Click to reverse)`}
+                                        onClick={() => setIsSortMenuOpen(!isSortMenuOpen)}
+                                        className={`w-9 h-9 sm:w-10 sm:h-10 rounded-xl flex items-center justify-center border-2 transition-all shadow-sm press-effect touch-target ${
+                                            isSortMenuOpen || sortOrder === 'desc' || sortBy !== 'dex'
+                                                ? 'bg-primary text-white border-primary shadow-md'
+                                                : 'bg-background text-text-main border-secondary/30 hover:border-primary/50'
+                                        }`}
+                                        title="Sort & Filter options"
+                                        aria-label="Sort and Filter options"
                                     >
-                                        <span className="text-primary font-black text-sm">{sortOrder === 'asc' ? '↑' : '↓'}</span>
-                                        <span className="text-[10px] uppercase font-bold">{sortOrder === 'asc' ? 'Asc' : 'Desc'}</span>
+                                        <svg className="w-4 h-4 sm:w-5 sm:h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2.5}>
+                                            <path strokeLinecap="round" strokeLinejoin="round" d="M3 4h13M3 8h9m-9 4h6m4 0l4-4m0 0l4 4m-4-4v12" />
+                                        </svg>
                                     </button>
+
+                                    {/* Dropdown Menu Popover */}
+                                    {isSortMenuOpen && (
+                                        <>
+                                            {/* Backdrop to close on click outside */}
+                                            <div
+                                                className="fixed inset-0 z-20"
+                                                onClick={() => setIsSortMenuOpen(false)}
+                                            />
+
+                                            <div className="absolute right-0 top-full mt-2 w-56 z-30 bg-surface border-2 border-primary/30 rounded-xl shadow-card p-2 animate-scaleIn text-xs font-sans">
+                                                <div className="px-2 py-1 mb-1 text-[10px] font-bold text-text-dim uppercase tracking-wider border-b border-secondary/20">
+                                                    Sort Auramons By
+                                                </div>
+
+                                                <div className="space-y-1 my-1">
+                                                    <button
+                                                        onClick={() => { setSortBy('recent'); setIsSortMenuOpen(false); }}
+                                                        className={`w-full text-left px-3 py-2 rounded-lg font-bold flex items-center justify-between transition-colors ${
+                                                            sortBy === 'recent' ? 'bg-primary/10 text-primary' : 'text-text-main hover:bg-secondary/10'
+                                                        }`}
+                                                    >
+                                                        <span>Recently Acquired</span>
+                                                        {sortBy === 'recent' && <span className="text-primary font-black">✓</span>}
+                                                    </button>
+
+                                                    <button
+                                                        onClick={() => { setSortBy('dex'); setIsSortMenuOpen(false); }}
+                                                        className={`w-full text-left px-3 py-2 rounded-lg font-bold flex items-center justify-between transition-colors ${
+                                                            sortBy === 'dex' ? 'bg-primary/10 text-primary' : 'text-text-main hover:bg-secondary/10'
+                                                        }`}
+                                                    >
+                                                        <span>Dex Order (#)</span>
+                                                        {sortBy === 'dex' && <span className="text-primary font-black">✓</span>}
+                                                    </button>
+
+                                                    <button
+                                                        onClick={() => { setSortBy('name'); setIsSortMenuOpen(false); }}
+                                                        className={`w-full text-left px-3 py-2 rounded-lg font-bold flex items-center justify-between transition-colors ${
+                                                            sortBy === 'name' ? 'bg-primary/10 text-primary' : 'text-text-main hover:bg-secondary/10'
+                                                        }`}
+                                                    >
+                                                        <span>Name (A-Z)</span>
+                                                        {sortBy === 'name' && <span className="text-primary font-black">✓</span>}
+                                                    </button>
+
+                                                    <button
+                                                        onClick={() => { setSortBy('level'); setIsSortMenuOpen(false); }}
+                                                        className={`w-full text-left px-3 py-2 rounded-lg font-bold flex items-center justify-between transition-colors ${
+                                                            sortBy === 'level' ? 'bg-primary/10 text-primary' : 'text-text-main hover:bg-secondary/10'
+                                                        }`}
+                                                    >
+                                                        <span>Level</span>
+                                                        {sortBy === 'level' && <span className="text-primary font-black">✓</span>}
+                                                    </button>
+                                                </div>
+
+                                                <div className="my-1.5 border-t border-secondary/20" />
+
+                                                <div className="px-2 py-1 mb-1 text-[10px] font-bold text-text-dim uppercase tracking-wider">
+                                                    Order Direction
+                                                </div>
+
+                                                <button
+                                                    onClick={() => { setSortOrder(prev => prev === 'asc' ? 'desc' : 'asc'); }}
+                                                    className="w-full text-left px-3 py-2 rounded-lg font-bold flex items-center justify-between bg-background border border-secondary/30 hover:border-primary/40 text-text-main transition-all press-effect"
+                                                >
+                                                    <span>Direction: <strong className="text-primary">{sortOrder === 'asc' ? 'Ascending' : 'Descending'}</strong></span>
+                                                    <span className="text-primary font-black text-sm">{sortOrder === 'asc' ? '↑' : '↓'}</span>
+                                                </button>
+
+                                                <p className="px-2 mt-2 text-[9px] text-text-dim italic text-center">
+                                                    ⭐ Favorited Auramons always stay at top
+                                                </p>
+                                            </div>
+                                        </>
+                                    )}
                                 </div>
                             </div>
                         </div>
