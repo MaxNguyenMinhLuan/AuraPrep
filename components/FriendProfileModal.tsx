@@ -34,53 +34,65 @@ const FriendProfileModal: React.FC<FriendProfileModalProps> = ({ friend, onClose
                 </div>
 
                 <div className="p-6 space-y-6 overflow-y-auto">
-                    {/* Stat pills */}
-                    <div className="flex justify-center gap-3">
-                        <div className="glass px-4 py-2 rounded-lg border border-accent/30 text-xs font-bold text-accent shadow-card flex items-center gap-1.5">
-                            <FireIcon className="w-4 h-4 text-accent" />
-                            <span>{friend.streak > 0 ? `${friend.streak} day streak` : 'No streak yet'}</span>
+                    {!friend.statsSynced ? (
+                        <div className="text-center py-4">
+                            <p className="text-xs font-bold text-text-main mb-1">Stats not synced yet</p>
+                            <p className="text-[10px] text-text-dim leading-relaxed">
+                                {friend.name} hasn't opened AuraPrep since this feature launched, so their real streak,
+                                weekly gain, and team aren't here yet — ask them to open the app once and it'll show up.
+                            </p>
                         </div>
-                        <div className="glass px-4 py-2 rounded-lg border border-secondary/50 text-xs font-bold text-primary shadow-card flex items-center gap-1.5">
-                            <AuraIcon className="w-4 h-4 text-primary" />
-                            <span>+{friend.weeklyGain.toLocaleString()} this week</span>
-                        </div>
-                    </div>
+                    ) : (
+                        <>
+                            {/* Stat pills */}
+                            <div className="flex justify-center gap-3">
+                                <div className="glass px-4 py-2 rounded-lg border border-accent/30 text-xs font-bold text-accent shadow-card flex items-center gap-1.5">
+                                    <FireIcon className="w-4 h-4 text-accent" />
+                                    <span>{friend.streak > 0 ? `${friend.streak} day streak` : 'No streak yet'}</span>
+                                </div>
+                                <div className="glass px-4 py-2 rounded-lg border border-secondary/50 text-xs font-bold text-primary shadow-card flex items-center gap-1.5">
+                                    <AuraIcon className="w-4 h-4 text-primary" />
+                                    <span>+{friend.weeklyGain.toLocaleString()} this week</span>
+                                </div>
+                            </div>
 
-                    {/* Team */}
-                    <div>
-                        <h3 className="text-[10px] text-text-dim uppercase font-bold mb-2 tracking-widest text-center">Team ({friend.team.length} / 6)</h3>
-                        <div className="grid grid-cols-3 gap-3">
-                            {Array.from({ length: 6 }).map((_, idx) => {
-                                const member = friend.team[idx];
-                                const creatureData = member ? INITIAL_CREATURES.find(c => c.id === member.creatureId) : null;
+                            {/* Team */}
+                            <div>
+                                <h3 className="text-[10px] text-text-dim uppercase font-bold mb-2 tracking-widest text-center">Team ({friend.team.length} / 6)</h3>
+                                <div className="grid grid-cols-3 gap-3">
+                                    {Array.from({ length: 6 }).map((_, idx) => {
+                                        const member = friend.team[idx];
+                                        const creatureData = member ? INITIAL_CREATURES.find(c => c.id === member.creatureId) : null;
 
-                                if (member && creatureData) {
-                                    return (
-                                        <div
-                                            key={idx}
-                                            className="flex flex-col items-center justify-center bg-background border-2 border-primary/40 p-2 rounded-lg shadow-sm w-full h-[90px]"
-                                        >
-                                            <PixelCreature creature={creatureData} evolutionStage={member.evolutionStage} pixelSize={2} isShiny={member.isShiny} />
-                                            <span className="text-[9px] font-bold text-text-main mt-1 line-clamp-1">
-                                                {creatureData.names[member.evolutionStage - 1] || creatureData.name}
-                                            </span>
-                                            <span className="text-[8px] bg-primary/10 text-primary px-1 rounded font-semibold mt-0.5">Lv.{member.level}</span>
-                                        </div>
-                                    );
-                                }
+                                        if (member && creatureData) {
+                                            return (
+                                                <div
+                                                    key={idx}
+                                                    className="flex flex-col items-center justify-center bg-background border-2 border-primary/40 p-2 rounded-lg shadow-sm w-full h-[90px]"
+                                                >
+                                                    <PixelCreature creature={creatureData} evolutionStage={member.evolutionStage} pixelSize={2} isShiny={member.isShiny} />
+                                                    <span className="text-[9px] font-bold text-text-main mt-1 line-clamp-1">
+                                                        {creatureData.names[member.evolutionStage - 1] || creatureData.name}
+                                                    </span>
+                                                    <span className="text-[8px] bg-primary/10 text-primary px-1 rounded font-semibold mt-0.5">Lv.{member.level}</span>
+                                                </div>
+                                            );
+                                        }
 
-                                return (
-                                    <div
-                                        key={idx}
-                                        className="flex flex-col items-center justify-center bg-background border-2 border-dashed border-text-dim/20 p-2 h-[90px] rounded-lg text-text-dim/40"
-                                    >
-                                        <span className="text-xl font-light">?</span>
-                                        <span className="text-[8px] uppercase font-bold tracking-wider">Empty</span>
-                                    </div>
-                                );
-                            })}
-                        </div>
-                    </div>
+                                        return (
+                                            <div
+                                                key={idx}
+                                                className="flex flex-col items-center justify-center bg-background border-2 border-dashed border-text-dim/20 p-2 h-[90px] rounded-lg text-text-dim/40"
+                                            >
+                                                <span className="text-xl font-light">?</span>
+                                                <span className="text-[8px] uppercase font-bold tracking-wider">Empty</span>
+                                            </div>
+                                        );
+                                    })}
+                                </div>
+                            </div>
+                        </>
+                    )}
                 </div>
             </div>
         </div>

@@ -31,6 +31,11 @@ export interface PublicProfile {
     league?: LeagueType;
     team: PublicTeamMember[];
     streak: number;
+    // True once this user's client has ever run syncPublicLeaderboardStats.
+    // Lets the UI distinguish "genuinely has 0 streak / empty team" from
+    // "hasn't opened the app since this feature shipped" — both look like
+    // zeros otherwise, which reads as a bug to whoever's viewing them.
+    statsSynced: boolean;
 }
 
 export type FriendRequestStatus = 'pending' | 'accepted' | 'rejected';

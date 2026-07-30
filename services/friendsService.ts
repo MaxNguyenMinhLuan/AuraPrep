@@ -26,7 +26,12 @@ function toPublicProfile(uid: string, data: any): PublicProfile {
         guardianEvolutionStage: [1, 2, 3].includes(data.guardianEvolutionStage) ? data.guardianEvolutionStage : 1,
         league: data.league ?? undefined,
         team: Array.isArray(data.team) ? data.team : [],
-        streak: typeof data.streak === 'number' ? data.streak : 0
+        streak: typeof data.streak === 'number' ? data.streak : 0,
+        // weeklyGain was the first field syncPublicLeaderboardStats ever
+        // wrote, so its presence on the doc is a reliable "has synced at
+        // least once" marker — ensurePublicProfile (name/photo only, run
+        // on every login) never sets it.
+        statsSynced: typeof data.weeklyGain === 'number'
     };
 }
 
