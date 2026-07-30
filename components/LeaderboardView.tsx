@@ -12,7 +12,7 @@ import SwordsIcon from './icons/SwordsIcon';
 import HandshakeIcon from './icons/HandshakeIcon';
 import AddFriendModal from './AddFriendModal';
 import FriendProfileModal from './FriendProfileModal';
-import { getLeagueCompetitors, getFriendsList } from '../services/friendsService';
+import { getLeagueCompetitors, getFriendsList, lookupPublicProfile } from '../services/friendsService';
 
 interface LeaderboardEntry {
     id: string;
@@ -190,7 +190,12 @@ const LeaderboardView: React.FC<LeaderboardViewProps> = ({ user, username, weekl
         userRowRef.current?.scrollIntoView({ behavior: 'smooth', block: 'center' });
     };
 
-    const openFriendProfile = (entryId: string) => {
+    const openFriendProfile = async (entryId: string) => {
+        if (entryId === user.uid) {
+            const profile = await lookupPublicProfile(user.uid);
+            if (profile) setSelectedFriend(profile);
+            return;
+        }
         const profile = friendProfiles.find(p => p.uid === entryId);
         if (profile) setSelectedFriend(profile);
     };
@@ -257,7 +262,7 @@ const LeaderboardView: React.FC<LeaderboardViewProps> = ({ user, username, weekl
                             const order = displayRank === 1 ? 'order-2' : (displayRank === 2 ? 'order-1' : 'order-3');
                             const scale = displayRank === 1 ? 'md:scale-110 lg:scale-110' : 'scale-90';
                             const height = displayRank === 1 ? 'h-32 md:h-40 lg:h-56' : (displayRank === 2 ? 'h-24 md:h-32 lg:h-40' : 'h-20 md:h-24 lg:h-32');
-                            const isClickable = !isLeagueTab && !entry.isUser;
+                            const isClickable = !isLeagueTab;
                             return (
                                 <div
                                     key={entry.id}
@@ -307,7 +312,7 @@ const LeaderboardView: React.FC<LeaderboardViewProps> = ({ user, username, weekl
                         </div>
                         <div className="divide-y divide-secondary/10">
                             {allEntries.map((entry) => {
-                                const isClickable = !isLeagueTab && !entry.isUser;
+                                const isClickable = !isLeagueTab;
                                 return (
                                 <div
                                     key={entry.id}
