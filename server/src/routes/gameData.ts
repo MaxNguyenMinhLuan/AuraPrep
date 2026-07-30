@@ -58,8 +58,17 @@ router.post('/sync', async (req: AuthenticatedRequest, res: Response) => {
       return res.status(404).json({ error: 'User not found' });
     }
 
-    // Get active creature data for display
-    const activeCreature = creatures?.find((c: any) => c.id === activeCreatureId);
+    // Get active creature data for display. name/type can be missing on a
+    // partially-hydrated client creature object (e.g. mid-onboarding), and
+    // UserGameData requires both - fall back per-field rather than only
+    // when the whole lookup misses, or Mongoose validation rejects the sync.
+    const foundCreature = creatures?.find((c: any) => c.id === activeCreatureId);
+    const activeCreature = foundCreature ? {
+      id: foundCreature.id,
+      name: foundCreature.name || 'Charmander',
+      type: foundCreature.type || 'Fire',
+      level: foundCreature.level || 1,
+    } : undefined;
 
     // Create or update UserGameData
     let gameData = await UserGameData.findOne({ userId });
