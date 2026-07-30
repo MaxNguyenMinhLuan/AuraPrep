@@ -148,8 +148,6 @@ router.post('/sync', async (req: AuthenticatedRequest, res: Response) => {
 
     await gameData.save();
 
-    console.log(`[debug] gameData/sync succeeded for user ${userId}`);
-
     return res.status(200).json({
       message: 'Game data synced successfully',
       gameData

@@ -4,6 +4,7 @@ import { db, auth } from '../services/firebase';
 import { doc, setDoc } from 'firebase/firestore';
 
 const NDA_VERSION = '1.0-BETA';
+const API_URL = import.meta.env.VITE_API_URL || 'http://localhost:5001/api';
 
 // localStorage key: keyed by uid so different users on same device work correctly
 const ndaKey = (uid: string) => `aura_nda_signed_${uid}`;
@@ -31,8 +32,13 @@ export function checkNdaSigned(uid: string): boolean {
 
 /**
  * Store NDA acceptance.
- * Primary: localStorage (instant, no server needed, no permissions errors).
+ * Primary: localStorage (instant, no server needed, no permissions errors) —
+ * this is what gates the modal client-side, so it must always succeed.
  * Backup: silent Firestore write for audit trail — if it fails due to rules, we ignore it.
+ * Required: the Mongo-backed sign-nda endpoint — this is what every
+ * server-side game-data route actually checks (User.ndaCompliance.hasSigned),
+ * so without this call a user can pass the client-side gate forever while
+ * every real API call keeps 403ing with NDA_NOT_SIGNED.
  */
 async function storeNdaSigned(uid: string, email: string, legalName: string): Promise<void> {
     const record = {
@@ -52,6 +58,24 @@ async function storeNdaSigned(uid: string, email: string, legalName: string): Pr
         await setDoc(doc(db, 'ndaCompliance', firebaseUid), record, { merge: true });
     } catch {
         // Silently ignore — localStorage record is the source of truth
+    }
+
+    // Required: Mongo, via the server's own sign-nda endpoint. This is the
+    // one the API's NDA guard actually reads, so it must not be skipped.
+    const authToken = await auth.currentUser?.getIdToken();
+    if (authToken) {
+        const response = await fetch(`${API_URL}/compliance/sign-nda`, {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+                Authorization: `Bearer ${authToken}`,
+            },
+            body: JSON.stringify({ versionAccepted: NDA_VERSION, legalName }),
+        });
+        // 409 means this user already signed server-side - not an error.
+        if (!response.ok && response.status !== 409) {
+            throw new Error('Failed to record NDA acceptance. Please try again.');
+        }
     }
 }
 
