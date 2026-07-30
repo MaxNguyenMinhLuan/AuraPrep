@@ -5,6 +5,7 @@ import { getStrategyTip } from '../utils/strategyTips';
 import LoadingSpinner from './icons/LoadingSpinner';
 import QuestionStimulus from './QuestionStimulus';
 import AnswerChoices from './AnswerChoices';
+import TwoPaneQuestion from './TwoPaneQuestion';
 import FormattedText from './FormattedText';
 import ReportQuestionModal from './ReportQuestionModal';
 import { reportQuestion } from '../services/reportService';
@@ -115,9 +116,10 @@ const ReviewView: React.FC<ReviewViewProps> = ({ questions, onAnswer, onExit, us
                 isCorrect === false ? 'bg-accent/5 border-accent shadow-[0_0_20px_rgba(220,38,38,0.25)] red-flash' : 'bg-surface border-accent/50'
             }`}>
                 <div className="absolute top-0 right-0 bg-accent text-white text-[8px] px-2 py-1 font-bold rounded-bl-md">REVIEW</div>
+                <TwoPaneQuestion question={currentQuestion}>
                 <div>
                   <p className="text-[10px] text-text-dim mb-2 uppercase font-bold">{currentQuestion.subtopic}</p>
-                  
+
                   <QuestionStimulus question={currentQuestion} />
 
                   <FormattedText className="text-base md:text-lg mb-6 leading-relaxed font-clean" text={currentQuestion.question} />
@@ -136,7 +138,7 @@ const ReviewView: React.FC<ReviewViewProps> = ({ questions, onAnswer, onExit, us
                             {isCorrect ? 'Recovered!' : 'Still Needs Practice'}
                         </h3>
                         <FormattedText className="text-xs md:text-sm text-text-main mt-2 leading-relaxed italic font-clean" text={currentQuestion.explanation} />
-                        
+
                         {/* Strategy Tip Box */}
                         {strategyTip && (
                             <div className="mt-4 p-3 bg-yellow-500/10 border-l-4 border-yellow-500 rounded-r-xl text-left animate-fadeIn">
@@ -165,6 +167,7 @@ const ReviewView: React.FC<ReviewViewProps> = ({ questions, onAnswer, onExit, us
                         </button>
                     </div>
                 )}
+                </TwoPaneQuestion>
 
                 {showReportModal && (
                     <ReportQuestionModal

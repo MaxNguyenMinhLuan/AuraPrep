@@ -16,6 +16,7 @@ import {
 } from '../../services/diagnosticService';
 import QuestionStimulus from '../QuestionStimulus';
 import AnswerChoices from '../AnswerChoices';
+import TwoPaneQuestion from '../TwoPaneQuestion';
 import FormattedText from '../FormattedText';
 
 interface SkillDiagnosticProps {
@@ -179,6 +180,7 @@ const SkillDiagnostic: React.FC<SkillDiagnosticProps> = ({ onComplete }) => {
                         {domains[domainIndex]}
                     </p>
 
+                    <TwoPaneQuestion question={currentQuestion}>
                     <QuestionStimulus question={currentQuestion} />
 
                     <FormattedText className="text-sm leading-relaxed mb-6" text={currentQuestion.question} />
@@ -206,6 +208,7 @@ const SkillDiagnostic: React.FC<SkillDiagnosticProps> = ({ onComplete }) => {
                             </button>
                         </div>
                     )}
+                    </TwoPaneQuestion>
                 </div>
             </div>
         </div>

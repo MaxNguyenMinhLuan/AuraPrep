@@ -3,6 +3,7 @@ import React, { useState, useCallback, useEffect } from 'react';
 import { MissionInstance, PowerUpType } from '../types';
 import QuestionStimulus from './QuestionStimulus';
 import AnswerChoices from './AnswerChoices';
+import TwoPaneQuestion from './TwoPaneQuestion';
 import { getStrategyTip } from '../utils/strategyTips';
 import FormattedText from './FormattedText';
 import AuraIcon from './icons/AuraIcon';
@@ -180,6 +181,7 @@ const MissionView: React.FC<MissionViewProps> = ({ mission, onAnswer, onExit, in
             <div className={`p-3 md:p-4 border-2 flex flex-col justify-between rounded-xl shadow-card transition-all duration-300 ${
                 isCorrect === false ? 'bg-accent/5 border-accent shadow-[0_0_20px_rgba(220,38,38,0.25)] red-flash' : 'bg-surface border-secondary/30'
             }`}>
+                <TwoPaneQuestion question={currentQuestion}>
                 <div className="pb-4">
                   <div className="flex justify-between items-center mb-2 flex-wrap gap-2">
                     <p className="text-[10px] md:text-xs text-text-dim uppercase font-bold tracking-tighter">{currentQuestion.subtopic}</p>
@@ -213,7 +215,7 @@ const MissionView: React.FC<MissionViewProps> = ({ mission, onAnswer, onExit, in
                             <p className="text-[9px] md:text-[10px] font-bold text-accent uppercase tracking-widest mb-2 animate-subtlePulse">Progress Resetting to 0...</p>
                         )}
                         <FormattedText className="text-xs md:text-sm text-text-main mt-2 leading-relaxed italic font-clean" text={currentQuestion.explanation} />
-                        
+
                         {/* Strategy Tip Box */}
                         {strategyTip && (
                             <div className="mt-4 p-3 bg-yellow-500/10 border-l-4 border-yellow-500 rounded-r-xl text-left animate-fadeIn">
@@ -242,6 +244,7 @@ const MissionView: React.FC<MissionViewProps> = ({ mission, onAnswer, onExit, in
                         </button>
                     </div>
                 )}
+                </TwoPaneQuestion>
             </div>
         </div>
     );

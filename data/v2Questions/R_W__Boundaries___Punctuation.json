@@ -1,0 +1,14 @@
+[
+  {
+    "Question": "The chef's signature dish requires four ________ basil, ripe tomatoes, aged parmesan, and cold-pressed olive oil.\n\nWhich choice completes the text so that it conforms to the conventions of Standard English?",
+    "A": "ingredients, fresh",
+    "B": "ingredients: fresh",
+    "C": "ingredients; fresh",
+    "D": "ingredients fresh",
+    "CorrectAns": "B",
+    "Type": "R/W: Boundaries & Punctuation",
+    "Difficulty": "Medium",
+    "Source": "Original",
+    "Explanation": "\"The chef's signature dish requires four ingredients\" is a complete independent clause, and what follows, \"fresh basil, ripe tomatoes, aged parmesan, and cold-pressed olive oil,\" is a list identifying exactly what those four ingredients are. A colon is the correct mark for introducing a list after a complete independent clause, so choice B is correct. Choice A's comma cannot properly introduce a list following an independent clause. Choice C's semicolon is reserved for joining two independent clauses, but the list of ingredients is not itself an independent clause, so the semicolon is ungrammatical here. Choice D omits punctuation entirely, fusing the clause and the list together into an unpunctuated run-on."
+  }
+]

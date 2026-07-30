@@ -11,6 +11,7 @@ import LoadingSpinner from './icons/LoadingSpinner';
 import FormattedText from './FormattedText';
 import QuestionStimulus from './QuestionStimulus';
 import AnswerChoices from './AnswerChoices';
+import TwoPaneQuestion from './TwoPaneQuestion';
 import ScissorsIcon from './icons/ScissorsIcon';
 import EyeIcon from './icons/EyeIcon';
 import LockIcon from './icons/LockIcon';
@@ -201,6 +202,7 @@ const PracticeSession: React.FC<{
                 <div className={`p-4 md:p-6 border-2 flex flex-col justify-between rounded-xl shadow-card transition-all duration-300 ${
                     isCorrect === false ? 'bg-accent/5 border-accent shadow-[0_0_20px_rgba(220,38,38,0.25)] red-flash' : 'bg-surface border-secondary/30'
                 }`}>
+                    <TwoPaneQuestion question={currentQuestion}>
                     <div>
                         <div className="flex justify-between items-start mb-3 md:mb-4">
                             <p className="text-[9px] md:text-[10px] text-text-dim uppercase font-bold tracking-wider">{subtopic}</p>
@@ -224,7 +226,7 @@ const PracticeSession: React.FC<{
                         <div className="mt-6 md:mt-8 p-4 md:p-6 bg-background animate-fadeIn border-2 border-secondary rounded-lg shadow-md">
                             <h3 className={`text-lg md:text-xl font-bold ${isCorrect ? 'text-success' : 'text-accent'}`}>{isCorrect ? 'Correct!' : 'Incorrect'}</h3>
                             <FormattedText className="text-xs md:text-sm text-text-main mt-2 leading-relaxed italic font-clean" text={currentQuestion.explanation} />
-                            
+
                             {/* Strategy Tip Box */}
                             {strategyTip && (
                                 <div className="mt-4 p-3 bg-yellow-500/10 border-l-4 border-yellow-500 rounded-r-xl text-left animate-fadeIn">
@@ -248,6 +250,7 @@ const PracticeSession: React.FC<{
                             </button>
                         </div>
                     )}
+                    </TwoPaneQuestion>
                 </div>
             )}
 
@@ -585,6 +588,7 @@ const BossFightSession: React.FC<{
                         </div>
                     )}
                     
+                    <TwoPaneQuestion question={currentQuestion}>
                     <div>
                       <QuestionStimulus question={currentQuestion} />
                       <FormattedText className="text-base md:text-lg mb-8 leading-relaxed pt-4 font-clean" text={currentQuestion.question} />
@@ -614,7 +618,7 @@ const BossFightSession: React.FC<{
                                 if(!def) return null;
                                 const isActive = (type === 'SECOND_CHANCE' && secondChanceActive) || (type === 'HINT' && hintVisible) || (type === 'DOUBLE_JEOPARDY' && doubleJeopardyActive);
                                 return (
-                                    <button 
+                                    <button
                                         key={i}
                                         onClick={() => handleUsePowerUp(type)}
                                         disabled={isActive}
@@ -654,6 +658,7 @@ const BossFightSession: React.FC<{
                             </button>
                         </div>
                     )}
+                    </TwoPaneQuestion>
                 </div>
 
                 {showReportModal && (

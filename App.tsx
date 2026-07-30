@@ -493,14 +493,13 @@ const App: React.FC = () => {
                 }));
                 changed = true;
             }
-
             if (hasHydratedRef.current) {
                 const specialAuramonsToEnsure = [
                     { creatureId: 2, level: 100, evolutionStage: 3 as const, isShiny: false },
                     { creatureId: 74, level: 100, evolutionStage: 1 as const, isShiny: false },
                     { creatureId: 20, level: 100, evolutionStage: 2 as const, isShiny: false },
                     { creatureId: 51, level: 100, evolutionStage: 2 as const, isShiny: true },
-                    { creatureId: 16, level: 100, evolutionStage: 2 as const, isShiny: false },
+                    { creatureId: 16, level: 100, evolutionStage: 2 as const, isShiny: true },
                     { creatureId: 80, level: 100, evolutionStage: 1 as const, isShiny: false },
                 ];
 

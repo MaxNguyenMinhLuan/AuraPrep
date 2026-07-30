@@ -19,6 +19,7 @@ import {
 import { getRecommendedDifficulty, getUserSkillProfile } from '../../services/stealthDiagnosticService';
 import QuestionStimulus from '../QuestionStimulus';
 import AnswerChoices from '../AnswerChoices';
+import TwoPaneQuestion from '../TwoPaneQuestion';
 import FormattedText from '../FormattedText';
 
 interface WelcomeMissionProps {
@@ -209,6 +210,7 @@ const WelcomeMission: React.FC<WelcomeMissionProps> = ({ uid, onComplete, onExit
                         {currentQuestion.subtopic}
                     </p>
 
+                    <TwoPaneQuestion question={currentQuestion}>
                     <QuestionStimulus question={currentQuestion} />
 
                     <FormattedText className="text-sm leading-relaxed mb-6" text={currentQuestion.question} />
@@ -241,6 +243,7 @@ const WelcomeMission: React.FC<WelcomeMissionProps> = ({ uid, onComplete, onExit
                             </button>
                         </div>
                     )}
+                    </TwoPaneQuestion>
                 </div>
 
                 {/* Motivational footer */}
