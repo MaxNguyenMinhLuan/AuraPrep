@@ -14,6 +14,7 @@ router.use(async (req: AuthenticatedRequest, res: Response, next) => {
     try {
         const user = await User.findById(req.user?.id).select('ndaCompliance').lean();
         if (user?.ndaCompliance?.hasSigned !== true) {
+            console.log(`[debug] gameData request blocked by NDA guard for user ${req.user?.id}`);
             res.status(403).json({
                 code: 'NDA_NOT_SIGNED',
                 message: 'NDA acceptance required before accessing game data'
@@ -146,6 +147,8 @@ router.post('/sync', async (req: AuthenticatedRequest, res: Response) => {
     }
 
     await gameData.save();
+
+    console.log(`[debug] gameData/sync succeeded for user ${userId}`);
 
     return res.status(200).json({
       message: 'Game data synced successfully',
