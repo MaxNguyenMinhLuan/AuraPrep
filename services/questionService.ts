@@ -36,7 +36,7 @@ const parseLegacyGraphData = (text: string): GraphData | undefined => {
 };
 
 // Subtopic to official domain mapping matching questions.json
-const SUBTOPIC_TO_DOMAIN_MAP: Record<string, string> = {
+export const SUBTOPIC_TO_DOMAIN_MAP: Record<string, string> = {
     // Heart of Algebra
     'Algebra: Linear Functions': 'Algebra',
     'Algebra: Single Variable Equations': 'Algebra',

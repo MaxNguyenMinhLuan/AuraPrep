@@ -58,7 +58,17 @@ const ProfileModal: React.FC<ProfileModalProps> = ({ user, onClose, onUpdateUser
         setGiftCodeError(false);
         try {
             const result = await redeemGiftCode(giftCode);
-            setGiftCodeMessage(`✨ You received ${result.auramon.name} at Level ${result.auramon.level}!`);
+            let message = '✨ Gift code redeemed! ';
+            if (result.rewards && Array.isArray(result.rewards)) {
+                const rewards = result.rewards.map((r: any) => {
+                    if (r.type === 'auramons') return `${r.count} Auramon${r.count > 1 ? 's' : ''}`;
+                    if (r.type === 'aura') return `${r.amount} aura points`;
+                    if (r.type === 'powerUps') return 'power-ups';
+                    return '';
+                }).filter(Boolean);
+                message += rewards.join(', ');
+            }
+            setGiftCodeMessage(message);
             setGiftCode('');
             setTimeout(() => window.location.reload(), 2000);
         } catch (error: any) {

@@ -9,7 +9,7 @@
     <meta name="mobile-web-app-capable" content="yes">
     <meta name="theme-color" content="#f3f4f6">
     <meta name="apple-mobile-web-app-title" content="AuraPrep">
-    <title>AuraPrep</title>
+    <title>AuraPrep Shop Test Harness</title>
     <link rel="manifest" href="/manifest.json">
     <link rel="apple-touch-icon" href="/app-icon.png?v=3">
     <link rel="icon" type="image/png" href="/app-icon.png?v=3">
@@ -315,7 +315,16 @@
             },
         }
     </script>
-
+<script type="importmap">
+{
+  "imports": {
+    "@google/genai": "https://aistudiocdn.com/@google/genai@^1.29.0",
+    "react": "https://aistudiocdn.com/react@^19.2.0",
+    "react/": "https://aistudiocdn.com/react@^19.2.0/",
+    "react-dom/": "https://aistudiocdn.com/react-dom@^19.2.0/"
+  }
+}
+</script>
 <style>
     /* ── Comet Rite summon animation ─────────────────────────────── */
     @keyframes cometFlight {
@@ -599,19 +608,9 @@
         padding: 8px 0;
     }
 </style>
-<script type="importmap">
-{
-  "imports": {
-    "@google/genai": "https://aistudiocdn.com/@google/genai@^1.29.0",
-    "react": "https://aistudiocdn.com/react@^19.2.0",
-    "react/": "https://aistudiocdn.com/react@^19.2.0/",
-    "react-dom/": "https://aistudiocdn.com/react-dom@^19.2.0/"
-  }
-}
-</script>
-  <script type="module" crossorigin src="/assets/index-DPJVJje3.js"></script>
 </head>
 <body class="bg-background text-text-main font-sans text-[10px]">
     <div id="root"></div>
+    <script type="module" src="/scratch/shopTestEntry.tsx"></script>
 </body>
 </html>

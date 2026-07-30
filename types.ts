@@ -241,6 +241,7 @@ export type TutorialPhase =
     | 'forced-summon'              // Force player to go to summon tab and summon
     | 'forced-bestiary'            // Force player to check bestiary and view creature
     | 'choose-active-creature'     // Force player to choose active creature
+    | 'skill-diagnostic'           // Live placement test — see services/diagnosticService.ts
     | 'explain-daily-missions'     // Explain daily missions and stealth diagnostic
 
     // Phase 2: Daily Missions (stealth diagnostic)
