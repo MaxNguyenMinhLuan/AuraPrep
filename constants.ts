@@ -856,7 +856,7 @@ export const INITIAL_CREATURES: Creature[] = [
         id: 51,
         name: 'Magikarp',
         names: ['Magikarp', 'Gyarados'],
-        rarity: Rarity.Common,
+        rarity: Rarity.Uncommon,
         type: CreatureType.Water,
         pixelSprite: EMPTY_SPRITE,
         pixelColors: EMPTY_COLORS,

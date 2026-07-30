@@ -8,7 +8,7 @@
  * state; this module only owns the copy and the substitution mechanics.
  */
 
-export type PushCategory = 'dailyMissions' | 'streak' | 'leaderboard' | 'auraFarming' | 'beyondMissions' | 'lastChance' | 'evolutionSoon' | 'lunchBreak' | 'streakBroken' | 'dormant' | 'dormantHarsh';
+export type PushCategory = 'dailyMissions' | 'streak' | 'leaderboard' | 'auraFarming' | 'beyondMissions' | 'lastChance' | 'evolutionSoon' | 'lunchBreak' | 'streakBroken' | 'dormant' | 'dormantHarsh' | 'surpassed';
 
 export interface PushTemplate {
     id: string;
@@ -672,6 +672,60 @@ export const PUSH_TEMPLATES: Record<PushCategory, PushTemplate[]> = {
             id: 'we-noticed-a-while-ago',
             title: '👁️ We noticed a while ago, {FIRST_NAME}',
             body: "{DAYS_INACTIVE} days is long enough that this stopped being a gentle reminder. One mission ends the streak of silence.",
+        },
+    ],
+
+    // 12. Surpassed - sent when another user passes this user on the leaderboard.
+    surpassed: [
+        {
+            id: 'passed-view-from-above',
+            title: '📉 Down we go...',
+            body: '{FIRST_NAME}, {RIVAL} just passed you in the {LEAGUE_NAME} League leaderboard. {PARTNER_NAME} is sighing in disappointment.',
+        },
+        {
+            id: 'spot-taken',
+            title: '👑 Spot taken',
+            body: 'Your leaderboard spot was just taken by {RIVAL}. Are you going to study and take it back, or just watch them win?',
+        },
+        {
+            id: 'eat-dust',
+            title: '🏃‍♂️ Eat my dust!',
+            body: 'That\'s what {RIVAL} said as they zipped past you in the ranks. Tap to start studying and catch up!',
+        },
+        {
+            id: 'cozy-down-here',
+            title: '📉 Sliding down the ranks',
+            body: 'You just lost a rank to {RIVAL}. But hey, the lower ranks are nice and cozy, right?',
+        },
+        {
+            id: 'rival-flex',
+            title: '💪 {RIVAL} is flexing on you',
+            body: 'They just overtook you in the {LEAGUE_NAME} League. {PARTNER_NAME} thinks you have a serious study skill issue.',
+        },
+        {
+            id: 'tiktok-vs-leaderboard',
+            title: '🛡️ Reclaim your honor',
+            body: '{RIVAL} just passed you. Are you going to let them do that, or are you too busy scrolling to care?',
+        },
+        {
+            id: 'waving-goodbye',
+            title: '👋 Wave goodbye!',
+            body: '{RIVAL} is waving as they climb higher. You\'re staying down here, right?',
+        },
+        {
+            id: 'sleeping-on-the-job',
+            title: '😴 Sleeping on the job?',
+            body: '{FIRST_NAME}, while you were resting, {RIVAL} worked hard and overtook you. Time to wake up and get that Aura!',
+        },
+        {
+            id: 'polite-demotion',
+            title: '👑 Move to the back',
+            body: 'Excuse me, {FIRST_NAME}, but {RIVAL} has claimed your rank. Please step aside or solve some questions to push back.',
+        },
+        {
+            id: 'auramon-embarrassed',
+            title: '🐢 {PARTNER_NAME} is embarrassed',
+            body: 'Seeing {RIVAL} pass you is making {PARTNER_NAME} cover its eyes. Reclaim your rank and restore your partner\'s pride!',
         },
     ],
 };

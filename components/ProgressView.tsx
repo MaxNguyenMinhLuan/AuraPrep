@@ -59,6 +59,7 @@ interface ProgressViewProps {
     awardAura: (amount: number) => void;
     addXpToActiveCreature: (xp: number) => void;
     setIsBossFightActive?: (isActive: boolean) => void;
+    setIsPracticeActive?: (isActive: boolean) => void;
 }
 
 //--- SUB-COMPONENTS ---//

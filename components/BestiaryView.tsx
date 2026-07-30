@@ -52,6 +52,8 @@ const BestiaryView: React.FC<BestiaryViewProps> = ({ userCreatures, userTeam, on
     const [tempName, setTempName] = useState('');
     const [isSelectingForTeam, setIsSelectingForTeam] = useState(false);
     const [searchQuery, setSearchQuery] = useState('');
+    const [sortBy, setSortBy] = useState<'name' | 'level' | 'dex'>('dex');
+    const [sortOrder, setSortOrder] = useState<'asc' | 'desc'>('asc');
 
     // Keep selectedInstance in sync with userCreatures changes (for favorite toggle)
     const currentInstance = selectedInstance
@@ -64,8 +66,56 @@ const BestiaryView: React.FC<BestiaryViewProps> = ({ userCreatures, userTeam, on
     const filteredCreatures = userCreatures.filter(instance => {
         const creatureData = INITIAL_CREATURES.find(c => c.id === instance.creatureId);
         if (!creatureData) return false;
-        const name = instance.customName || creatureData.names[instance.evolutionStage - 1] || creatureData.name;
-        return name.toLowerCase().includes(searchQuery.toLowerCase());
+        if (!searchQuery.trim()) return true;
+
+        const query = searchQuery.toLowerCase().trim();
+
+        // 1. Nickname check (customName)
+        if (instance.customName && instance.customName.toLowerCase().includes(query)) {
+            return true;
+        }
+
+        // 2. Base species name check (e.g. "Charmander")
+        if (creatureData.name && creatureData.name.toLowerCase().includes(query)) {
+            return true;
+        }
+
+        // 3. Evolution stage names check (e.g. "Charmander", "Charmeleon", "Charizard")
+        if (creatureData.names && creatureData.names.some(n => n && n.toLowerCase().includes(query))) {
+            return true;
+        }
+
+        return false;
+    });
+
+    const sortedCreatures = [...filteredCreatures].sort((a, b) => {
+        // Favorited (starred) Auramons ALWAYS show up first no matter what
+        if (a.isFavorite && !b.isFavorite) return -1;
+        if (!a.isFavorite && b.isFavorite) return 1;
+
+        const creatureDataA = INITIAL_CREATURES.find(c => c.id === a.creatureId);
+        const creatureDataB = INITIAL_CREATURES.find(c => c.id === b.creatureId);
+
+        let comp = 0;
+        if (sortBy === 'name') {
+            const nameA = a.customName || (creatureDataA?.names[a.evolutionStage - 1]) || creatureDataA?.name || '';
+            const nameB = b.customName || (creatureDataB?.names[b.evolutionStage - 1]) || creatureDataB?.name || '';
+            comp = nameA.localeCompare(nameB, undefined, { sensitivity: 'base' });
+        } else if (sortBy === 'level') {
+            comp = a.level - b.level;
+        } else if (sortBy === 'dex') {
+            comp = a.creatureId - b.creatureId;
+        }
+
+        if (sortOrder === 'desc') {
+            comp = -comp;
+        }
+
+        if (comp === 0) {
+            comp = a.id - b.id;
+        }
+
+        return comp;
     });
 
     const handleSaveName = () => {
@@ -346,34 +396,64 @@ const BestiaryView: React.FC<BestiaryViewProps> = ({ userCreatures, userTeam, on
 
                     {/* Roster list */}
                     <div>
-                        <div className="flex flex-col sm:flex-row sm:justify-between sm:items-center gap-3 mb-3">
-                            <h2 className="text-sm font-bold text-primary">Your Auramons ({userCreatures.length})</h2>
-                            <div className="relative w-full sm:max-w-xs">
-                                <input
-                                    type="text"
-                                    placeholder="Search Auramons..."
-                                    value={searchQuery}
-                                    onChange={(e) => setSearchQuery(e.target.value)}
-                                    className="w-full px-3 py-1.5 pl-8 bg-surface text-text-main border border-secondary/30 rounded-lg focus:outline-none focus:border-primary/50 text-[11px] font-bold shadow-sm transition-all font-sans placeholder-text-dim/50"
-                                />
-                                <svg className="absolute left-2.5 top-1/2 -translate-y-1/2 text-text-dim w-3.5 h-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2.5}>
-                                    <path strokeLinecap="round" strokeLinejoin="round" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
-                                </svg>
+                        <div className="flex flex-col md:flex-row md:justify-between md:items-center gap-3 mb-4 bg-surface p-3 rounded-xl border border-secondary/30 shadow-card">
+                            <h2 className="text-sm font-bold text-primary whitespace-nowrap">Your Auramons ({userCreatures.length})</h2>
+                            <div className="flex flex-col sm:flex-row items-stretch sm:items-center gap-2.5 w-full md:w-auto">
+                                <div className="relative flex-1 sm:w-48">
+                                    <input
+                                        type="text"
+                                        placeholder="Search by name or species..."
+                                        value={searchQuery}
+                                        onChange={(e) => setSearchQuery(e.target.value)}
+                                        className="w-full px-3 py-1.5 pl-8 pr-7 bg-background text-text-main border border-secondary/30 rounded-lg focus:outline-none focus:border-primary/50 text-[11px] font-bold shadow-sm transition-all font-sans placeholder-text-dim/50"
+                                    />
+                                    <svg className="absolute left-2.5 top-1/2 -translate-y-1/2 text-text-dim w-3.5 h-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2.5}>
+                                        <path strokeLinecap="round" strokeLinejoin="round" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
+                                    </svg>
+                                    {searchQuery && (
+                                        <button
+                                            onClick={() => setSearchQuery('')}
+                                            className="absolute right-2 top-1/2 -translate-y-1/2 text-text-dim hover:text-text-main text-xs font-bold p-0.5"
+                                            title="Clear search"
+                                        >
+                                            ✕
+                                        </button>
+                                    )}
+                                </div>
+                                <div className="flex items-center gap-2 shrink-0">
+                                    <span className="text-[10px] font-bold text-text-dim uppercase tracking-wider hidden sm:inline">Sort:</span>
+                                    <select
+                                        value={sortBy}
+                                        onChange={(e) => setSortBy(e.target.value as 'name' | 'level' | 'dex')}
+                                        className="bg-background text-text-main border border-secondary/30 rounded-lg px-2.5 py-1.5 text-xs font-bold focus:outline-none focus:border-primary/50 shadow-sm cursor-pointer"
+                                        aria-label="Sort options"
+                                    >
+                                        <option value="dex">Dex Order</option>
+                                        <option value="name">Name (Alphabetical)</option>
+                                        <option value="level">Level</option>
+                                    </select>
+                                    <button
+                                        onClick={() => setSortOrder(prev => prev === 'asc' ? 'desc' : 'asc')}
+                                        className="flex items-center gap-1 bg-background hover:bg-secondary/10 border border-secondary/30 rounded-lg px-2.5 py-1.5 text-xs font-bold text-text-main shadow-sm press-effect transition-all touch-target"
+                                        title={`Order: ${sortOrder === 'asc' ? 'Ascending' : 'Descending'} (Click to reverse)`}
+                                    >
+                                        <span className="text-primary font-black text-sm">{sortOrder === 'asc' ? '↑' : '↓'}</span>
+                                        <span className="text-[10px] uppercase font-bold">{sortOrder === 'asc' ? 'Asc' : 'Desc'}</span>
+                                    </button>
+                                </div>
                             </div>
                         </div>
                         {userCreatures.length === 0 ? (
                             <div className="text-center py-8 bg-surface rounded-xl border border-secondary/30">
                                 <p className="text-sm text-text-dim">You don't own any Auramons yet. Summon some in the Summon tab!</p>
                             </div>
+                        ) : sortedCreatures.length === 0 ? (
+                            <div className="text-center py-8 bg-surface rounded-xl border border-secondary/30">
+                                <p className="text-sm text-text-dim">No Auramons match your search "{searchQuery}".</p>
+                            </div>
                         ) : (
                             <div className="grid grid-cols-2 sm:grid-cols-4 md:grid-cols-5 gap-3">
-                                {[...filteredCreatures]
-                                    .sort((a, b) => {
-                                        if (a.isFavorite && !b.isFavorite) return -1;
-                                        if (!a.isFavorite && b.isFavorite) return 1;
-                                        return b.level - a.level;
-                                    })
-                                    .map((instance) => {
+                                {sortedCreatures.map((instance) => {
                                         const creatureData = INITIAL_CREATURES.find(c => c.id === instance.creatureId);
                                         if (!creatureData) return null;
                                         const isSelected = userTeam.includes(instance.id);

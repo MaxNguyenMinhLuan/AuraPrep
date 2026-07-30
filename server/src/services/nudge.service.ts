@@ -8,6 +8,7 @@ import { sendNotificationToUser } from './push.service';
 import { PushCategory, pickRandomTemplate, pickRival, renderPushTemplate } from '../shared/pushNotificationTemplates';
 import { levelsUntilNextEvolution } from '../shared/evolutionThresholds';
 import { getUserLeagueRank } from './leaderboard.service';
+import { getFirestore } from 'firebase-admin/firestore';
 
 // A nudge "slot" is a distinct reason to notify a user in a given local day.
 // 'morning' and 'evening' are the two guaranteed sends; 'afternoon' is
@@ -164,6 +165,13 @@ export class NudgeService {
             let nudgesSentCount = 0;
 
             for (const gameData of records) {
+                // 0. Check if user has been surpassed on the leaderboard
+                try {
+                    await this.checkLeaderboardSurpassed(gameData);
+                } catch (error) {
+                    console.error(`[Leaderboard] Failed checkLeaderboardSurpassed for ${gameData.userId}:`, error);
+                }
+
                 const timezone = gameData.timezone || 'America/New_York';
                 const { localMinuteOfDay, localDateStr, dayOfWeek } = this.getLocalTimeInfo(timezone);
 
@@ -426,6 +434,96 @@ export class NudgeService {
         }
 
         return gameData.dailyMissions.completed ? 'beyondMissions' : 'leaderboard';
+    }
+
+    /**
+     * Check if a user's leaderboard rank has worsened (i.e. they were surpassed).
+     * If so, trigger a surpassed push notification and update their last known rank.
+     */
+    private static async checkLeaderboardSurpassed(gameData: IUserGameData): Promise<void> {
+        const profile = gameData.profile || {};
+        const leagueName = profile.league || 'Bronze';
+        const rankResult = await getUserLeagueRank(gameData.userId.toString(), leagueName);
+        if (!rankResult) return;
+
+        const currentRank = rankResult.rank;
+        const lastKnownRank = profile.lastKnownLeaderboardRank;
+
+        // If lastKnownRank is not set, initialize it but don't notify
+        if (typeof lastKnownRank !== 'number') {
+            profile.lastKnownLeaderboardRank = currentRank;
+            gameData.profile = profile;
+            gameData.markModified('profile');
+            await gameData.save();
+            return;
+        }
+
+        // If rank number increased, the user went down in rank (got surpassed)
+        if (currentRank > lastKnownRank) {
+            let rivalName = pickRival();
+            try {
+                const db = getFirestore();
+                const snap = await db
+                    .collection('users')
+                    .where('league', '==', leagueName)
+                    .orderBy('weeklyGain', 'desc')
+                    .get();
+                if (!snap.empty && snap.docs[currentRank - 2]) {
+                    // The user right above us now is at index `currentRank - 2` (since currentRank is 1-indexed)
+                    const rivalDoc = snap.docs[currentRank - 2];
+                    if (rivalDoc.id !== gameData.userId.toString()) {
+                        rivalName = rivalDoc.data()?.name || rivalName;
+                    }
+                }
+            } catch (err) {
+                console.error(`Failed to fetch rival name from Firestore:`, err);
+            }
+
+            // Clean up the name if it's a full name
+            rivalName = getFirstName(rivalName);
+
+            // Send notification
+            const user = await User.findById(gameData.userId);
+            if (user) {
+                const partnerName = gameData.activeCreature?.name || 'your Auramon';
+                const firstName = getFirstName(user.name);
+
+                const token = jwt.sign(
+                    { userId: user._id.toString(), email: user.email, purpose: 'push-nudge' },
+                    config.jwt.accessTokenSecret,
+                    { expiresIn: '7d' }
+                );
+                const deepLink = `${config.appUrl}?token=${token}`;
+
+                const pushContent = renderPushTemplate(pickRandomTemplate('surpassed'), {
+                    firstName,
+                    partnerName,
+                    streakCount: (gameData.profile as any)?.dailyStreak ?? gameData.currentStreak ?? 0,
+                    rival: rivalName,
+                    leagueName,
+                    levelsToEvolve: 0,
+                    daysInactive: 0
+                });
+
+                const pushResult = await sendNotificationToUser(user._id.toString(), {
+                    title: pushContent.title,
+                    body: pushContent.body,
+                    url: deepLink,
+                });
+
+                if (pushResult.sent > 0) {
+                    console.log(`🔔 Leaderboard Surpassed push notification sent to ${user.email} (new rank: ${currentRank}, old rank: ${lastKnownRank}, rival: ${rivalName}).`);
+                }
+            }
+        }
+
+        // Update the last known rank to the current one
+        if (currentRank !== lastKnownRank) {
+            profile.lastKnownLeaderboardRank = currentRank;
+            gameData.profile = profile;
+            gameData.markModified('profile');
+            await gameData.save();
+        }
     }
 
     private static async markEvolutionNudgeSent(gameData: IUserGameData): Promise<void> {
