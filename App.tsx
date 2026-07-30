@@ -1,6 +1,6 @@
 
 import React, { useState, useMemo, useEffect } from 'react';
-import { UserProfile, CreatureInstance, View, DailyActivity, SkillLevel, MissionInstance, Question, User, LeagueType, TutorialState } from './types';
+import { UserProfile, CreatureInstance, View, DailyActivity, SkillLevel, MissionInstance, Question, User, LeagueType, TutorialState, PublicTeamMember } from './types';
 import { SUBTOPICS, INITIAL_CREATURES, AURA_POINTS_PER_PRACTICE_STREAK, LEAGUES } from './constants';
 import useLocalStorage from './hooks/useLocalStorage';
 import useUserStorage, { clearLegacyData } from './hooks/useUserStorage';
@@ -300,27 +300,68 @@ const App: React.FC = () => {
     // weeklyGain/guardian/league/team/streak fresh so the League leaderboard
     // can rank real users instead of only mocks, and friends can view this
     // user's team. Debounced since these change on every correct answer.
+    // Always-current snapshot so the flush-on-hide handler below can send the
+    // latest computed stats instead of whatever was in scope when attached.
+    const latestLeaderboardStatsRef = React.useRef<{ weeklyGain: number; guardianId: number; guardianEvolutionStage: 1 | 2 | 3; league: LeagueType; team: PublicTeamMember[]; streak: number } | null>(null);
+    const lastSyncedLeaderboardStatsStrRef = React.useRef<string>('');
+    {
+        const activeCreature = creatures.find(c => c.id === activeCreatureId);
+        const guardianEvolutionStage = activeCreature?.evolutionStage;
+        latestLeaderboardStatsRef.current = {
+            weeklyGain: profile.weeklyAuraGain,
+            guardianId: activeCreature?.creatureId || 1,
+            guardianEvolutionStage: guardianEvolutionStage === 1 || guardianEvolutionStage === 2 || guardianEvolutionStage === 3 ? guardianEvolutionStage : 1,
+            league: profile.league,
+            team: userTeam
+                .map(instanceId => creatures.find(c => c.id === instanceId))
+                .filter((c): c is CreatureInstance => !!c)
+                .map(c => ({ creatureId: c.creatureId, evolutionStage: c.evolutionStage, level: c.level, isShiny: c.isShiny })),
+            streak: profile.dailyStreak
+        };
+    }
+
+    const flushLeaderboardSync = React.useCallback(() => {
+        if (!user) return;
+        const stats = latestLeaderboardStatsRef.current;
+        if (!stats) return;
+        const statsStr = JSON.stringify(stats);
+        if (statsStr === lastSyncedLeaderboardStatsStrRef.current) return; // No changes to sync
+        lastSyncedLeaderboardStatsStrRef.current = statsStr;
+        syncPublicLeaderboardStats(user.uid, stats)
+            .catch(error => {
+                lastSyncedLeaderboardStatsStrRef.current = ''; // allow retry on next flush
+                console.error('[Friends] Failed to sync leaderboard stats:', error);
+            });
+    }, [user]);
+
     useEffect(() => {
         if (!user) return;
-        const activeCreature = creatures.find(c => c.id === activeCreatureId);
-        const guardianId = activeCreature?.creatureId || 1;
-        const guardianEvolutionStage = activeCreature?.evolutionStage || 1;
-        const team = userTeam
-            .map(instanceId => creatures.find(c => c.id === instanceId))
-            .filter((c): c is CreatureInstance => !!c)
-            .map(c => ({ creatureId: c.creatureId, evolutionStage: c.evolutionStage, level: c.level, isShiny: c.isShiny }));
-        const timer = setTimeout(() => {
-            syncPublicLeaderboardStats(user.uid, {
-                weeklyGain: profile.weeklyAuraGain,
-                guardianId,
-                guardianEvolutionStage,
-                league: profile.league,
-                team,
-                streak: profile.dailyStreak
-            }).catch(error => console.error('[Friends] Failed to sync leaderboard stats:', error));
-        }, 800);
+        const timer = setTimeout(flushLeaderboardSync, 800);
         return () => clearTimeout(timer);
-    }, [user?.uid, profile.weeklyAuraGain, profile.league, profile.dailyStreak, activeCreatureId, creatures, userTeam]);
+    }, [user?.uid, profile.weeklyAuraGain, profile.league, profile.dailyStreak, activeCreatureId, creatures, userTeam, flushLeaderboardSync]);
+
+    // Same rationale as the flushSync flush-on-hide handler below: an 800ms
+    // debounce is cancelled outright if the tab is backgrounded/closed first,
+    // silently dropping the user's public team/streak update — friends then
+    // see a stale snapshot indefinitely since there's no realtime listener.
+    useEffect(() => {
+        if (!user) return;
+
+        const handleVisibilityChange = () => {
+            if (document.hidden) flushLeaderboardSync();
+        };
+        const handlePageHide = () => flushLeaderboardSync();
+        const handleBeforeUnload = () => flushLeaderboardSync();
+
+        document.addEventListener('visibilitychange', handleVisibilityChange);
+        window.addEventListener('pagehide', handlePageHide);
+        window.addEventListener('beforeunload', handleBeforeUnload);
+        return () => {
+            document.removeEventListener('visibilitychange', handleVisibilityChange);
+            window.removeEventListener('pagehide', handlePageHide);
+            window.removeEventListener('beforeunload', handleBeforeUnload);
+        };
+    }, [user, flushLeaderboardSync]);
 
     // On login: fetch the authoritative cloud copy BEFORE the app renders.
     // We show a loading spinner during this time so stale localStorage data
@@ -518,16 +559,19 @@ const App: React.FC = () => {
 
     useEffect(() => {
         if (!user || !hasHydratedRef.current) return;
-        const timer = setTimeout(flushSync, 3000); // 3-second debounce
+        const timer = setTimeout(flushSync, 1000); // debounce just enough to coalesce rapid-fire updates
         return () => clearTimeout(timer);
     }, [user, profile, creatures, activeCreatureId, auraPoints, dailyActivity, reviewQueue, userTeam, tutorialState, flushSync]);
 
     // The debounce above is cancelled if the user backgrounds/closes the app
-    // before the 3s timer fires, silently dropping the pending write — the
+    // before the timer fires, silently dropping the pending write — the
     // change is real on this device but never reaches Firestore, so no other
-    // device ever sees it. Force an immediate flush the moment the page is
-    // hidden or being torn down (covers mobile app-switch, tab close, and
-    // desktop navigation-away), in addition to the debounced path.
+    // device ever sees it. Force an immediate flush on every signal that can
+    // precede a teardown (covers mobile app-switch, tab close, and desktop
+    // navigation-away), in addition to the debounced path. None of these are
+    // guaranteed to complete before the page actually dies — the Firestore
+    // SDK has no sendBeacon-style guaranteed-delivery primitive — so this is
+    // a best-effort reduction of the risk window, not a hard guarantee.
     useEffect(() => {
         if (!user) return;
 
@@ -539,12 +583,17 @@ const App: React.FC = () => {
         const handlePageHide = () => {
             flushSync();
         };
+        const handleBeforeUnload = () => {
+            flushSync();
+        };
 
         document.addEventListener('visibilitychange', handleVisibilityChange);
         window.addEventListener('pagehide', handlePageHide);
+        window.addEventListener('beforeunload', handleBeforeUnload);
         return () => {
             document.removeEventListener('visibilitychange', handleVisibilityChange);
             window.removeEventListener('pagehide', handlePageHide);
+            window.removeEventListener('beforeunload', handleBeforeUnload);
         };
     }, [user, flushSync]);
 
@@ -615,7 +664,7 @@ const App: React.FC = () => {
 
     // Daily reset and streak check logic + Weekly Reset
     useEffect(() => {
-        if (!user) return;
+        if (!user || !hasHydratedRef.current) return;
         const now = new Date();
         const today = now.toLocaleDateString('en-CA');
         
@@ -706,17 +755,17 @@ const App: React.FC = () => {
         } else if (mockCompetitors.length === 0) {
             setMockCompetitors(generateCompetitors(profile.league));
         }
-    }, [dailyActivity.date, profile.lastStreakDate, user, tutorialState.currentPhase, currentView]);
+    }, [dailyActivity.date, profile.lastStreakDate, user, tutorialState.currentPhase, currentView, isHydrating]);
 
     // Continuous spawning of missions during onboarding diagnostic phase
     useEffect(() => {
-        if (!user || isCheckingSession) return;
-        
+        if (!user || isCheckingSession || !hasHydratedRef.current) return;
+
         // Check if user is still in the onboarding/diagnostic phase (before completing tutorial)
         if (!tutorialState.isComplete) {
             const hasMissions = dailyActivity.missions && dailyActivity.missions.length > 0;
             const allCompleted = hasMissions && dailyActivity.missions.every(m => m.completed);
-            
+
             if (allCompleted) {
                 console.log('Onboarding user completed all missions. Spawning new onboarding/diagnostic missions immediately...');
                 const today = new Date().toLocaleDateString('en-CA');
@@ -732,7 +781,7 @@ const App: React.FC = () => {
                 });
             }
         }
-    }, [dailyActivity.missions, tutorialState.isComplete, user, isCheckingSession, profile]);
+    }, [dailyActivity.missions, tutorialState.isComplete, user, isCheckingSession, profile, isHydrating]);
 
     // Side effect to sync view state when mission data is missing
     useEffect(() => {
@@ -1705,6 +1754,21 @@ const App: React.FC = () => {
 
     if (!user) {
         return <LoginView onLogin={setUser} />;
+    }
+
+    // Show loading while fetching the authoritative cloud copy of game data.
+    // Without this gate, the app renders interactive with stale/default local
+    // state, the user can rack up progress, and then the cloud fetch resolves
+    // and silently overwrites it with the older server snapshot.
+    if (isHydrating) {
+        return (
+            <div className="min-h-screen w-full flex items-center justify-center bg-background">
+                <div className="text-center space-y-4">
+                    <div className="w-16 h-16 border-4 border-primary border-t-transparent rounded-full animate-spin mx-auto"></div>
+                    <p className="text-sm text-text-dim">Syncing your progress...</p>
+                </div>
+            </div>
+        );
     }
 
     // Show NDA compliance spinner

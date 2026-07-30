@@ -82,7 +82,13 @@ const LeaderboardView: React.FC<LeaderboardViewProps> = ({ user, username, weekl
         }
     };
 
-    useEffect(() => { refreshFriends(); }, [user.uid]);
+    // Refetch on mount AND every time the user switches into the Friends tab —
+    // there's no realtime listener on friends' public stats, so without this
+    // a friend's team/streak update made while this tab was in the background
+    // would never appear until the whole view remounted.
+    useEffect(() => {
+        if (activeTab === 'friends') refreshFriends();
+    }, [user.uid, activeTab]);
 
     const handleFriendsChanged = () => {
         refreshFriends();
