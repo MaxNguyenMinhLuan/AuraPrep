@@ -83,21 +83,24 @@ export const addSpecialAuramons = functions.https.onCall(async (data, context) =
       { id: 20, evolutionStage: 2, name: 'Raichu' },
       // Shiny Gyarados (final stage - id: 51)
       { id: 51, evolutionStage: 2, name: 'Shiny Gyarados', isShiny: true },
-      // Dragonair (middle stage - id: 16)
-      { id: 16, evolutionStage: 2, name: 'Dragonair' },
+      // Shiny Dragonair (middle stage - id: 16, Lv. 50)
+      { id: 16, evolutionStage: 2, name: 'Shiny Dragonair', isShiny: true, targetLevel: 50 },
       // Galarian Articuno (no evolution - id: 80)
       { id: 80, evolutionStage: 1, name: 'Galarian Articuno' }
     ];
 
-    // Create new creature instances at max level (100)
-    const newCreatures = auramons.map((auramon, index) => ({
-      id: maxId + index + 1,
-      creatureId: auramon.id,
-      xp: (100 - 5) * 30, // Max level 100 XP
-      level: 100,
-      evolutionStage: auramon.evolutionStage,
-      isShiny: auramon.isShiny || false
-    }));
+    // Create new creature instances
+    const newCreatures = auramons.map((auramon, index) => {
+      const targetLevel = (auramon as any).targetLevel || 100;
+      return {
+        id: maxId + index + 1,
+        creatureId: auramon.id,
+        xp: (targetLevel - 5) * 30,
+        level: targetLevel,
+        evolutionStage: auramon.evolutionStage,
+        isShiny: auramon.isShiny || false
+      };
+    });
 
     // Update the document
     const updatedCreatures = [...currentCreatures, ...newCreatures];

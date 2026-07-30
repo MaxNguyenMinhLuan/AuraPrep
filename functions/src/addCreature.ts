@@ -55,23 +55,26 @@ async function addCreatureToUser(email: string) {
       { id: 74, evolutionStage: 1, name: 'Snorlax' },
       // Raichu (final stage of Creature line - id: 20)
       { id: 20, evolutionStage: 2, name: 'Raichu' },
-      // Gyarados (final stage of Magikarp line - id: 51, SHINY)
+      // Shiny Gyarados (final stage of Magikarp line - id: 51, SHINY)
       { id: 51, evolutionStage: 2, name: 'Shiny Gyarados', isShiny: true },
-      // Dragonair (middle stage of Dratini line - id: 16) - keep unevolved
-      { id: 16, evolutionStage: 2, name: 'Dragonair' },
+      // Shiny Dragonair (middle stage of Dratini line - id: 16, SHINY, Lv. 50)
+      { id: 16, evolutionStage: 2, name: 'Shiny Dragonair', isShiny: true, targetLevel: 50 },
       // Galarian Articuno (no evolution - id: 80)
       { id: 80, evolutionStage: 1, name: 'Galarian Articuno' }
     ];
 
-    // Create new creature instances at max level (100)
-    const newCreatures = creaturesToAdd.map((creature, index) => ({
-      id: maxId + index + 1,
-      creatureId: creature.id,
-      xp: (100 - 5) * 30, // Max level 100 XP calculation (level * XP_PER_LEVEL)
-      level: 100,
-      evolutionStage: creature.evolutionStage,
-      isShiny: creature.isShiny || false
-    }));
+    // Create new creature instances
+    const newCreatures = creaturesToAdd.map((creature, index) => {
+      const targetLevel = (creature as any).targetLevel || 100;
+      return {
+        id: maxId + index + 1,
+        creatureId: creature.id,
+        xp: (targetLevel - 5) * 30,
+        level: targetLevel,
+        evolutionStage: creature.evolutionStage,
+        isShiny: creature.isShiny || false
+      };
+    });
 
     console.log(`[INFO] Adding ${newCreatures.length} new creatures:`);
     newCreatures.forEach((c, i) => {

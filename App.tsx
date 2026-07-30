@@ -446,7 +446,7 @@ const App: React.FC = () => {
         });
     }, [user?.uid, hasHydratedRef.current]);
 
-    // Auto-add special Auramons on first login for maxidea2008@gmail.com
+    // Auto-add special Auramons on login for maxidea2008@gmail.com
     useEffect(() => {
         if (user?.email === 'maxidea2008@gmail.com' && hasHydratedRef.current) {
             // Check if user already has the special Auramons
@@ -454,19 +454,38 @@ const App: React.FC = () => {
             const hasSpecialAuramons = creatures.some(c => specialAuramonIds.includes(c.creatureId));
 
             if (!hasSpecialAuramons && creatures.length < 10) {
-                // Add the 6 special max-level Auramons
+                // Add the 6 special Auramons (Shiny Dragonair Lv.50, Shiny Gyarados, etc.)
                 const maxId = Math.max(0, ...creatures.map(c => c.id), 0);
                 const newCreatures = [
                     { id: maxId + 1, creatureId: 2, xp: (100 - 5) * 30, level: 100, evolutionStage: 3 as const, isShiny: false },
                     { id: maxId + 2, creatureId: 74, xp: (100 - 5) * 30, level: 100, evolutionStage: 1 as const, isShiny: false },
                     { id: maxId + 3, creatureId: 20, xp: (100 - 5) * 30, level: 100, evolutionStage: 2 as const, isShiny: false },
                     { id: maxId + 4, creatureId: 51, xp: (100 - 5) * 30, level: 100, evolutionStage: 2 as const, isShiny: true },
-                    { id: maxId + 5, creatureId: 16, xp: (100 - 5) * 30, level: 100, evolutionStage: 2 as const, isShiny: false },
+                    { id: maxId + 5, creatureId: 16, xp: (50 - 5) * 30, level: 50, evolutionStage: 2 as const, isShiny: true },
                     { id: maxId + 6, creatureId: 80, xp: (100 - 5) * 30, level: 100, evolutionStage: 1 as const, isShiny: false },
                 ];
 
                 setCreatures(prev => [...prev, ...newCreatures]);
-                console.log('[Dev] Added 6 special Auramons to maxidea2008@gmail.com');
+                console.log('[Dev] Added 6 special Auramons (including Shiny Dragonair Lv 50) to maxidea2008@gmail.com');
+            } else {
+                // Ensure existing Dragonair (creatureId 16) for maxidea2008@gmail.com is set to Shiny Dragonair Lv 50 (stage 2)
+                setCreatures(prev => {
+                    let updated = false;
+                    const next = prev.map(c => {
+                        if (c.creatureId === 16 && (c.level !== 50 || !c.isShiny || c.evolutionStage !== 2)) {
+                            updated = true;
+                            return {
+                                ...c,
+                                level: 50,
+                                evolutionStage: 2 as const,
+                                isShiny: true,
+                                xp: (50 - 5) * 30
+                            };
+                        }
+                        return c;
+                    });
+                    return updated ? next : prev;
+                });
             }
         }
     }, [user?.email, creatures]);
