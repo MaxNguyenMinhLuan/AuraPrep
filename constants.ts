@@ -1218,7 +1218,7 @@ export const INITIAL_CREATURES: Creature[] = [
         pixelColors: EMPTY_COLORS,
         maxEvolutionStage: 1,
         description: 'A legendary bird Creature of Galar. Elegant and freezing.',
-        spriteUrls: ['https://img.pokemondb.net/sprites/home/normal/articuno-galarian.png']
+        spriteUrls: ['https://play.pokemonshowdown.com/sprites/gen5ani/articuno-galar.gif']
     },
     {
         id: 81,

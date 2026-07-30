@@ -17,7 +17,13 @@ export const PixelCreature: React.FC<PixelCreatureProps> = ({ creature, evolutio
         const effectiveStage = Math.min(evolutionStage, creature.maxEvolutionStage);
         let spriteUrl = creature.spriteUrls[effectiveStage - 1];
         if (isShiny && spriteUrl) {
-            spriteUrl = spriteUrl.replace('/normal/', '/shiny/');
+            if (spriteUrl.includes('play.pokemonshowdown.com/sprites/gen5ani/')) {
+                spriteUrl = spriteUrl.replace('/gen5ani/', '/gen5ani-shiny/');
+            } else if (spriteUrl.includes('img.pokemondb.net/sprites/black-white/anim/normal/')) {
+                spriteUrl = spriteUrl.replace('img.pokemondb.net/sprites/black-white/anim/normal/', 'play.pokemonshowdown.com/sprites/gen5ani-shiny/');
+            } else {
+                spriteUrl = spriteUrl.replace('/normal/', '/shiny/');
+            }
         }
         const stageName = creature.names[effectiveStage - 1] || creature.name;
         const baseSize = pixelSize * 12; // Larger multiplier for animated sprites
