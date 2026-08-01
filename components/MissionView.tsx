@@ -9,6 +9,8 @@ import FormattedText from './FormattedText';
 import AuraIcon from './icons/AuraIcon';
 import ReportQuestionModal from './ReportQuestionModal';
 import { reportQuestion } from '../services/reportService';
+import CalculatorButton from './CalculatorButton';
+import { isMathSubtopic } from '../utils/subjectClassification';
 
 interface MissionViewProps {
     mission: MissionInstance;
@@ -169,6 +171,9 @@ const MissionView: React.FC<MissionViewProps> = ({ mission, onAnswer, onExit, in
 
             <div className="text-center mb-3 md:mb-4">
                  <button onClick={onExit} className="text-text-dim hover:text-highlight float-left p-2 -ml-2 touch-target">&larr; Back</button>
+                 {isMathSubtopic(currentQuestion.subtopic) && (
+                     <CalculatorButton className="float-right -mr-2" />
+                 )}
             </div>
 
             <div className="mb-3 md:mb-4">

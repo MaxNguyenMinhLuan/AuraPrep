@@ -22,6 +22,8 @@ import TargetIcon from './icons/TargetIcon';
 import ReportQuestionModal from './ReportQuestionModal';
 import { logDailyEvent } from '../services/dailyStatsService';
 import { reportQuestion } from '../services/reportService';
+import CalculatorButton from './CalculatorButton';
+import { isMathSubtopic } from '../utils/subjectClassification';
 
 const getPowerUpColorClass = (id: PowerUpType) => {
     switch (id) {
@@ -176,21 +178,24 @@ const PracticeSession: React.FC<{
                     }
                     onExit();
                 }} className="text-text-dim hover:text-highlight active:text-highlight flex items-center gap-2 p-2 -ml-2 touch-target">← Back</button>
-                 <div className="flex items-center gap-2">
-                     <span className="text-primary font-bold text-xs md:text-sm">Streak:</span>
-                     <div className="w-16 md:w-20 flex gap-[2px] h-3.5 md:h-4 z-10 relative">
-                         {Array.from({ length: 3 }).map((_, i) => (
-                             <div key={i} className="flex-1 rounded-[2px] bg-surface/30 border border-text-dark/40 overflow-hidden relative -skew-x-12 shadow-sm">
-                                 <div 
-                                     className={`absolute top-0 h-full bg-gradient-to-r from-orange-600 via-amber-500 to-yellow-400 transition-opacity duration-300 ${i >= streak ? 'opacity-0' : 'opacity-100'}`}
-                                     style={{
-                                         width: `calc(300% + 4px)`,
-                                         left: `calc(-${i * 100}% - ${i * 2}px)`
-                                     }}
-                                 />
-                             </div>
-                         ))}
+                 <div className="flex items-center gap-3">
+                     <div className="flex items-center gap-2">
+                         <span className="text-primary font-bold text-xs md:text-sm">Streak:</span>
+                         <div className="w-16 md:w-20 flex gap-[2px] h-3.5 md:h-4 z-10 relative">
+                             {Array.from({ length: 3 }).map((_, i) => (
+                                 <div key={i} className="flex-1 rounded-[2px] bg-surface/30 border border-text-dark/40 overflow-hidden relative -skew-x-12 shadow-sm">
+                                     <div
+                                         className={`absolute top-0 h-full bg-gradient-to-r from-orange-600 via-amber-500 to-yellow-400 transition-opacity duration-300 ${i >= streak ? 'opacity-0' : 'opacity-100'}`}
+                                         style={{
+                                             width: `calc(300% + 4px)`,
+                                             left: `calc(-${i * 100}% - ${i * 2}px)`
+                                         }}
+                                     />
+                                 </div>
+                             ))}
+                         </div>
                      </div>
+                     {isMathSubtopic(currentQuestion?.subtopic || subtopic) && <CalculatorButton />}
                  </div>
             </div>
  
@@ -571,8 +576,11 @@ const BossFightSession: React.FC<{
                             {minutes.toString().padStart(2, '0')}:{seconds.toString().padStart(2, '0')}
                         </span>
                     </div>
-                    <div className="text-sm text-primary font-bold">
-                        Q: {currentIndex + 1} / {BOSS_FIGHT_LENGTH}
+                    <div className="flex items-center gap-3">
+                        <div className="text-sm text-primary font-bold">
+                            Q: {currentIndex + 1} / {BOSS_FIGHT_LENGTH}
+                        </div>
+                        {isMathSubtopic(currentQuestion.subtopic || subtopic) && <CalculatorButton />}
                     </div>
                 </div>
                 
@@ -758,7 +766,7 @@ const LevelUpAnimation: React.FC<{
 
 //--- MAIN COMPONENT ---//
 
-const ProgressView: React.FC<ProgressViewProps> = ({ userId, userEmail, profile, setAuraPoints, updateProfile, levelUpSubtopic, consumePowerUp, addToReviewQueue, awardAura, addXpToActiveCreature, setIsBossFightActive }) => {
+const ProgressView: React.FC<ProgressViewProps> = ({ userId, userEmail, profile, setAuraPoints, updateProfile, levelUpSubtopic, consumePowerUp, addToReviewQueue, awardAura, addXpToActiveCreature, setIsBossFightActive, setIsPracticeActive }) => {
     const [view, setView] = useState<'list' | 'options' | 'practice' | 'prep' | 'bossFight' | 'levelUp'>('list');
     const [selectedSubtopic, setSelectedSubtopic] = useState<string | null>(null);
     const [lastLevelUpInfo, setLastLevelUpInfo] = useState<{ from: SkillLevel, to: SkillLevel } | null>(null);
@@ -887,7 +895,7 @@ const ProgressView: React.FC<ProgressViewProps> = ({ userId, userEmail, profile,
                 profile={profile}
                 updateProfile={updateProfile}
                 onStreakComplete={handleStreakComplete}
-                onExit={() => setView('options')}
+                onExit={() => { setView('options'); setIsPracticeActive?.(false); }}
                 awardAura={awardAura}
                 awardXp={addXpToActiveCreature}
                 userId={userId}
@@ -906,7 +914,7 @@ const ProgressView: React.FC<ProgressViewProps> = ({ userId, userEmail, profile,
                     <h2 className="text-2xl text-highlight leading-tight">{selectedSubtopic}</h2>
                 </div>
                 <div className="space-y-6">
-                    <button onClick={() => setView('practice')} className="w-full text-left p-6 bg-surface hover:bg-secondary border-b-4 border-secondary/50 transition-colors duration-200 rounded-lg shadow-md group">
+                    <button onClick={() => { setView('practice'); setIsPracticeActive?.(true); }} className="w-full text-left p-6 bg-surface hover:bg-secondary border-b-4 border-secondary/50 transition-colors duration-200 rounded-lg shadow-md group">
                         <h3 className="text-xl font-bold text-primary mb-2 group-hover:text-primary/80">Practice</h3>
                         <p className="text-sm text-text-dim">Hone your skills. Earn {AURA_POINTS_PER_PRACTICE_STREAK} Aura for every 3-question streak.</p>
                     </button>
