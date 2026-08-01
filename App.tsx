@@ -47,7 +47,7 @@ import { INITIAL_TUTORIAL_STATE, TUTORIAL_DIALOGUE, STARTER_IDS, PROGRESS_UNLOCK
 // import { processBaselineResults, baselineResultsToStats } from './utils/baselineScoring';
 import { hasCompletedStealthPlacement, processStealthMissionAnswer } from './services/stealthMissionService';
 import { migrateLocalStorageToBackend, syncGameDataToBackend, fetchGameData } from './services/gameDataService';
-import { ensurePublicProfile, reconcileAcceptedRequests, getIncomingRequests, syncPublicLeaderboardStats } from './services/friendsService';
+import { ensurePublicProfile, reconcileAcceptedRequests, getIncomingRequests, syncPublicLeaderboardStats, deriveDisplayStreak } from './services/friendsService';
 import { logDailyEvent } from './services/dailyStatsService';
 import { DifficultyTier } from './types/stealthDiagnostic';
 
@@ -302,7 +302,7 @@ const App: React.FC = () => {
     // user's team. Debounced since these change on every correct answer.
     // Always-current snapshot so the flush-on-hide handler below can send the
     // latest computed stats instead of whatever was in scope when attached.
-    const latestLeaderboardStatsRef = React.useRef<{ weeklyGain: number; guardianId: number; guardianEvolutionStage: 1 | 2 | 3; league: LeagueType; team: PublicTeamMember[]; streak: number } | null>(null);
+    const latestLeaderboardStatsRef = React.useRef<{ weeklyGain: number; guardianId: number; guardianEvolutionStage: 1 | 2 | 3; league: LeagueType; team: PublicTeamMember[]; streak: number; lastStreakDate?: string } | null>(null);
     const lastSyncedLeaderboardStatsStrRef = React.useRef<string>('');
     {
         const activeCreature = creatures.find(c => c.id === activeCreatureId);
@@ -316,7 +316,8 @@ const App: React.FC = () => {
                 .map(instanceId => creatures.find(c => c.id === instanceId))
                 .filter((c): c is CreatureInstance => !!c)
                 .map(c => ({ creatureId: c.creatureId, evolutionStage: c.evolutionStage, level: c.level, isShiny: c.isShiny })),
-            streak: profile.dailyStreak
+            streak: profile.dailyStreak,
+            lastStreakDate: profile.lastStreakDate || undefined
         };
     }
 
@@ -338,7 +339,18 @@ const App: React.FC = () => {
         if (!user) return;
         const timer = setTimeout(flushLeaderboardSync, 800);
         return () => clearTimeout(timer);
-    }, [user?.uid, profile.weeklyAuraGain, profile.league, profile.dailyStreak, activeCreatureId, creatures, userTeam, flushLeaderboardSync]);
+    }, [user?.uid, profile.weeklyAuraGain, profile.league, profile.dailyStreak, profile.lastStreakDate, activeCreatureId, creatures, userTeam, flushLeaderboardSync]);
+
+    // Weekly reset (profile.lastWeekResetDate changing) is a rare, discrete
+    // event rather than a per-answer tick, so it skips the 800ms debounce —
+    // otherwise a friend viewing this user mid-reset-week could see a stale
+    // pre-reset weeklyGain for up to 800ms longer than necessary, and on a
+    // slow/backgrounded tab the flush-on-hide handlers are the only backstop.
+    useEffect(() => {
+        if (!user || !profile.lastWeekResetDate) return;
+        flushLeaderboardSync();
+        // eslint-disable-next-line react-hooks/exhaustive-deps
+    }, [user?.uid, profile.lastWeekResetDate]);
 
     // Same rationale as the flushSync flush-on-hide handler below: an 800ms
     // debounce is cancelled outright if the tab is backgrounded/closed first,
@@ -1127,6 +1139,12 @@ const App: React.FC = () => {
         }
     };
 
+    // Covers the brief window on login/date-change before the daily-reset
+    // effect above has run and persisted a decayed dailyStreak to state —
+    // without this, the header/dashboard can flash the pre-decay count for
+    // one render. Same grace-period rule the effect itself uses.
+    const displayDailyStreak = deriveDisplayStreak(profile.dailyStreak, profile.lastStreakDate || undefined);
+
     const renderView = () => {
         const activeMission = dailyActivity.missions.find(m => m.id === activeMissionId);
         switch (currentView) {
@@ -1134,7 +1152,7 @@ const App: React.FC = () => {
                 return <Dashboard
                             user={user!}
                             auraPoints={auraPoints}
-                            dailyStreak={profile.dailyStreak}
+                            dailyStreak={displayDailyStreak}
                             creatures={creatures}
                             activeCreatureId={activeCreatureId}
                             setActiveCreatureId={setActiveCreatureId}
@@ -1866,10 +1884,10 @@ const App: React.FC = () => {
                             <AuraIcon className="w-3.5 h-3.5 animate-gentleBounce text-primary" />
                             <span>{auraPoints.toLocaleString()}</span>
                         </div>
-                        {profile.dailyStreak > 0 && (
+                        {displayDailyStreak > 0 && (
                             <div className="glass px-3 py-1.5 rounded-lg border border-accent/30 text-xs font-bold text-accent shadow-card flex items-center gap-1 animate-popIn">
                                 <FireIcon className="w-4 h-4 animate-subtlePulse text-accent" />
-                                <span>{profile.dailyStreak}</span>
+                                <span>{displayDailyStreak}</span>
                             </div>
                         )}
                     </div>

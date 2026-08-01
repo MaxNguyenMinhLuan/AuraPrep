@@ -190,13 +190,12 @@ const LeaderboardView: React.FC<LeaderboardViewProps> = ({ user, username, weekl
         userRowRef.current?.scrollIntoView({ behavior: 'smooth', block: 'center' });
     };
 
+    // FriendProfileModal takes over freshness itself via a live listener
+    // once opened, so this only needs to seed an initial snapshot — self
+    // and friend cases no longer need different freshness guarantees here.
     const openFriendProfile = async (entryId: string) => {
-        if (entryId === user.uid) {
-            const profile = await lookupPublicProfile(user.uid);
-            if (profile) setSelectedFriend(profile);
-            return;
-        }
-        const profile = friendProfiles.find(p => p.uid === entryId);
+        const cached = entryId !== user.uid ? friendProfiles.find(p => p.uid === entryId) : undefined;
+        const profile = cached ?? await lookupPublicProfile(entryId);
         if (profile) setSelectedFriend(profile);
     };
 

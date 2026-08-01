@@ -13,10 +13,31 @@ import {
     limit,
     getDocs,
     addDoc,
-    arrayUnion
+    arrayUnion,
+    documentId,
+    onSnapshot,
+    type Unsubscribe
 } from 'firebase/firestore';
 
+// Same grace-period rule App.tsx uses to decide a streak has lapsed
+// (see the diffDays > 1 check around the daily-reset effect): more than
+// one calendar day since the owner's last completion means the streak is
+// dead, no matter what raw count was last published. Deriving this at
+// read time means a friend's displayed streak self-corrects the moment a
+// day boundary passes, instead of staying wrong until their own client
+// happens to reopen and notice.
+export function deriveDisplayStreak(rawStreak: number, lastStreakDate: string | undefined): number {
+    if (!lastStreakDate) return rawStreak;
+    const last = new Date(lastStreakDate);
+    if (isNaN(last.getTime())) return rawStreak;
+    const today = new Date(new Date().toLocaleDateString('en-CA'));
+    const diffDays = Math.ceil(Math.abs(today.getTime() - last.getTime()) / (1000 * 60 * 60 * 24));
+    return diffDays > 1 ? 0 : rawStreak;
+}
+
 function toPublicProfile(uid: string, data: any): PublicProfile {
+    const lastStreakDate = typeof data.lastStreakDate === 'string' ? data.lastStreakDate : undefined;
+    const rawStreak = typeof data.streak === 'number' ? data.streak : 0;
     return {
         uid,
         name: data.name,
@@ -26,7 +47,9 @@ function toPublicProfile(uid: string, data: any): PublicProfile {
         guardianEvolutionStage: [1, 2, 3].includes(data.guardianEvolutionStage) ? data.guardianEvolutionStage : 1,
         league: data.league ?? undefined,
         team: Array.isArray(data.team) ? data.team : [],
-        streak: typeof data.streak === 'number' ? data.streak : 0,
+        streak: deriveDisplayStreak(rawStreak, lastStreakDate),
+        lastStreakDate,
+        statsSyncedAt: typeof data.statsSyncedAt === 'string' ? data.statsSyncedAt : undefined,
         // weeklyGain was the first field syncPublicLeaderboardStats ever
         // wrote, so its presence on the doc is a reliable "has synced at
         // least once" marker — ensurePublicProfile (name/photo only, run
@@ -59,7 +82,7 @@ export async function ensurePublicProfile(user: User): Promise<void> {
  */
 export async function syncPublicLeaderboardStats(
     uid: string,
-    stats: { weeklyGain: number; guardianId: number; guardianEvolutionStage: 1 | 2 | 3; league: LeagueType; team: PublicTeamMember[]; streak: number }
+    stats: { weeklyGain: number; guardianId: number; guardianEvolutionStage: 1 | 2 | 3; league: LeagueType; team: PublicTeamMember[]; streak: number; lastStreakDate?: string }
 ): Promise<void> {
     await setDoc(doc(db, 'users', uid), {
         weeklyGain: stats.weeklyGain,
@@ -68,6 +91,8 @@ export async function syncPublicLeaderboardStats(
         league: stats.league,
         team: stats.team,
         streak: stats.streak,
+        lastStreakDate: stats.lastStreakDate ?? null,
+        statsSyncedAt: new Date().toISOString(),
         updatedAt: new Date().toISOString()
     }, { merge: true });
 }
@@ -77,6 +102,21 @@ export async function lookupPublicProfile(uid: string): Promise<PublicProfile | 
     const snap = await getDoc(docRef);
     if (!snap.exists()) return null;
     return toPublicProfile(snap.id, snap.data());
+}
+
+/**
+ * Live subscription to a single friend's public profile, for the one
+ * profile a user is actively looking at (e.g. an open FriendProfileModal).
+ * Kept to a single doc rather than the whole friends list — a listener per
+ * visible friend row would multiply open connections for little benefit,
+ * since the list itself is re-fetched on every tab visit anyway.
+ */
+export function subscribeToPublicProfile(uid: string, onUpdate: (profile: PublicProfile | null) => void): Unsubscribe {
+    return onSnapshot(doc(db, 'users', uid), snap => {
+        onUpdate(snap.exists() ? toPublicProfile(snap.id, snap.data()) : null);
+    }, error => {
+        console.error('[Friends] subscribeToPublicProfile error:', error);
+    });
 }
 
 /**
@@ -235,10 +275,34 @@ export async function reconcileAcceptedRequests(uid: string): Promise<void> {
     }
 }
 
+// Firestore 'in' queries cap at 30 values per query.
+const IN_QUERY_CHUNK_SIZE = 30;
+
+function chunk<T>(items: T[], size: number): T[][] {
+    const chunks: T[][] = [];
+    for (let i = 0; i < items.length; i += size) chunks.push(items.slice(i, i + size));
+    return chunks;
+}
+
+/**
+ * Batch-read public profiles by uid. One 'in' query per 30 uids instead of
+ * one getDoc per uid — cuts an N-friend list from N reads to ceil(N/30).
+ */
+async function batchLookupPublicProfiles(uids: string[]): Promise<PublicProfile[]> {
+    if (uids.length === 0) return [];
+    const usersRef = collection(db, 'users');
+    const results = await Promise.all(
+        chunk(uids, IN_QUERY_CHUNK_SIZE).map(async batch => {
+            const snap = await getDocs(query(usersRef, where(documentId(), 'in', batch)));
+            return snap.docs.map(d => toPublicProfile(d.id, d.data()));
+        })
+    );
+    return results.flat();
+}
+
 export async function getFriendsList(uid: string): Promise<PublicProfile[]> {
     const snap = await getDoc(doc(db, 'friends', uid));
     if (!snap.exists()) return [];
     const uids: string[] = snap.data().list || [];
-    const profiles = await Promise.all(uids.map(lookupPublicProfile));
-    return profiles.filter((p): p is PublicProfile => p !== null);
+    return batchLookupPublicProfiles(uids);
 }

@@ -1,16 +1,47 @@
-import React from 'react';
+import React, { useEffect, useState } from 'react';
 import { PublicProfile } from '../types';
 import { INITIAL_CREATURES } from '../constants';
 import { PixelCreature } from './CreatureCard';
 import FireIcon from './icons/FireIcon';
 import AuraIcon from './icons/AuraIcon';
+import { subscribeToPublicProfile } from '../services/friendsService';
 
 interface FriendProfileModalProps {
     friend: PublicProfile;
     onClose: () => void;
 }
 
-const FriendProfileModal: React.FC<FriendProfileModalProps> = ({ friend, onClose }) => {
+// How stale statsSyncedAt has to be before the weekly-gain figure gets an
+// "as of" note. Team/streak don't need this: team goes stale silently but
+// harmlessly, and streak is self-correcting via deriveDisplayStreak.
+const STALE_AFTER_DAYS = 3;
+
+function daysSince(iso: string | undefined): number | null {
+    if (!iso) return null;
+    const then = new Date(iso).getTime();
+    if (isNaN(then)) return null;
+    return Math.floor((Date.now() - then) / (1000 * 60 * 60 * 24));
+}
+
+const FriendProfileModal: React.FC<FriendProfileModalProps> = ({ friend: initialFriend, onClose }) => {
+    // Seed from the initial snapshot passed in (avoids a loading flash on
+    // open), then hand off to a live listener so team/streak/aura update
+    // in place for as long as this modal stays open — a friend making
+    // changes elsewhere no longer requires closing and reopening this
+    // modal to see them.
+    const [friend, setFriend] = useState(initialFriend);
+
+    useEffect(() => {
+        setFriend(initialFriend);
+        const unsubscribe = subscribeToPublicProfile(initialFriend.uid, updated => {
+            if (updated) setFriend(updated);
+        });
+        return unsubscribe;
+    }, [initialFriend.uid]);
+
+    const staleDays = daysSince(friend.statsSyncedAt);
+    const isStale = staleDays !== null && staleDays >= STALE_AFTER_DAYS;
+
     return (
         <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/60 backdrop-blur-sm animate-fadeIn">
             <div className="bg-surface w-full max-w-md rounded-2xl shadow-2xl border-2 border-secondary overflow-hidden animate-reveal max-h-[85vh] flex flex-col">
@@ -55,6 +86,11 @@ const FriendProfileModal: React.FC<FriendProfileModalProps> = ({ friend, onClose
                                     <span>+{friend.weeklyGain.toLocaleString()} this week</span>
                                 </div>
                             </div>
+                            {isStale && (
+                                <p className="text-center text-[9px] text-text-dim -mt-4">
+                                    Weekly gain as of {friend.name}'s last visit, {staleDays} day{staleDays === 1 ? '' : 's'} ago
+                                </p>
+                            )}
 
                             {/* Team */}
                             <div>

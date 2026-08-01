@@ -30,7 +30,20 @@ export interface PublicProfile {
     guardianEvolutionStage: 1 | 2 | 3;
     league?: LeagueType;
     team: PublicTeamMember[];
+    // Already gap-corrected for display (see deriveDisplayStreak in
+    // friendsService) — 0 if more than a day has passed since
+    // lastStreakDate, regardless of the raw value last published. Callers
+    // never need to redo that math themselves.
     streak: number;
+    // ISO date (YYYY-MM-DD, local to the profile owner) of their last
+    // streak-extending completion. Published alongside streak so readers
+    // can independently tell whether a streak should have decayed since
+    // the owner's client last ran, instead of trusting a cached count.
+    lastStreakDate?: string;
+    // ISO timestamp of the last successful syncPublicLeaderboardStats call.
+    // Lets the UI show "as of X days ago" for fields (like weeklyGain) that
+    // can't be re-derived from a date the way streak can.
+    statsSyncedAt?: string;
     // True once this user's client has ever run syncPublicLeaderboardStats.
     // Lets the UI distinguish "genuinely has 0 streak / empty team" from
     // "hasn't opened the app since this feature shipped" — both look like
