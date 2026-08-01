@@ -441,7 +441,33 @@ export class NudgeService {
      * If so, trigger a surpassed push notification and update their last known rank.
      */
     private static async checkLeaderboardSurpassed(gameData: IUserGameData): Promise<void> {
+        // Respect the same 50-minute cross-slot cooldown every other nudge
+        // uses, so a surpassed push can't land back-to-back with a
+        // guaranteed/event nudge in the same tick.
+        const lastNudgeTime = gameData.dailyMissions.lastNudgeSentAt;
+        if (lastNudgeTime && (Date.now() - lastNudgeTime.getTime() < 50 * 60 * 1000)) {
+            return;
+        }
+
         const profile = gameData.profile || {};
+
+        // Rate-gate to once per hour per user - this used to run every 5
+        // minutes for every subscribed user with no gate at all, which is
+        // both unnecessary Firestore read volume and was implicated in the
+        // 2026-07-30 crash loop (every tick was another chance to hit the
+        // uncaught google-auth-library failure before real credentials existed).
+        const lastCheckedAt: string | undefined = profile.lastRankCheckAt;
+        if (lastCheckedAt && Date.now() - new Date(lastCheckedAt).getTime() < 60 * 60 * 1000) {
+            return;
+        }
+        // Persist the gate timestamp up front (before the Firestore call,
+        // which can fail/return null) so a failed lookup still counts
+        // against the hourly rate limit instead of retrying every 5 minutes.
+        profile.lastRankCheckAt = new Date().toISOString();
+        gameData.profile = profile;
+        gameData.markModified('profile');
+        await gameData.save();
+
         const leagueName = profile.league || 'Bronze';
         const rankResult = await getUserLeagueRank(gameData.userId.toString(), leagueName);
         if (!rankResult) return;
@@ -513,6 +539,11 @@ export class NudgeService {
 
                 if (pushResult.sent > 0) {
                     console.log(`🔔 Leaderboard Surpassed push notification sent to ${user.email} (new rank: ${currentRank}, old rank: ${lastKnownRank}, rival: ${rivalName}).`);
+                    // Count this send against the shared cooldown so the
+                    // guaranteed/event slot check later in this same tick
+                    // doesn't immediately stack another push on top of it.
+                    gameData.dailyMissions.lastNudgeSentAt = new Date();
+                    await gameData.save();
                 }
             }
         }

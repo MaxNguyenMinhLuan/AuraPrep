@@ -52,7 +52,12 @@ export const config = {
     },
 
     firebase: {
-        projectId: process.env.FIREBASE_PROJECT_ID || 'auraprep-da99c'
+        projectId: process.env.FIREBASE_PROJECT_ID || 'auraprep-da99c',
+        // Base64-encoded service account JSON. Without this, Firebase Admin
+        // can still verify ID tokens (needs only Google's public keys) but
+        // Firestore calls (getUserLeagueRank) have no real credentials to
+        // authenticate with - see the crash-loop note in leaderboard.service.ts.
+        serviceAccountKeyBase64: process.env.FIREBASE_SERVICE_ACCOUNT_KEY_BASE64 || ''
     },
 
     cors: {

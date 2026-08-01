@@ -4,6 +4,21 @@ import { config, validateConfig } from './config';
 import { AnalyticsScheduler } from './jobs/scheduler';
 import { QuestionIngestionService } from './services/questionIngestion.service';
 
+// Safety net for third-party library quirks that throw outside the promise
+// chain a normal try/catch wraps (e.g. google-auth-library's internal
+// credential-lookup race, which crashed this process repeatedly on 2026-07-30
+// even though the calling code in leaderboard.service.ts had its own
+// try/catch). Logs loudly instead of silently dying mid-request/mid-sweep -
+// intentional process.exit() calls elsewhere are unaffected, since exit()
+// doesn't route through these events.
+process.on('unhandledRejection', (reason) => {
+    console.error('⚠️  Unhandled promise rejection (process kept alive):', reason);
+});
+
+process.on('uncaughtException', (error) => {
+    console.error('⚠️  Uncaught exception (process kept alive):', error);
+});
+
 async function startServer(): Promise<void> {
     try {
         // Validate configuration

@@ -1,18 +1,35 @@
 import { Response, NextFunction } from 'express';
-import { initializeApp, getApps } from 'firebase-admin/app';
+import { initializeApp, getApps, cert } from 'firebase-admin/app';
 import { getAuth } from 'firebase-admin/auth';
 import { TokenService } from '../services/token.service';
 import { User } from '../models/User';
 import { config } from '../config';
 import { AuthenticatedRequest, ApiResponse } from '../types';
 
-// Initialize Firebase Admin
+// Initialize Firebase Admin. A bare { projectId } init is enough to verify
+// Firebase ID tokens (needs only Google's public keys), but NOT enough for
+// Firestore (leaderboard.service.ts) - that needs a real service-account
+// credential to authenticate, which a non-GCP host like Render has no other
+// way to obtain. Use the explicit credential when configured; fall back to
+// the bare init otherwise so local dev keeps working without requiring every
+// contributor to have the key.
 if (getApps().length === 0) {
     try {
-        initializeApp({
-            projectId: config.firebase.projectId
-        });
-        console.log(`Firebase Admin initialized with project ID: ${config.firebase.projectId}`);
+        if (config.firebase.serviceAccountKeyBase64) {
+            const serviceAccount = JSON.parse(
+                Buffer.from(config.firebase.serviceAccountKeyBase64, 'base64').toString('utf-8')
+            );
+            initializeApp({
+                projectId: config.firebase.projectId,
+                credential: cert(serviceAccount)
+            });
+            console.log(`Firebase Admin initialized with service account credentials for project: ${config.firebase.projectId}`);
+        } else {
+            initializeApp({
+                projectId: config.firebase.projectId
+            });
+            console.log(`Firebase Admin initialized with project ID only (no service account - Firestore calls will fail): ${config.firebase.projectId}`);
+        }
     } catch (error) {
         console.error('Failed to initialize Firebase Admin SDK:', error);
     }
