@@ -1866,18 +1866,8 @@ const App: React.FC = () => {
         );
     }
 
-    // "Testing mode": while a daily mission or training review question is
-    // being answered, swap the gamified gradient for a neutral backdrop
-    // closer to Bluebook's stark, distraction-free feel. Practice and Boss
-    // Fight keep the gradient background.
-    const isTestingMode = currentView === View.MISSION || currentView === View.REVIEW;
-
     return (
-        <div className={`min-h-screen w-full text-text-main font-sans text-sm flex flex-col lg:flex-row transition-colors duration-300 ${
-            isTestingMode
-                ? 'bg-background'
-                : 'bg-gradient-to-tr from-[#f5d0fe] via-[#fef9c3] to-[#a5f3fc] dark:from-[#311042] dark:via-[#0f172a] dark:to-[#083344]'
-        }`}>
+        <div className="min-h-screen w-full bg-gradient-to-tr from-[#f5d0fe] via-[#fef9c3] to-[#a5f3fc] dark:from-[#311042] dark:via-[#0f172a] dark:to-[#083344] text-text-main font-sans text-sm flex flex-col lg:flex-row">
             <BottomNavBar
                 currentView={currentView}
                 setCurrentView={handleViewChange}
