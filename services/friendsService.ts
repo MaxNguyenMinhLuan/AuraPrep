@@ -300,9 +300,43 @@ async function batchLookupPublicProfiles(uids: string[]): Promise<PublicProfile[
     return results.flat();
 }
 
-export async function getFriendsList(uid: string): Promise<PublicProfile[]> {
+export async function getFriendUids(uid: string): Promise<string[]> {
     const snap = await getDoc(doc(db, 'friends', uid));
     if (!snap.exists()) return [];
-    const uids: string[] = snap.data().list || [];
+    return snap.data().list || [];
+}
+
+export async function getFriendsList(uid: string): Promise<PublicProfile[]> {
+    const uids = await getFriendUids(uid);
     return batchLookupPublicProfiles(uids);
+}
+
+/**
+ * Live subscription to every profile in a friends list at once, for the
+ * Friends tab's podium + list (as opposed to subscribeToPublicProfile,
+ * which only covers the single profile an open FriendProfileModal is
+ * showing). Without this, a friend's team/streak/aura change made while
+ * this tab stays open and in the foreground never appears until the user
+ * switches tabs away and back — the same staleness problem the modal
+ * listener solved, just for the list view instead of the detail view.
+ * One onSnapshot 'in' query per 30 uids, merged into a single callback.
+ */
+export function subscribeToFriendsList(uids: string[], onUpdate: (profiles: PublicProfile[]) => void): Unsubscribe {
+    if (uids.length === 0) {
+        onUpdate([]);
+        return () => {};
+    }
+    const usersRef = collection(db, 'users');
+    const batches = chunk(uids, IN_QUERY_CHUNK_SIZE);
+    const profilesByBatch: PublicProfile[][] = batches.map(() => []);
+    const emit = () => onUpdate(profilesByBatch.flat());
+    const unsubscribes = batches.map((batch, idx) =>
+        onSnapshot(query(usersRef, where(documentId(), 'in', batch)), snap => {
+            profilesByBatch[idx] = snap.docs.map(d => toPublicProfile(d.id, d.data()));
+            emit();
+        }, error => {
+            console.error('[Friends] subscribeToFriendsList error:', error);
+        })
+    );
+    return () => unsubscribes.forEach(u => u());
 }

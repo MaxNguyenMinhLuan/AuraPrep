@@ -12,7 +12,7 @@ import SwordsIcon from './icons/SwordsIcon';
 import HandshakeIcon from './icons/HandshakeIcon';
 import AddFriendModal from './AddFriendModal';
 import FriendProfileModal from './FriendProfileModal';
-import { getLeagueCompetitors, getFriendsList, lookupPublicProfile } from '../services/friendsService';
+import { getLeagueCompetitors, getFriendUids, subscribeToFriendsList, lookupPublicProfile } from '../services/friendsService';
 
 interface LeaderboardEntry {
     id: string;
@@ -72,26 +72,40 @@ const LeaderboardView: React.FC<LeaderboardViewProps> = ({ user, username, weekl
         return () => { cancelled = true; };
     }, [league, user.uid]);
 
-    const refreshFriends = async () => {
-        setIsLoadingFriends(true);
-        try {
-            const list = await getFriendsList(user.uid);
-            setFriendProfiles(list);
-        } finally {
-            setIsLoadingFriends(false);
-        }
-    };
+    // Bumped whenever friend membership itself changes (add/accept/remove),
+    // so the uid list — and therefore the live subscription below, which is
+    // keyed to a fixed uid set — gets re-derived. Field-level changes to an
+    // existing friend's stats don't need this; the subscription already
+    // picks those up on its own.
+    const [friendsVersion, setFriendsVersion] = useState(0);
 
-    // Refetch on mount AND every time the user switches into the Friends tab —
-    // there's no realtime listener on friends' public stats, so without this
-    // a friend's team/streak update made while this tab was in the background
-    // would never appear until the whole view remounted.
+    // Friends tab: fetch the current friend uid list, then hold a live
+    // onSnapshot subscription open across all of them for as long as the tab
+    // stays active — team/streak/aura update in place the moment a friend's
+    // own client syncs, instead of only refreshing when this tab is
+    // switched away from and back to.
     useEffect(() => {
-        if (activeTab === 'friends') refreshFriends();
-    }, [user.uid, activeTab]);
+        if (activeTab !== 'friends') return;
+        let cancelled = false;
+        let unsubscribeProfiles: (() => void) | null = null;
+        setIsLoadingFriends(true);
+        (async () => {
+            const uids = await getFriendUids(user.uid);
+            if (cancelled) return;
+            unsubscribeProfiles = subscribeToFriendsList(uids, profiles => {
+                if (cancelled) return;
+                setFriendProfiles(profiles);
+                setIsLoadingFriends(false);
+            });
+        })();
+        return () => {
+            cancelled = true;
+            unsubscribeProfiles?.();
+        };
+    }, [user.uid, activeTab, friendsVersion]);
 
     const handleFriendsChanged = () => {
-        refreshFriends();
+        setFriendsVersion(v => v + 1);
         onFriendRequestsChanged();
     };
 
